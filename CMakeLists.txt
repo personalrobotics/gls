@@ -38,7 +38,6 @@ link_libraries(
 
 add_library(${PROJECT_NAME}
   src/GLS.cpp
-#  src/utils/BisectPerm.cpp
 )
 
 install(TARGETS ${PROJECT_NAME}
