@@ -1,3 +1,5 @@
+/* Authors: Aditya Vamsikrishna Mandalika */
+
 #ifndef GLS_DATASTRUCTURES_TYPES_HPP_
 #define GLS_DATASTRUCTURES_TYPES_HPP_
 
@@ -6,32 +8,28 @@
 #include <boost/graph/properties.hpp>
 #include <boost/property_map/dynamic_property_map.hpp>
 
-#include "GLS/Datastructures/Graph.hpp"
-
 namespace gls {
 namespace datastructures {
 
-// TODO (avk): All I need to know is that VertexProperties and EdgeProperties exist.
-
-/// Undirected Boost graph
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> Graph;
+/// Basic Boost graph
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> BasicGraph;
 
 /// Boost vertex
-typedef boost::graph_traits<Graph>::vertex_descriptor Vertex;
+typedef boost::graph_traits<BasicGraph>::vertex_descriptor Vertex;
 
 /// Boost vertex iterator
-typedef boost::graph_traits<Graph>::vertex_iterator VertexIter;
+typedef boost::graph_traits<BasicGraph>::vertex_iterator VertexIter;
 
 /// Boost edge
-typedef boost::graph_traits<Graph>::edge_descriptor Edge;
+typedef boost::graph_traits<BasicGraph>::edge_descriptor Edge;
 
 /// Boost edge iterator
-typedef boost::graph_traits<Graph>::edge_iterator EdgeIter;
+typedef boost::graph_traits<BasicGraph>::edge_iterator EdgeIter;
 
 /// Boost graph neighbor iterator
-typedef boost::graph_traits<Graph>::adjacency_iterator NeighborIter;
+typedef boost::graph_traits<BasicGraph>::adjacency_iterator NeighborIter;
 
-}
-}
+} // datastructures
+} // gls
 
 #endif // GLS_DATASTRUCTURES_TYPES_HPP_

@@ -23,7 +23,7 @@ public:
   virtual ~Event() = default;
 
   // Checks if the event is triggered.
-  virtual bool isTriggered(std::size_t vertex) = 0;
+  bool isTriggered(std::size_t vertex);
 
 }; // Event
 

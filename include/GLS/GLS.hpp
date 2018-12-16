@@ -20,11 +20,11 @@
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/datastructures/NearestNeighborsGNAT.h>
 
-#include "GLS/Event.hpp"
-#include "GLS/Selector.hpp"
+#include "GLS/Event/Event.hpp"
+#include "GLS/Selector/Selector.hpp"
 #include "GLS/Datastructures/Graph.hpp"
 
-namespace GLS {
+namespace gls {
 
 /// The OMPL Planner class that implements the algorithm
 class GLS: public ompl::base::Planner
@@ -50,35 +50,39 @@ public:
   void clear() override;
 
   // Setters and const Getters.
-  void setEvent(gls::event::Event event);
+  // void setEvent(gls::event::Event event);
   // gls::event::ConstEventPtr getEvent() const;
 
-  void setSelector(gls::selector::Selector selector);
+  // void setSelector(gls::selector::Selector selector);
   // gls::selector::ConstSelectorPtr getSelector() const;
 
 private:
   /// The pointer to the OMPL state space.
   const ompl::base::StateSpacePtr mSpace;
 
+  // TODO (avk): Change to pointers to const things
+
   /// Event
-  gls::event::Event mEvent;
+  gls::event::Event* mEvent = nullptr;
 
   /// Selector
-  gls::selector::Selector mSelector;
+  gls::selector::Selector* mSelector = nullptr;
 
   /// The fixed roadmap over which the search is done.
-  Graph mGraph;
+  gls::datastructures::Graph mGraph;
 
   /// Source vertex.
-  Vertex mStartVertex;
+  gls::datastructures::Vertex mStartVertex;
 
   /// Goal vertex.
-  Vertex mGoalVertex;
+  gls::datastructures::Vertex mGoalVertex;
 
   // Search Methods
   void extendSearchTree();
   void rewireSearchTree();
   void evaluateSearchTree();
+};
+
 }
 
 #endif // GLS_GLS_HPP_

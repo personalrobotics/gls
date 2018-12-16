@@ -20,7 +20,7 @@ public:
   Selector();
 
   /// Destructor.
-  virtual ~Selector() = default;
+  ~Selector() = default;
 
   // Selects edges to evaluate from given set of edges.
   // TODO (avk): Is vector the right datastructure.
@@ -29,7 +29,7 @@ public:
 
 protected:
   // Ranks the edges from 
-  virtual void rankEdgesByUtilityInEvaluation() = 0;
+  void rankEdgesByUtilityInEvaluation();
 
   // Data Member to hold the edges. Why?
 }; // Selector
