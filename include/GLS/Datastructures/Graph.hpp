@@ -1,7 +1,7 @@
 /* Authors: Aditya Vamsikrishna Mandalika */
 
-#ifndef GLS_GRAPH_GRAPH_HPP_
-#define GLS_GRAPH_GRAPH_HPP_
+#ifndef GLS_DATASTRUCTURES_GRAPH_HPP_
+#define GLS_DATASTRUCTURES_GRAPH_HPP_
 
 // STL headers
 #include <vector>
@@ -12,29 +12,12 @@
 #include <boost/property_map/dynamic_property_map.hpp>
 
 namespace gls {
-namespace graph {
+namespace datastructures {
 
 struct VertexProperties;
 struct EdgeProperties;
 
-/// Undirected Boost graph
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> Graph;
-
-/// Boost vertex
-typedef boost::graph_traits<Graph>::vertex_descriptor Vertex;
-
-/// Boost vertex iterator
-typedef boost::graph_traits<Graph>::vertex_iterator VertexIter;
-
-/// Boost edge
-typedef boost::graph_traits<Graph>::edge_descriptor Edge;
-
-/// Boost edge iterator
-typedef boost::graph_traits<Graph>::edge_iterator EdgeIter;
-
-/// Boost graph neighbor iterator
-typedef boost::graph_traits<Graph>::adjacency_iterator NeighborIter;
-
-} // graph
+} // datastructures
 } // gls
-#endif // GLS_GRAPH_GRAPH_HPP_
+
+#endif // GLS_DATASTRUCTURES_GRAPH_HPP_

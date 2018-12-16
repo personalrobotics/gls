@@ -1,9 +1,12 @@
 /* Authors: Aditya Vamsikrishna Mandalika */
 
 #include "GLS/Datastructures/Graph.hpp"
+#include "GLS/Datastructures/Types.hpp"
+// TODO (avk): Is this circular dependency avoidable?
+// i.e. I depend on Types.hpp and Types.hpp depends on Graph.hpp.
 
 namespace gls {
-namespace graph {
+namespace datastructures {
 
 struct VertexProperties
 {

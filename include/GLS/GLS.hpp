@@ -10,12 +10,6 @@
 #include <queue>
 #include <exception>
 
-// Boost headers
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/properties.hpp>
-#include <boost/graph/reverse_graph.hpp>
-#include <boost/property_map/dynamic_property_map.hpp>
-
 // OMPL headers
 #include <ompl/base/Planner.h>
 #include <ompl/base/StateSpace.h>
@@ -28,6 +22,7 @@
 
 #include "GLS/Event.hpp"
 #include "GLS/Selector.hpp"
+#include "GLS/Datastructures/Graph.hpp"
 
 namespace GLS {
 
@@ -39,15 +34,20 @@ public:
   /// \param[in] si The OMPL space information manager
   explicit GLS(const ompl::base::SpaceInformationPtr &si);
 
-  /// \param[in] si The OMPL space information manager
-  /// \param[in] roadmapFileName The path to the .graphml file that encodes the roadmap.
-  GLS(const ompl::base::SpaceInformationPtr &si,
-      const std::string& roadmapFileName);
-
   /// Destructor
   ~GLS(void);
 
-  // OMPL Methods.
+  /// Set the problem definition and define the start, goal.
+  void setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef);
+
+  /// Solve the planning problem.
+  ompl::base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition &ptc);
+
+  /// Setup the planner.
+  void setup() override;
+
+  /// Clear the planner setup.
+  void clear() override;
 
   // Setters and const Getters.
   void setEvent(gls::event::Event event);
@@ -57,14 +57,28 @@ public:
   // gls::selector::ConstSelectorPtr getSelector() const;
 
 private:
-  // Event
+  /// The pointer to the OMPL state space.
+  const ompl::base::StateSpacePtr mSpace;
+
+  /// Event
   gls::event::Event mEvent;
 
-  // Selector
+  /// Selector
   gls::selector::Selector mSelector;
 
-  // Search Methods
+  /// The fixed roadmap over which the search is done.
+  Graph mGraph;
 
+  /// Source vertex.
+  Vertex mStartVertex;
+
+  /// Goal vertex.
+  Vertex mGoalVertex;
+
+  // Search Methods
+  void extendSearchTree();
+  void rewireSearchTree();
+  void evaluateSearchTree();
 }
 
 #endif // GLS_GLS_HPP_

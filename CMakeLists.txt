@@ -35,6 +35,7 @@ link_libraries(
 
 add_library(${PROJECT_NAME}
   src/GLS.cpp
+  src/Datastructures/Graph.cpp
   src/Event/Event.cpp
   src/Selector/Selector.cpp
 )
