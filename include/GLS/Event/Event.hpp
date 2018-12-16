@@ -4,7 +4,7 @@
 #define GLS_EVENT_EVENT_HPP_
 
 #include <string>   // std::string
-#include <utility>  // std::pait
+#include <utility>  // std::pair
 #include <vector>   // std::vector
 
 namespace gls {
@@ -23,7 +23,7 @@ public:
   virtual ~Event() = default;
 
   // Checks if the event is triggered.
-  virtual bool eventIsTriggered(std::size_t vertex) = 0;
+  virtual bool isTriggered(std::size_t vertex) = 0;
 
 }; // Event
 
