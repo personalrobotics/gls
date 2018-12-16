@@ -7,11 +7,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 find_package(catkin REQUIRED
   COMPONENTS
   cmake_modules)
-find_package(OMPL REQUIRED)
+find_package(ompl REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options system)
 
-# TODO (avk): Remove the OpenCV dependency.
-find_package(OpenCV REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
@@ -23,7 +21,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OMPL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
-  ${OpenCV_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -38,6 +35,8 @@ link_libraries(
 
 add_library(${PROJECT_NAME}
   src/GLS.cpp
+  src/Event/Event.cpp
+  src/Selector/Selector.cpp
 )
 
 install(TARGETS ${PROJECT_NAME}
