@@ -16,23 +16,87 @@
 namespace gls {
 namespace datastructures {
 
-struct VertexProperties
+enum EvaluationStatus
 {
-  /// Cost-to-Come
-  double costToCome;
-
-  /// Heuristic value
-  double heuristic;
-
-  /// Parent
-  Vertex parent;
-
-  /// Children
-  std::vector<Vertex> children;
+  NotEvaluated,
+  Evaluated
 };
 
-struct EdgeProperties
+class VertexProperties
 {
+public:
+  // Set cost-to-come.
+  void setCostToCome(double cost);
+
+  // Get cost-to-come.
+  double getCostToCome() const;
+
+  // Set heuristic.
+  void setHeuristic(double heuristic);
+
+  // Get heuristic.
+  double getHeuristic() const;
+
+  // Set the vertex parent.
+  void setParent(Vertex parent);
+
+  // Get the vertex parent.
+  Vertex getParent() const;
+
+  // Set the children of the vertex in the search tree.
+  void setChildren(std::vector<Vertex> children);
+
+  // Add a single child to the vertex.
+  void addChild(Vertex child);
+
+  // Add multiple children to the vertex.
+  void addChildren(std::vector<Vertex> children);
+
+  // Remove a single child.
+  void removeChild(Vertex child);
+
+  // Remove multiple children.
+  void removeChildren(std::vector<Vertex> children);
+
+  // Clears the children.
+  void removeAllChildren();
+
+  // Get children.
+  std::vector<Vertex>& getChildren() const;
+
+  // Checks if vertex has given child.
+  bool hasChild(Vertex child) const;
+
+private:
+  /// Cost-to-Come.
+  double mCostToCome;
+
+  /// Heuristic value.
+  double mHeuristic;
+
+  /// Parent.
+  Vertex mParent;
+
+  /// Children.
+  std::vector<Vertex> mChildren;
+};
+
+class EdgeProperties
+{
+public:
+  // Sets the length of the edge.
+  void setLength(double length);
+
+  // Get the length of the edge.
+  double getLength();
+
+  // Sets the edge to have been evaluated.
+  void setEvaluationStatus(EvaluationStatus evaluationStatus);
+
+  // Checks if the edge has been evaluated.
+  EvaluationStatus getEvaluationStatus();
+
+private:
   /// The length of the edge using the space distance metric
   double length;
 
