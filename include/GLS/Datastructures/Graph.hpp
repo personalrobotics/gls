@@ -5,6 +5,7 @@
 
 // STL headers
 #include <vector>
+#include <set>
 
 // Boost headers
 #include <boost/graph/adjacency_list.hpp>
@@ -44,25 +45,22 @@ public:
   Vertex getParent() const;
 
   // Set the children of the vertex in the search tree.
-  void setChildren(std::vector<Vertex> children);
+  void setChildren(std::set<Vertex> children);
 
   // Add a single child to the vertex.
   void addChild(Vertex child);
 
   // Add multiple children to the vertex.
-  void addChildren(std::vector<Vertex> children);
+  void addChildren(std::set<Vertex> children);
 
   // Remove a single child.
   void removeChild(Vertex child);
 
   // Remove multiple children.
-  void removeChildren(std::vector<Vertex> children);
+  void removeChildren(std::set<Vertex> children);
 
   // Clears the children.
   void removeAllChildren();
-
-  // Get children.
-  std::vector<Vertex>& getChildren() const;
 
   // Checks if vertex has given child.
   bool hasChild(Vertex child) const;
@@ -78,7 +76,7 @@ private:
   Vertex mParent;
 
   /// Children.
-  std::vector<Vertex> mChildren;
+  std::set<Vertex> mChildren;
 };
 
 class EdgeProperties
@@ -88,7 +86,7 @@ public:
   void setLength(double length);
 
   // Get the length of the edge.
-  double getLength();
+  double getLength() const;
 
   // Sets the edge to have been evaluated.
   void setEvaluationStatus(EvaluationStatus evaluationStatus);
@@ -98,13 +96,13 @@ public:
 
 private:
   /// The length of the edge using the space distance metric
-  double length;
+  double mLength;
 
   /// Flag to check if edge is evaluated
-  bool isEvaluated;
+  EvaluationStatus mEvaluated;
 };
 
-/// Undirected Boost graph
+/// Undirected Boost graph using the properties just defined.
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> Graph;
 
 } // datastructures
