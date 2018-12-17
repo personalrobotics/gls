@@ -95,7 +95,7 @@ double EdgeProperties::getLength() const
 
 void EdgeProperties::setEvaluationStatus(EvaluationStatus evaluationStatus)
 {
-  mEvaluated = evaluationStatus;
+  mEvaluationStatus = evaluationStatus;
 }
 
 EvaluationStatus EdgeProperties::getEvaluationStatus()

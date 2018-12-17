@@ -99,7 +99,7 @@ private:
   double mLength;
 
   /// Flag to check if edge is evaluated
-  EvaluationStatus mEvaluated;
+  EvaluationStatus mEvaluationStatus;
 };
 
 /// Undirected Boost graph using the properties just defined.
