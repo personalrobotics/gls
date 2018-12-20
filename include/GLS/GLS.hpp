@@ -77,7 +77,8 @@ private:
   void evaluateSearchTree();
 
   /// The pointer to the OMPL state space.
-  ompl::base::StateSpacePtr mSpace;
+  // TODO (avk): Should this be ConstStateSpacePtr?
+  const ompl::base::StateSpacePtr mSpace;
 
   /// Event
   gls::event::EventPtr mEvent;
@@ -93,7 +94,6 @@ private:
 
   /// Goal vertex.
   gls::datastructures::Vertex mGoalVertex;
-
 };
 
 } // namespace gls
