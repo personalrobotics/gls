@@ -38,16 +38,16 @@ public:
   /// Destructor.
   ~GLS(void);
 
+  /// Setup the planner.
+  void setup() override;
+
   /// Set the problem definition and define the start, goal.
   /// \param[in] pdef OMPL Problem Definition.
-  void setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef);
+  void setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef) override;
 
   /// Solve the planning problem.
   /// \param[in] ptc OMPL Planning Termination Condition.
   ompl::base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition &ptc);
-
-  /// Setup the planner.
-  void setup() override;
 
   /// Clear the planner setup.
   void clear() override;

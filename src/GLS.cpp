@@ -21,6 +21,47 @@ GLS::~GLS()
   // Do nothing.
 }
 
+// ============================================================================
+void GLS::setup()
+{
+  // Do nothing
+}
 
+// ============================================================================
+void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef)
+{
+  // Do nothing
+}
+
+// ============================================================================
+void GLS::clear()
+{
+  // Do nothing
+}
+
+// ============================================================================
+ompl::base::PlannerStatus GLS::solve(
+  const ompl::base::PlannerTerminationCondition &ptc)
+{
+  // Do nothing
+}
+
+// ============================================================================
+void GLS::extendSearchTree()
+{
+  // Do nothing
+}
+
+// ============================================================================
+void GLS::rewireSearchTree()
+{
+  // Do nothing
+}
+
+// ============================================================================
+void GLS::evaluateSearchTree()
+{
+  // Do nothing
+}
 
 } // namespace gls
