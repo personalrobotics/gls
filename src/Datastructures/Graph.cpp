@@ -10,7 +10,7 @@ void VertexProperties::setCostToCome(double cost)
   mCostToCome = cost;
 }
 
-double VertexProperties::getCostToCome() const
+double VertexProperties::getCostToCome()
 {
   return mCostToCome;
 }
@@ -20,7 +20,7 @@ void VertexProperties::setHeuristic(double heuristic)
   mHeuristic = heuristic;
 }
 
-double VertexProperties::getHeuristic() const
+double VertexProperties::getHeuristic()
 {
   return mHeuristic;
 }
@@ -30,7 +30,7 @@ void VertexProperties::setParent(Vertex parent)
   mParent = parent;
 }
 
-Vertex VertexProperties::getParent() const
+Vertex VertexProperties::getParent()
 {
   return mParent;
 }
@@ -75,7 +75,7 @@ void VertexProperties::removeAllChildren()
   mChildren.clear();
 }
 
-bool VertexProperties::hasChild(Vertex child) const
+bool VertexProperties::hasChild(Vertex child)
 {
   auto iterS = mChildren.find(child);
   if (iterS != mChildren.end())
@@ -88,7 +88,7 @@ void EdgeProperties::setLength(double length)
   mLength = length;
 }
 
-double EdgeProperties::getLength() const
+double EdgeProperties::getLength()
 {
   return mLength;
 }

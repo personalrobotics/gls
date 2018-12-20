@@ -37,6 +37,9 @@ protected:
 
 }; // Selector
 
+typedef std::shared_ptr<Selector> SelectorPtr;
+typedef std::shared_ptr<const Selector> ConstSelectorPtr;
+
 } // selector
 } // gls
 

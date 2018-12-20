@@ -53,6 +53,9 @@ protected:
 
 }; // Event
 
+typedef std::shared_ptr<Event> EventPtr;
+typedef std::shared_ptr<const Event> ConstEventPtr;
+
 } // event
 } // gls
 

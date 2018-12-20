@@ -20,27 +20,30 @@
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/datastructures/NearestNeighborsGNAT.h>
 
+// GLS headers
 #include "GLS/Event/Event.hpp"
 #include "GLS/Selector/Selector.hpp"
 #include "GLS/Datastructures/Graph.hpp"
 
 namespace gls {
 
-/// The OMPL Planner class that implements the algorithm
+/// The OMPL Planner class that implements the algorithm.
 class GLS: public ompl::base::Planner
 {
 public:
-  /// Constructor
-  /// \param[in] si The OMPL space information manager
+  /// Constructor.
+  /// \param[in] si The OMPL space information manager.
   explicit GLS(const ompl::base::SpaceInformationPtr &si);
 
-  /// Destructor
+  /// Destructor.
   ~GLS(void);
 
   /// Set the problem definition and define the start, goal.
+  /// \param[in] pdef OMPL Problem Definition.
   void setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef);
 
   /// Solve the planning problem.
+  /// \param[in] ptc OMPL Planning Termination Condition.
   ompl::base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition &ptc);
 
   /// Setup the planner.
@@ -49,24 +52,38 @@ public:
   /// Clear the planner setup.
   void clear() override;
 
-  // Setters and const Getters.
-  // void setEvent(gls::event::Event event);
-  // gls::event::ConstEventPtr getEvent() const;
+  /// Set the event to be used by GLS.
+  /// \param[in] event Event that defines the trigger condition.
+  void setEvent(gls::event::EventPtr event);
 
-  // void setSelector(gls::selector::Selector selector);
-  // gls::selector::ConstSelectorPtr getSelector() const;
+  /// Returns the event used by the algorithm.
+  gls::event::ConstEventPtr getEvent() const;
+
+  /// Set the selector to be used by GLS.
+  /// \param[in] selector Selector that defines the evaluation strategy.
+  void setSelector(gls::selector::SelectorPtr selector);
+
+  /// Returns the selector used by the algorithm.
+  gls::selector::ConstSelectorPtr getSelector() const;
 
 private:
-  /// The pointer to the OMPL state space.
-  const ompl::base::StateSpacePtr mSpace;
+  /// Extends the search tree forwards.
+  void extendSearchTree();
 
-  // TODO (avk): Change to pointers to const things
+  /// Rewires the search tree when edge costs change.
+  void rewireSearchTree();
+
+  /// Evaluates the search tree when the extension pauses.
+  void evaluateSearchTree();
+
+  /// The pointer to the OMPL state space.
+  ompl::base::StateSpacePtr mSpace;
 
   /// Event
-  gls::event::Event* mEvent = nullptr;
+  gls::event::EventPtr mEvent;
 
   /// Selector
-  gls::selector::Selector* mSelector = nullptr;
+  gls::selector::SelectorPtr mSelector;
 
   /// The fixed roadmap over which the search is done.
   gls::datastructures::Graph mGraph;
@@ -77,12 +94,8 @@ private:
   /// Goal vertex.
   gls::datastructures::Vertex mGoalVertex;
 
-  // Search Methods
-  void extendSearchTree();
-  void rewireSearchTree();
-  void evaluateSearchTree();
 };
 
-}
+} // namespace gls
 
 #endif // GLS_GLS_HPP_

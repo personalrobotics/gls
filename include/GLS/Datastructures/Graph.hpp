@@ -30,19 +30,19 @@ public:
   void setCostToCome(double cost);
 
   // Get cost-to-come.
-  double getCostToCome() const;
+  double getCostToCome();
 
   // Set heuristic.
   void setHeuristic(double heuristic);
 
   // Get heuristic.
-  double getHeuristic() const;
+  double getHeuristic();
 
   // Set the vertex parent.
   void setParent(Vertex parent);
 
   // Get the vertex parent.
-  Vertex getParent() const;
+  Vertex getParent();
 
   // Set the children of the vertex in the search tree.
   void setChildren(std::set<Vertex> children);
@@ -63,7 +63,7 @@ public:
   void removeAllChildren();
 
   // Checks if vertex has given child.
-  bool hasChild(Vertex child) const;
+  bool hasChild(Vertex child);
 
 private:
   /// Cost-to-Come.
@@ -86,7 +86,7 @@ public:
   void setLength(double length);
 
   // Get the length of the edge.
-  double getLength() const;
+  double getLength();
 
   // Sets the edge to have been evaluated.
   void setEvaluationStatus(EvaluationStatus evaluationStatus);
