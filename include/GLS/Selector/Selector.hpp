@@ -22,16 +22,19 @@ public:
   /// Destructor.
   ~Selector() = default;
 
-  // Selects edges to evaluate from given set of edges.
-  // TODO (avk): Is vector the right datastructure.
-  // By default only support selecting one edge.
-  void selectEdgesToEvaluate(std::vector<std::size_t>& edges);
+  /// Selects edges to evaluate from given path.
+  virtual void selectEdgesToEvaluate(gls::datastructures::PathPtr path) = 0;
 
 protected:
-  // Ranks the edges from 
-  void rankEdgesByUtilityInEvaluation();
+  /// Ranks the edges.
+  virtual void rankEdgesByUtilityInEvaluation() = 0;
 
-  // Data Member to hold the edges. Why?
+  /// Source vertex of the graph.
+  gls::datastructures::Vertex mSourceVertex;
+
+  /// Target vertex of the graph.
+  gls::datastructures::Vertex mTargetVertex;
+
 }; // Selector
 
 } // selector

@@ -105,6 +105,12 @@ private:
 /// Undirected Boost graph using the properties just defined.
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> Graph;
 
+/// Shared pointer to Graph.
+typedef std::shared_ptr<Graph> GraphPtr;
+
+/// Shared pointer to const Graph.
+typedef std::shared_ptr<const Graph> ConstGraphPtr;
+
 } // datastructures
 } // gls
 
