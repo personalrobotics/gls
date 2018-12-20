@@ -24,19 +24,35 @@ GLS::~GLS()
 // ============================================================================
 void GLS::setup()
 {
-  // Do nothing
+  // Check if already setup.
+  if (static_cast<bool>(ompl::base::Planner::setup_))
+    return;
+
+  // Mark the planner to have been setup.
+  ompl::base::Planner::setup();
 }
 
 // ============================================================================
 void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef)
 {
-  // Do nothing
+  // Make sure we setup the planner first.
+  if (!static_cast<bool>(ompl::base::Planner::setup_))
+  {
+    setup();
+  }
+
+  // Mark the planner's problem to be defined.
+  ompl::base::Planner::setProblemDefinition(pdef);
+
+  // TODO (avk): Time to pull in state wrapper around OMPL state.
+  // TODO (avk): Set the start and goal states.
+  // TODO (avk): implement addStartAndGoalToGraph().
 }
 
 // ============================================================================
 void GLS::clear()
 {
-  // Do nothing
+  // TODO (avk): implement resetVertexProperties() and resetEdgeProperties()
 }
 
 // ============================================================================
