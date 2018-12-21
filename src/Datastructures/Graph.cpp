@@ -5,46 +5,55 @@
 namespace gls {
 namespace datastructures {
 
+// ============================================================================
 void VertexProperties::setCostToCome(double cost)
 {
   mCostToCome = cost;
 }
 
+// ============================================================================
 double VertexProperties::getCostToCome()
 {
   return mCostToCome;
 }
 
+// ============================================================================
 void VertexProperties::setHeuristic(double heuristic)
 {
   mHeuristic = heuristic;
 }
 
+// ============================================================================
 double VertexProperties::getHeuristic()
 {
   return mHeuristic;
 }
 
+// ============================================================================
 void VertexProperties::setParent(Vertex parent)
 {
   mParent = parent;
 }
 
+// ============================================================================
 Vertex VertexProperties::getParent()
 {
   return mParent;
 }
 
+// ============================================================================
 void VertexProperties::setChildren(std::set<Vertex> children)
 {
   mChildren = children;
 }
 
+// ============================================================================
 void VertexProperties::addChild(Vertex child)
 {
   mChildren.emplace(child);
 }
 
+// ============================================================================
 void VertexProperties::addChildren(std::set<Vertex> children)
 {
   for (auto iterS = children.begin(); iterS != children.end(); ++iterS)
@@ -53,6 +62,7 @@ void VertexProperties::addChildren(std::set<Vertex> children)
   }
 }
 
+// ============================================================================
 void VertexProperties::removeChild(Vertex child)
 {
   auto iterS = mChildren.find(child);
@@ -60,6 +70,7 @@ void VertexProperties::removeChild(Vertex child)
     mChildren.erase(iterS);
 }
 
+// ============================================================================
 void VertexProperties::removeChildren(std::set<Vertex> children)
 {
   for (auto iterS = children.begin(); iterS != children.end(); ++iterS)
@@ -70,11 +81,13 @@ void VertexProperties::removeChildren(std::set<Vertex> children)
   }
 }
 
+// ============================================================================
 void VertexProperties::removeAllChildren()
 {
   mChildren.clear();
 }
 
+// ============================================================================
 bool VertexProperties::hasChild(Vertex child)
 {
   auto iterS = mChildren.find(child);
@@ -83,21 +96,25 @@ bool VertexProperties::hasChild(Vertex child)
   return false;
 }
 
+// ============================================================================
 void EdgeProperties::setLength(double length)
 {
   mLength = length;
 }
 
+// ============================================================================
 double EdgeProperties::getLength()
 {
   return mLength;
 }
 
+// ============================================================================
 void EdgeProperties::setEvaluationStatus(EvaluationStatus evaluationStatus)
 {
   mEvaluationStatus = evaluationStatus;
 }
 
+// ============================================================================
 EvaluationStatus EdgeProperties::getEvaluationStatus()
 {
   return mEvaluationStatus;

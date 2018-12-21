@@ -12,6 +12,7 @@
 #include <boost/graph/properties.hpp>
 #include <boost/property_map/dynamic_property_map.hpp>
 
+// GLS headers
 #include "GLS/Datastructures/Types.hpp"
 
 namespace gls {
