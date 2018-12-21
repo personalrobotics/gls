@@ -1,8 +1,8 @@
 /* Authors: Aditya Vamsikrishna Mandalika */
 
-#include <ompl/util/Console.h> // OMPL_INFORM
-
 #include "GLS/Datastructures/SearchQueue.hpp"
+
+#include <ompl/util/Console.h> // OMPL_INFORM
 
 namespace gls {
 namespace datastructures {
