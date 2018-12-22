@@ -4,8 +4,8 @@
 #define GLS_DATASTRUCTURES_GRAPH_HPP_
 
 // STL headers
-#include <vector>
 #include <set>
+#include <vector>
 
 // Boost headers
 #include <boost/graph/adjacency_list.hpp>
@@ -104,7 +104,12 @@ private:
 };
 
 /// Undirected Boost graph using the properties just defined.
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> Graph;
+typedef boost::adjacency_list<boost::vecS,
+                              boost::vecS,
+                              boost::undirectedS,
+                              VertexProperties,
+                              EdgeProperties>
+    Graph;
 
 /// Shared pointer to Graph.
 typedef std::shared_ptr<Graph> GraphPtr;

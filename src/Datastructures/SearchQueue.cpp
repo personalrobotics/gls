@@ -10,11 +10,12 @@ namespace datastructures {
 using gls::datastructures::Vertex;
 
 SearchQueue::SearchQueue()
-  : mVertexQueue([this](const std::pair<gls::datastructures::Vertex, double> &lhs,
-                        const std::pair<gls::datastructures::Vertex, double> &rhs)
-                {
-                  return queueComparison(lhs, rhs);
-                })
+  : mVertexQueue(
+        [this](
+            const std::pair<gls::datastructures::Vertex, double>& lhs,
+            const std::pair<gls::datastructures::Vertex, double>& rhs) {
+          return queueComparison(lhs, rhs);
+        })
 {
   // Do Nothing.
 }
@@ -73,8 +74,9 @@ bool SearchQueue::isEmpty()
 }
 
 // ============================================================================
-bool queueComparison(const std::pair<gls::datastructures::Vertex, double> &left,
-                     const std::pair<gls::datastructures::Vertex, double> &right)
+bool queueComparison(
+    const std::pair<gls::datastructures::Vertex, double>& left,
+    const std::pair<gls::datastructures::Vertex, double>& right)
 {
   if (left.second < right.second)
     return true;

@@ -2,16 +2,15 @@
 
 #include "GLS/GLS.hpp"
 
-#include <algorithm>        // std::reverse
-#include <cmath>            // pow, sqrt
-#include <set>              // std::set
-#include <assert.h>         // debug
+#include <algorithm> // std::reverse
+#include <cmath>     // pow, sqrt
+#include <set>       // std::set
+#include <assert.h>  // debug
 
 namespace gls {
 
-GLS::GLS(const ompl::base::SpaceInformationPtr &si)
-  : ompl::base::Planner(si, "GLS")
-  , mSpace(si->getStateSpace())
+GLS::GLS(const ompl::base::SpaceInformationPtr& si)
+  : ompl::base::Planner(si, "GLS"), mSpace(si->getStateSpace())
 {
   // Do Nothing.
 }
@@ -33,7 +32,7 @@ void GLS::setup()
 }
 
 // ============================================================================
-void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef)
+void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
 {
   // Make sure we setup the planner first.
   if (!static_cast<bool>(ompl::base::Planner::setup_))
@@ -57,7 +56,7 @@ void GLS::clear()
 
 // ============================================================================
 ompl::base::PlannerStatus GLS::solve(
-  const ompl::base::PlannerTerminationCondition &ptc)
+    const ompl::base::PlannerTerminationCondition& ptc)
 {
   // Do nothing
 }

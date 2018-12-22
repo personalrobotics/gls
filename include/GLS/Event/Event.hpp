@@ -3,9 +3,9 @@
 #ifndef GLS_EVENT_EVENT_HPP_
 #define GLS_EVENT_EVENT_HPP_
 
-#include <string>   // std::string
-#include <utility>  // std::pair
-#include <vector>   // std::vector
+#include <string>  // std::string
+#include <utility> // std::pair
+#include <vector>  // std::vector
 
 #include "GLS/Datastructures/Graph.hpp"
 #include "GLS/Datastructures/Types.hpp"
@@ -38,8 +38,12 @@ public:
   /// Update vertex properties
   /// Concrete classes specify the appropriate update rules.
   /// \param[in] vertex Vertex whose properties need to be updated.
-  /// \param[in] cascade Set to true if the update needs to be cascaded downstream.
-  virtual void updateVertexProperties(gls::datastructures::Vertex vertex, vertexUpdateOption cascade = vertexUpdateOption::CascadeUpdate) = 0;
+  /// \param[in] cascade Set to true if the update needs to be cascaded
+  /// downstream.
+  virtual void updateVertexProperties(
+      gls::datastructures::Vertex vertex,
+      vertexUpdateOption cascade = vertexUpdateOption::CascadeUpdate)
+      = 0;
 
 protected:
   /// Pointer to the graph.

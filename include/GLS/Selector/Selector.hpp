@@ -3,9 +3,9 @@
 #ifndef GLS_SELECTOR_SELECTOR_HPP_
 #define GLS_SELECTOR_SELECTOR_HPP_
 
-#include <string>   // std::string
-#include <utility>  // std::pait
-#include <vector>   // std::vector
+#include <string>  // std::string
+#include <utility> // std::pait
+#include <vector>  // std::vector
 
 namespace gls {
 namespace selector {

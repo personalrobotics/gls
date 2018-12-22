@@ -4,36 +4,36 @@
 #define GLS_GLS_HPP_
 
 // STL headers
-#include <vector>
-#include <string> 
-#include <unordered_set>
-#include <queue>
 #include <exception>
+#include <queue>
+#include <string>
+#include <unordered_set>
+#include <vector>
 
 // OMPL headers
 #include <ompl/base/Planner.h>
-#include <ompl/base/StateSpace.h>
 #include <ompl/base/ScopedState.h>
+#include <ompl/base/StateSpace.h>
 #include <ompl/base/goals/GoalState.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <ompl/geometric/PathGeometric.h>
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/datastructures/NearestNeighborsGNAT.h>
+#include <ompl/geometric/PathGeometric.h>
 
 // GLS headers
+#include "GLS/Datastructures/Graph.hpp"
 #include "GLS/Event/Event.hpp"
 #include "GLS/Selector/Selector.hpp"
-#include "GLS/Datastructures/Graph.hpp"
 
 namespace gls {
 
 /// The OMPL Planner class that implements the algorithm.
-class GLS: public ompl::base::Planner
+class GLS : public ompl::base::Planner
 {
 public:
   /// Constructor.
   /// \param[in] si The OMPL space information manager.
-  explicit GLS(const ompl::base::SpaceInformationPtr &si);
+  explicit GLS(const ompl::base::SpaceInformationPtr& si);
 
   /// Destructor.
   ~GLS(void);
@@ -43,11 +43,13 @@ public:
 
   /// Set the problem definition and define the start, goal.
   /// \param[in] pdef OMPL Problem Definition.
-  void setProblemDefinition(const ompl::base::ProblemDefinitionPtr &pdef) override;
+  void setProblemDefinition(
+      const ompl::base::ProblemDefinitionPtr& pdef) override;
 
   /// Solve the planning problem.
   /// \param[in] ptc OMPL Planning Termination Condition.
-  ompl::base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition &ptc);
+  ompl::base::PlannerStatus solve(
+      const ompl::base::PlannerTerminationCondition& ptc);
 
   /// Clear the planner setup.
   void clear() override;
