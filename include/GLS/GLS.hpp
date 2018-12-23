@@ -70,9 +70,6 @@ public:
   gls::selector::ConstSelectorPtr getSelector() const;
 
 private:
-  /// Returns the f-value of the top vertex in mFrontierQueue.
-  double getTopFrontierQueueValue();
-
   /// Returns edge between source and target vertices.
   gls::datastructures::Edge getEdge(gls::datastructures::Vertex, gls::datastructures::Vertex);
 
@@ -96,9 +93,6 @@ private:
 
   /// SearchQueue representing the search tree that needs repairing.
   gls::datastructures::SearchQueue mRewireQueue;
-
-  /// SearchQueue representing the frontier vertices.
-  gls::datastructures::SearchQueue mFrontierQueue;
 
   /// Event
   gls::event::EventPtr mEvent;

@@ -72,21 +72,6 @@ ompl::base::PlannerStatus GLS::solve(
 }
 
 // ============================================================================
-double GLS::getTopFrontierQueueValue()
-{
-  double costReference;
-  if(mFrontierQueue.isEmpty())
-  {
-    costReference = std::numeric_limits<double>::max();
-  }
-  else
-  {
-    costReference = mFrontierQueue.getTopVertexValue();
-  }
-  return costReference;
-}
-
-// ============================================================================
 Edge GLS::getEdge(Vertex u, Vertex v)
 {
   Edge uv;
@@ -109,12 +94,6 @@ void GLS::extendSearchTree()
 
     // Pop the top vertex in the queue to extend the search tree.
     u = mExtendQueue.popTopVertex();
-
-    // Extend the search tree further only if cost of the vertex to extend is
-    // less than the cost best vertex in the frontier.
-    double costReference = getTopFrontierQueueValue();
-    if(mGraph[u].getEstimatedTotalCost() >= costReference)
-      break;
 
     // The vertex being extended should have been marked visited.
     assert(mGraph[u].getVisitStatus() == VisitStatus::Visited);
@@ -156,7 +135,6 @@ void GLS::extendSearchTree()
       {
         mGraph[v].setVisitStatus(VisitStatus::Visited);
         // assert(mExtendQueue.hasVertex(v) == false); // TODO (avk): hasVertex()
-        // assert(mFrontierQueue.hasVertex(v) == false);
       }
       else
       {
