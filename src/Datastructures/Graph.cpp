@@ -30,6 +30,12 @@ double VertexProperties::getHeuristic()
 }
 
 // ============================================================================
+double VertexProperties::getEstimatedTotalCost()
+{
+  return mCostToCome + mHeuristic;
+}
+
+// ============================================================================
 void VertexProperties::setParent(Vertex parent)
 {
   mParent = parent;
@@ -97,6 +103,30 @@ bool VertexProperties::hasChild(Vertex child)
 }
 
 // ============================================================================
+void VertexProperties::setVisitStatus(VisitStatus status)
+{
+  mVisitStatus = status;
+}
+
+// ============================================================================
+VisitStatus VertexProperties::getVisitStatus()
+{
+  return mVisitStatus;
+}
+
+// ============================================================================
+void VertexProperties::setCollisionStatus(CollisionStatus status)
+{
+  mCollisionStatus = status;
+}
+
+// ============================================================================
+CollisionStatus VertexProperties::getCollisionStatus()
+{
+  return mCollisionStatus;
+}
+
+// ============================================================================
 void EdgeProperties::setLength(double length)
 {
   mLength = length;
@@ -118,6 +148,18 @@ void EdgeProperties::setEvaluationStatus(EvaluationStatus evaluationStatus)
 EvaluationStatus EdgeProperties::getEvaluationStatus()
 {
   return mEvaluationStatus;
+}
+
+// ============================================================================
+void EdgeProperties::setCollisionStatus(CollisionStatus status)
+{
+  mCollisionStatus = status;
+}
+
+// ============================================================================
+CollisionStatus EdgeProperties::getCollisionStatus()
+{
+  return mCollisionStatus;
 }
 
 } // datastructures

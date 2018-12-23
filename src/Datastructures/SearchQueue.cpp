@@ -60,8 +60,6 @@ void SearchQueue::removeVertexWithValue(Vertex vertex, double cost)
   auto iterQ = mVertexQueue.find(std::make_pair(vertex, cost));
   if (iterQ != mVertexQueue.end())
     mVertexQueue.erase(iterQ);
-  else
-    OMPL_INFORM("SearchQueue: (Vertex, Cost) pair not in Queue");
 }
 
 // ============================================================================

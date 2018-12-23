@@ -22,6 +22,7 @@
 
 // GLS headers
 #include "GLS/Datastructures/Graph.hpp"
+#include "GLS/Datastructures/SearchQueue.hpp"
 #include "GLS/Event/Event.hpp"
 #include "GLS/Selector/Selector.hpp"
 
@@ -69,6 +70,12 @@ public:
   gls::selector::ConstSelectorPtr getSelector() const;
 
 private:
+  /// Returns the f-value of the top vertex in mFrontierQueue.
+  double getTopFrontierQueueValue();
+
+  /// Returns edge between source and target vertices.
+  gls::datastructures::Edge getEdge(gls::datastructures::Vertex, gls::datastructures::Vertex);
+
   /// Extends the search tree forwards.
   void extendSearchTree();
 
@@ -79,8 +86,19 @@ private:
   void evaluateSearchTree();
 
   /// The pointer to the OMPL state space.
-  // TODO (avk): Should this be ConstStateSpacePtr?
   const ompl::base::StateSpacePtr mSpace;
+
+  /// SearchQueue representing the open list to extend.
+  gls::datastructures::SearchQueue mExtendQueue;
+ 
+  /// SearchQueue representing the vertices whose attirbutes need update.
+  gls::datastructures::SearchQueue mUpdateQueue;
+
+  /// SearchQueue representing the search tree that needs repairing.
+  gls::datastructures::SearchQueue mRewireQueue;
+
+  /// SearchQueue representing the frontier vertices.
+  gls::datastructures::SearchQueue mFrontierQueue;
 
   /// Event
   gls::event::EventPtr mEvent;
