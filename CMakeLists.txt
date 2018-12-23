@@ -1,8 +1,32 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(generalized_lazy_search)
 
+#================================================================================
+# Compiler settings
+#================================================================================
 # Enforce the use of C++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+add_compile_options(-Wall -Wextra -Wpedantic)
+if(GENERALIZED_LAZY_SEARCH_TREAT_WARNINGS_AS_ERRORS)
+  add_compile_options(-Werror)
+endif()
+
+#================================================================================
+# CodeCov setup
+#================================================================================
+option(CODECOV "Enable CodeCov support" OFF)
+if(CODECOV)
+  include(CodeCoverage)
+  setup_target_for_coverage(${PROJECT_NAME}_coverage ctest coverage)
+  set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage"
+  )
+endif()
+
+#================================================================================
+# Link Libraries
+#================================================================================
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -47,6 +71,32 @@ install(TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+#================================================================================
+# Testing
+#================================================================================
+
+set_property(GLOBAL PROPERTY GENERALIZED_LAZY_SEARCH_TESTS)
+function(generalized_lazy_search_add_test target_name)
+  add_executable("${target_name}" ${ARGN})
+  add_test("${target_name}" "${target_name}")
+
+  target_link_libraries("${target_name}" gtest gtest_main)
+
+  set_property(GLOBAL APPEND PROPERTY GENERALIZED_LAZY_SEARCH_TESTS "${target_name}")
+endfunction()
+
+option(GENERALIZED_LAZY_SEARCH_BUILD_TESTS "Build generalized_lazy_search unit tests" ON)
+if(GENERALIZED_LAZY_SEARCH_BUILD_TESTS)
+  enable_testing()
+  include(cmake/External_GTest.cmake)
+  include_directories(${GTEST_INCLUDE_DIRS})
+  add_subdirectory("tests" EXCLUDE_FROM_ALL)
+endif()
+
+# Targets to mimic a Catkin package.
+get_property(all_tests GLOBAL PROPERTY GENERALIZED_LAZY_SEARCH_TESTS)
+add_custom_target(tests DEPENDS ${all_tests})
+add_custom_target(run_tests COMMAND "${CMAKE_CTEST_COMMAND}")
 
 #================================================================================
 # Formatting
