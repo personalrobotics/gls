@@ -97,10 +97,6 @@ void GLS::extendSearchTree()
     // The vertex being extended should have been marked visited.
     assert(mGraph[u].getVisitStatus() == VisitStatus::Visited);
 
-    // If the vertex popped is goal, add it to the frontier queue.
-    if (u == mGoalVertex)
-      mFrontierQueue.addVertexWithValue(u, mGraph[u].getEstimatedTotalCost());
-
     // If the vertex has been marked to be in collision, do not extend.
     if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
       continue;
