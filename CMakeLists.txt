@@ -88,15 +88,16 @@ endfunction()
 option(GENERALIZED_LAZY_SEARCH_BUILD_TESTS "Build generalized_lazy_search unit tests" ON)
 if(GENERALIZED_LAZY_SEARCH_BUILD_TESTS)
   enable_testing()
-  include(cmake/External_GTest.cmake)
+  include(ExternalProject)
+  #include(cmake/External_GTest.cmake)
   include_directories(${GTEST_INCLUDE_DIRS})
   add_subdirectory("tests" EXCLUDE_FROM_ALL)
 endif()
 
 # Targets to mimic a Catkin package.
 get_property(all_tests GLOBAL PROPERTY GENERALIZED_LAZY_SEARCH_TESTS)
-add_custom_target(tests DEPENDS ${all_tests})
-add_custom_target(run_tests COMMAND "${CMAKE_CTEST_COMMAND}")
+#add_custom_target(tests DEPENDS ${all_tests})
+#add_custom_target(run_tests COMMAND "${CMAKE_CTEST_COMMAND}")
 
 #================================================================================
 # Formatting
