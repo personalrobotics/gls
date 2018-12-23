@@ -54,9 +54,6 @@ typedef std::shared_ptr<const Edge> ConstEdgePtr;
 /// Boost edge iterator
 typedef boost::graph_traits<BasicGraph>::edge_iterator EdgeIter;
 
-/// Boost graph neighbor iterator
-typedef boost::graph_traits<BasicGraph>::adjacency_iterator NeighborIter;
-
 } // datastructures
 } // gls
 

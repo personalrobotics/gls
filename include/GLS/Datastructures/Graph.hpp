@@ -18,6 +18,18 @@
 namespace gls {
 namespace datastructures {
 
+enum CollisionStatus
+{
+  Collision,
+  Free
+};
+
+enum VisitStatus
+{
+  NotVisited,
+  Visited
+};
+
 enum EvaluationStatus
 {
   NotEvaluated,
@@ -38,6 +50,9 @@ public:
 
   // Get heuristic.
   double getHeuristic();
+
+  // Get estimated total cost.
+  double getEstimatedTotalCost();
 
   // Set the vertex parent.
   void setParent(Vertex parent);
@@ -66,6 +81,18 @@ public:
   // Checks if vertex has given child.
   bool hasChild(Vertex child);
 
+  // Sets the visit status of the vertex.
+  void setVisitStatus(VisitStatus status);
+
+  // Get the visit status of the vertex.
+  VisitStatus getVisitStatus();
+
+  // Sets the collision status of the vertex.
+  void setCollisionStatus(CollisionStatus status);
+
+  // Get the collision status of the vertex.
+  CollisionStatus getCollisionStatus();
+
 private:
   /// Cost-to-Come.
   double mCostToCome;
@@ -78,6 +105,12 @@ private:
 
   /// Children.
   std::set<Vertex> mChildren;
+
+  /// Visitation status.
+  VisitStatus mVisitStatus;
+
+  /// Collision status.
+  CollisionStatus mCollisionStatus;
 };
 
 class EdgeProperties
@@ -89,18 +122,27 @@ public:
   // Get the length of the edge.
   double getLength();
 
-  // Sets the edge to have been evaluated.
+  // Sets the evaluation status.
   void setEvaluationStatus(EvaluationStatus evaluationStatus);
 
-  // Checks if the edge has been evaluated.
+  // Get the evaluation status.
   EvaluationStatus getEvaluationStatus();
 
+  // Sets the collision status.
+  void setCollisionStatus(CollisionStatus status);
+
+  // Get the collision status.
+  CollisionStatus getCollisionStatus();
+
 private:
-  /// The length of the edge using the space distance metric
+  /// The length of the edge using the space distance metric.
   double mLength;
 
-  /// Flag to check if edge is evaluated
+  /// Evaluation status.
   EvaluationStatus mEvaluationStatus;
+
+  /// Collision status..
+  CollisionStatus mCollisionStatus;
 };
 
 /// Undirected Boost graph using the properties just defined.
@@ -116,6 +158,9 @@ typedef std::shared_ptr<Graph> GraphPtr;
 
 /// Shared pointer to const Graph.
 typedef std::shared_ptr<const Graph> ConstGraphPtr;
+
+/// Boost graph neighbor iterator
+typedef boost::graph_traits<Graph>::adjacency_iterator NeighborIter;
 
 } // datastructures
 } // gls
