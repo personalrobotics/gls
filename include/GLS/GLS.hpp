@@ -71,7 +71,8 @@ public:
 
 private:
   /// Returns edge between source and target vertices.
-  gls::datastructures::Edge getEdge(gls::datastructures::Vertex, gls::datastructures::Vertex);
+  gls::datastructures::Edge getEdge(
+      gls::datastructures::Vertex, gls::datastructures::Vertex);
 
   /// Extends the search tree forwards.
   void extendSearchTree();
@@ -87,7 +88,7 @@ private:
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;
- 
+
   /// SearchQueue representing the vertices whose attirbutes need update.
   gls::datastructures::SearchQueue mUpdateQueue;
 

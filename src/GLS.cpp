@@ -81,7 +81,6 @@ Edge GLS::getEdge(Vertex u, Vertex v)
   return uv;
 }
 
-
 // ============================================================================
 void GLS::extendSearchTree()
 {
@@ -99,22 +98,24 @@ void GLS::extendSearchTree()
     assert(mGraph[u].getVisitStatus() == VisitStatus::Visited);
 
     // If the vertex popped is goal, add it to the frontier queue.
-    if(u == mGoalVertex)
+    if (u == mGoalVertex)
       mFrontierQueue.addVertexWithValue(u, mGraph[u].getEstimatedTotalCost());
 
     // If the vertex has been marked to be in collision, do not extend.
-    if(mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
+    if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
       continue;
-    
+
     // Get the neighbors and extend.
     // TODO (avk): Have a wrapper in case the implicit vs explicit.
     NeighborIter ni, ni_end;
-    for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end; ++ni)
+    for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
+         ++ni)
     {
       // Get the successor vertex.
       Vertex v = *ni;
 
-      // If the successor has been previously marked to be in collision, continue.
+      // If the successor has been previously marked to be in collision,
+      // continue to the next successor.
       if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision)
         continue;
 
@@ -125,7 +126,8 @@ void GLS::extendSearchTree()
       // Get the edge between the two vertices.
       Edge uv = getEdge(u, v);
 
-      // If the edge has been previously marked to be in collision, continue.
+      // If the edge has been previously marked to be in collision,
+      // continue to the next successor.
       if (mGraph[uv].getCollisionStatus() == CollisionStatus::Collision)
         continue;
 
@@ -134,7 +136,8 @@ void GLS::extendSearchTree()
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited)
       {
         mGraph[v].setVisitStatus(VisitStatus::Visited);
-        // assert(mExtendQueue.hasVertex(v) == false); // TODO (avk): hasVertex()
+        // assert(mExtendQueue.hasVertex(v) == false);
+        // TODO (avk): hasVertex()
       }
       else
       {
@@ -145,7 +148,7 @@ void GLS::extendSearchTree()
       mGraph[v].setParent(u);
       mGraph[v].setCostToCome(mGraph[u].getCostToCome());
       mGraph[v].setHeuristic(0); // TODO (avk): heuristicFunction(v) in graph.
-      
+
       // Add it to its new siblings
       mGraph[u].addChild(v);
       mExtendQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
