@@ -28,6 +28,12 @@
 
 namespace gls {
 
+enum TreeValidityStatus
+{
+  Valid,
+  NotValid
+};
+
 /// The OMPL Planner class that implements the algorithm.
 class GLS : public ompl::base::Planner
 {
@@ -81,7 +87,10 @@ private:
   void rewireSearchTree();
 
   /// Evaluates the search tree when the extension pauses.
-  void evaluateSearchTree();
+  TreeValidityStatus evaluateSearchTree();
+
+  /// Return the path from source to target vertices.
+  ompl::base::PathPtr constructSolution(const gls::datastructures::Vertex&, const gls::datastructures::Vertex&);
 
   /// The pointer to the OMPL state space.
   const ompl::base::StateSpacePtr mSpace;
@@ -105,10 +114,10 @@ private:
   gls::datastructures::Graph mGraph;
 
   /// Source vertex.
-  gls::datastructures::Vertex mStartVertex;
+  gls::datastructures::Vertex mSourceVertex;
 
-  /// Goal vertex.
-  gls::datastructures::Vertex mGoalVertex;
+  /// Target vertex.
+  gls::datastructures::Vertex mTargetVertex;
 };
 
 } // namespace gls

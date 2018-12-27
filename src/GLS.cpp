@@ -68,7 +68,32 @@ void GLS::clear()
 ompl::base::PlannerStatus GLS::solve(
     const ompl::base::PlannerTerminationCondition& ptc)
 {
-  // Do nothing
+  // TODO (avk): Use ptc to terminate the search.
+
+  bool solutionFound = false;
+
+  // Add the source vertex to the search tree with zero cost-to-come.
+  mGraph[mSourceVertex].setVisitStatus(VisitStatus::Visited);
+  mExtendQueue.addVertexWithValue(mSourceVertex, 0);
+
+  // Run in loop.
+  while (!solutionFound || !mExtendQueue.isEmpty())
+  {
+    // Extend the tree till the event is triggered.
+    extendSearchTree();
+
+    // Evaluate the tree.
+    if (evaluateSearchTree() == TreeValidityStatus::NotValid)
+      rewireSearchTree();
+  }
+
+  // TODO (avk): Replace this with !solutionFound PlannerStatus::Failure
+  // if it exists.
+  if (solutionFound)
+  {
+    pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
+    return ompl::base::PlannerStatus::EXACT_SOLUTION;
+  }
 }
 
 // ============================================================================
@@ -198,9 +223,30 @@ void GLS::rewireSearchTree()
 }
 
 // ============================================================================
-void GLS::evaluateSearchTree()
+TreeValidityStatus GLS::evaluateSearchTree()
 {
   // Do nothing
+}
+
+// ============================================================================
+ompl::base::PathPtr GLS::constructSolution(const Vertex& source, const Vertex& target)
+{
+  ompl::geometric::PathGeometric *path = new ompl::geometric::PathGeometric(si_);
+  Vertex v = target;
+
+  while (v != source)
+  {
+    // TODO (avk): Involve the state wrapper.
+    // path->append(graph[v].state->state);
+    v = mGraph[v].getParent();
+  }
+
+  if (v == source)
+  {
+    // path->append(graph[start].state->state);
+  }
+  path->reverse();
+  return ompl::base::PathPtr(path);
 }
 
 } // namespace gls
