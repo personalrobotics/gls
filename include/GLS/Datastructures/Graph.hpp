@@ -60,6 +60,11 @@ public:
   // Get the vertex parent.
   Vertex getParent();
 
+  // Get the set of all children.
+  // TODO (avk): Remove this with getDescendents.
+  // Since this is only used in a loop.
+  std::set<Vertex>& getChildren();
+
   // Set the children of the vertex in the search tree.
   void setChildren(std::set<Vertex> children);
 

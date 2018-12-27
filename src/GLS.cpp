@@ -127,23 +127,62 @@ void GLS::extendSearchTree()
       if (mGraph[uv].getCollisionStatus() == CollisionStatus::Collision)
         continue;
 
-      // double edgeLength = mGraph[uv].getLength();
-
+      double edgeLength = mGraph[uv].getLength();
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited)
       {
         mGraph[v].setVisitStatus(VisitStatus::Visited);
-        // assert(mExtendQueue.hasVertex(v) == false);
-        // TODO (avk): hasVertex()
+        assert(mExtendQueue.hasVertexWithValue(v, mGraph[v].getCostToCome()) == false);
       }
       else
       {
-        // TODO (avk): Check if the new cost is better in which case, update.
+        double oldCostToCome = mGraph[v].getCostToCome();
+        double newCostToCome = mGraph[u].getCostToCome() + edgeLength;
+
+        // Use the parent ID to break ties.
+        Vertex previousParent = mGraph[v].getParent();
+
+        // If the previous cost-to-come is lower, continue.
+        if (oldCostToCome < newCostToCome)
+          continue;
+
+        // Tie-Breaking Rule
+        if (oldCostToCome == newCostToCome)
+        {
+          if (previousParent < u)
+            continue;
+        }
+
+        // The new cost is lower, make necessary updates.
+        // Remove from previous siblings.
+        mGraph[previousParent].removeChild(v);
+
+        // Remove the previous version of the vertex from possible queues.
+        mExtendQueue.removeVertexWithValue(v, oldCostToCome);
+
+        // Cascade the updates to all the descendents.
+        // Replace this with getDescendents() function.
+        std::vector<Vertex> subtree = {v};
+        while(!subtree.empty())
+        {
+          auto iterT = subtree.rbegin();
+          std::set<Vertex>& children = mGraph[*iterT].getChildren();
+          subtree.pop_back();
+
+          for(auto iterS = children.begin(); iterS != children.end(); ++iterS)
+          {
+            mGraph[*iterS].setVisitStatus(VisitStatus::NotVisited);
+            subtree.emplace_back(*iterS);
+            mExtendQueue.removeVertexWithValue(*iterS, mGraph[*iterS].getCostToCome());
+          }
+          children.clear();
+        }
       }
 
       // Update the successor's properties.
       mGraph[v].setParent(u);
       mGraph[v].setCostToCome(mGraph[u].getCostToCome());
       mGraph[v].setHeuristic(0); // TODO (avk): heuristicFunction(v) in graph.
+      // TODO (avk): We need to update the event-dependent attributes.
 
       // Add it to its new siblings
       mGraph[u].addChild(v);

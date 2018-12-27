@@ -48,6 +48,12 @@ Vertex VertexProperties::getParent()
 }
 
 // ============================================================================
+std::set<Vertex>& VertexProperties::getChildren()
+{
+  return mChildren;
+}
+
+// ============================================================================
 void VertexProperties::setChildren(std::set<Vertex> children)
 {
   mChildren = children;

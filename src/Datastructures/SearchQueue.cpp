@@ -72,6 +72,16 @@ bool SearchQueue::isEmpty()
 }
 
 // ============================================================================
+bool SearchQueue::hasVertexWithValue(const Vertex vertex, double cost)
+{
+  auto iterQ = mVertexQueue.find(std::make_pair(vertex, cost));
+  if (iterQ != mVertexQueue.end())
+    return true;
+
+  return false;
+}
+
+// ============================================================================
 bool queueComparison(
     const std::pair<gls::datastructures::Vertex, double>& left,
     const std::pair<gls::datastructures::Vertex, double>& right)

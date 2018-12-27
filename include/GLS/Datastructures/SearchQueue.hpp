@@ -67,6 +67,10 @@ public:
   /// Returns true if queue is empty.
   bool isEmpty();
 
+  /// Returns true if queue has vertex.
+  /// \param[in] vertex Vertex to search for in the queue.
+  bool hasVertexWithValue(const gls::datastructures::Vertex vertex, double cost);
+
 private:
   /// Custom comparator used to order vertices.
   bool queueComparison(
