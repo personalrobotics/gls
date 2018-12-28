@@ -83,8 +83,11 @@ ompl::base::PlannerStatus GLS::solve(
     extendSearchTree();
 
     // Evaluate the tree.
-    if (evaluateSearchTree() == TreeValidityStatus::NotValid)
-      rewireSearchTree();
+    // TODO (avk): Think of the API here.
+    // if (evaluateSearchTree() == TreeValidityStatus::NotValid)
+    //   rewireSearchTree();
+    // else
+    //   updateSearchTree()
   }
 
   // TODO (avk): Replace this with !solutionFound PlannerStatus::Failure
