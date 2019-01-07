@@ -7,8 +7,8 @@
 #include <utility> // std::pair
 #include <vector>  // std::vector
 
-#include "GLS/Datastructures/Graph.hpp"
-#include "GLS/Datastructures/Types.hpp"
+#include "gls/datastructures/Graph.hpp"
+#include "gls/datastructures/Types.hpp"
 
 namespace gls {
 namespace event {

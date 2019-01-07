@@ -46,12 +46,12 @@ link_libraries(
 )
 
 add_library(${PROJECT_NAME}
-  src/Datastructures/Graph.cpp
-  src/Datastructures/SearchQueue.cpp
-  src/Datastructures/State.cpp
+  src/datastructures/Graph.cpp
+  src/datastructures/SearchQueue.cpp
+  src/datastructures/State.cpp
   src/GLS.cpp
-  src/Event/Event.cpp
-  src/Selector/Selector.cpp
+  src/event/Event.cpp
+  src/selector/Selector.cpp
 )
 
 install(TARGETS ${PROJECT_NAME}

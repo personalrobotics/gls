@@ -12,7 +12,7 @@
 #include <ompl/datastructures/BinaryHeap.h>
 
 // GLS headers
-#include "GLS/Datastructures/Types.hpp"
+#include "gls/datastructures/Types.hpp"
 
 namespace gls {
 namespace datastructures {

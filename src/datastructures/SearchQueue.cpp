@@ -1,6 +1,6 @@
 /* Authors: Aditya Vamsikrishna Mandalika */
 
-#include "GLS/Datastructures/SearchQueue.hpp"
+#include "gls/datastructures/SearchQueue.hpp"
 
 #include <ompl/util/Console.h> // OMPL_INFORM
 

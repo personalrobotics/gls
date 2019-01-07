@@ -13,7 +13,7 @@
 #include <boost/property_map/dynamic_property_map.hpp>
 
 // GLS headers
-#include "GLS/Datastructures/Types.hpp"
+#include "gls/datastructures/Types.hpp"
 
 namespace gls {
 namespace datastructures {

@@ -1,6 +1,6 @@
 /* Authors: Aditya Vamsikrishna Mandalika */
 
-#include "GLS/Datastructures/Graph.hpp"
+#include "gls/datastructures/Graph.hpp"
 
 namespace gls {
 namespace datastructures {

@@ -1,6 +1,6 @@
 /* Authors: Aditya Vamsikrishna Mandalika */
 
-#include "GLS/Datastructures/State.hpp"
+#include "gls/datastructures/State.hpp"
 
 namespace gls {
 namespace datastructures {

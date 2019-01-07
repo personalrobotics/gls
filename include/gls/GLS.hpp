@@ -21,10 +21,10 @@
 #include <ompl/geometric/PathGeometric.h>
 
 // GLS headers
-#include "GLS/Datastructures/Graph.hpp"
-#include "GLS/Datastructures/SearchQueue.hpp"
-#include "GLS/Event/Event.hpp"
-#include "GLS/Selector/Selector.hpp"
+#include "gls/datastructures/Graph.hpp"
+#include "gls/datastructures/SearchQueue.hpp"
+#include "gls/event/Event.hpp"
+#include "gls/selector/Selector.hpp"
 
 namespace gls {
 

@@ -1,6 +1,6 @@
 /* Authors: Aditya Vamsikrishna Mandalika */
 
-#include "GLS/GLS.hpp"
+#include "gls/GLS.hpp"
 
 #include <algorithm> // std::reverse
 #include <cmath>     // pow, sqrt
