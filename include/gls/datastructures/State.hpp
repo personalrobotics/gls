@@ -23,7 +23,7 @@ public:
 
   /// Get OMPL state.
   // TODO (avk): Should I make this function const?
-  ompl::base::State* getState();
+  ompl::base::State* getOMPLState();
 
   /// Get OMPL space.
   // TODO (avk): Should I make this function const?

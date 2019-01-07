@@ -16,6 +16,9 @@
 #include "gls/datastructures/State.hpp"
 #include "gls/datastructures/Types.hpp"
 
+// TODO (avk): state and length are made public to accomodate the
+// roadmapmanager which seems stupid. Change it if possible.
+
 namespace gls {
 namespace datastructures {
 

@@ -25,7 +25,7 @@ State::~State()
 }
 
 // ================================================================================================
-ompl::base::State* State::getState()
+ompl::base::State* State::getOMPLState()
 {
   return mState;
 }

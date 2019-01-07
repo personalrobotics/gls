@@ -13,6 +13,7 @@ using gls::datastructures::EdgeIter;
 using gls::datastructures::EdgeProperties;
 using gls::datastructures::EvaluationStatus;
 using gls::datastructures::NeighborIter;
+using gls::datastructures::StatePtr;
 using gls::datastructures::Vertex;
 using gls::datastructures::VertexIter;
 using gls::datastructures::VertexProperties;
@@ -79,9 +80,69 @@ void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
   // Mark the planner's problem to be defined.
   ompl::base::Planner::setProblemDefinition(pdef);
 
-  // TODO (avk): Time to pull in state wrapper around OMPL state.
-  // TODO (avk): Set the start and goal states.
-  // TODO (avk): implement addStartAndGoalToGraph().
+  addSourceAndTargetToGraph();
+}
+
+void GLS::addSourceAndTargetToGraph()
+{
+  // TODO (avk): need mConnectionRadius
+  double mConnectionRadius = 0;
+
+  StatePtr sourceState(new gls::datastructures::State(mSpace));
+  mSpace->copyState(sourceState->getOMPLState(), pdef_->getStartState(0));
+
+  StatePtr targetState(new gls::datastructures::State(mSpace));
+  mSpace->copyState(targetState->getOMPLState(), pdef_->getGoal()->as<ompl::base::GoalState>()->getState());
+
+  // Add start and goal vertices to the graph
+  // TODO (avk): Implement setState();
+  mSourceVertex = boost::add_vertex(mGraph);
+  // mGraph[mSourceVertex].setState(sourceState);
+
+  mTargetVertex = boost::add_vertex(mGraph);
+  // mGraph[mTargetVertex].setState(targetState);
+
+  // Assign default values. // TODO (avk): Implement the heurstic function.
+  mGraph[mSourceVertex].setCostToCome(0);
+  mGraph[mSourceVertex].setHeuristic(0);
+  mGraph[mSourceVertex].setVisitStatus(VisitStatus::NotVisited);
+  mGraph[mSourceVertex].setCollisionStatus(CollisionStatus::Free);
+  mGraph[mSourceVertex].setParent(-1);
+
+  mGraph[mTargetVertex].setCostToCome(std::numeric_limits<double>::infinity());
+  mGraph[mTargetVertex].setHeuristic(0);
+  mGraph[mTargetVertex].setVisitStatus(VisitStatus::NotVisited);
+  mGraph[mTargetVertex].setCollisionStatus(CollisionStatus::Free);
+
+  VertexIter vi, vi_end;
+  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
+  {
+    double sourceDistance = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), sourceState->getOMPLState());
+    double targetDistance = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), targetState->getOMPLState());
+
+    if (sourceDistance < mConnectionRadius)
+    {
+      if(mSourceVertex == *vi)
+        continue;
+
+      std::pair<Edge, bool> newEdge = boost::add_edge(mSourceVertex, *vi, mGraph);
+      
+      mGraph[newEdge.first].setLength(sourceDistance);
+      mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+      mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
+    }
+
+    if (targetDistance < mConnectionRadius)
+    {
+      if(mTargetVertex == *vi)
+        continue;
+
+      std::pair<Edge,bool> newEdge = boost::add_edge(mTargetVertex, *vi, mGraph);
+      mGraph[newEdge.first].setLength(targetDistance);
+      mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+      mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
+    }
+  }
 }
 
 // ============================================================================

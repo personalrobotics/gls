@@ -78,6 +78,9 @@ public:
   gls::selector::ConstSelectorPtr getSelector() const;
 
 private:
+  /// Adds source and target vertices, and relevant edges to \c mGraph.
+  void addSourceAndTargetToGraph();
+
   /// Returns edge between source and target vertices.
   gls::datastructures::Edge getEdge(
       gls::datastructures::Vertex, gls::datastructures::Vertex);
