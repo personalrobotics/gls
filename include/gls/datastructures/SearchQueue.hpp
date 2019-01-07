@@ -69,7 +69,8 @@ public:
 
   /// Returns true if queue has vertex.
   /// \param[in] vertex Vertex to search for in the queue.
-  bool hasVertexWithValue(const gls::datastructures::Vertex vertex, double cost);
+  bool hasVertexWithValue(
+      const gls::datastructures::Vertex vertex, double cost);
 
 private:
   /// Custom comparator used to order vertices.

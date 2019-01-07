@@ -169,7 +169,9 @@ typedef std::shared_ptr<const Graph> ConstGraphPtr;
 typedef boost::graph_traits<Graph>::adjacency_iterator NeighborIter;
 
 /// Map each vertex to the underlying state [read from the graphml file]
-typedef boost::property_map<Graph, gls::datastructures::StatePtr VertexProperties::*>::type VPStateMap;
+typedef boost::property_map<Graph,
+                            gls::datastructures::StatePtr
+                                VertexProperties::*>::type VPStateMap;
 
 /// Map each edge to its length
 typedef boost::property_map<Graph, double EdgeProperties::*>::type EPLengthMap;

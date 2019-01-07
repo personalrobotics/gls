@@ -159,7 +159,9 @@ void GLS::extendSearchTree()
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited)
       {
         mGraph[v].setVisitStatus(VisitStatus::Visited);
-        assert(mExtendQueue.hasVertexWithValue(v, mGraph[v].getCostToCome()) == false);
+        assert(
+            mExtendQueue.hasVertexWithValue(v, mGraph[v].getCostToCome())
+            == false);
       }
       else
       {
@@ -190,17 +192,18 @@ void GLS::extendSearchTree()
         // Cascade the updates to all the descendents.
         // Replace this with getDescendents() function.
         std::vector<Vertex> subtree = {v};
-        while(!subtree.empty())
+        while (!subtree.empty())
         {
           auto iterT = subtree.rbegin();
           std::set<Vertex>& children = mGraph[*iterT].getChildren();
           subtree.pop_back();
 
-          for(auto iterS = children.begin(); iterS != children.end(); ++iterS)
+          for (auto iterS = children.begin(); iterS != children.end(); ++iterS)
           {
             mGraph[*iterS].setVisitStatus(VisitStatus::NotVisited);
             subtree.emplace_back(*iterS);
-            mExtendQueue.removeVertexWithValue(*iterS, mGraph[*iterS].getCostToCome());
+            mExtendQueue.removeVertexWithValue(
+                *iterS, mGraph[*iterS].getCostToCome());
           }
           children.clear();
         }
@@ -232,9 +235,11 @@ TreeValidityStatus GLS::evaluateSearchTree()
 }
 
 // ============================================================================
-ompl::base::PathPtr GLS::constructSolution(const Vertex& source, const Vertex& target)
+ompl::base::PathPtr GLS::constructSolution(
+    const Vertex& source, const Vertex& target)
 {
-  ompl::geometric::PathGeometric *path = new ompl::geometric::PathGeometric(si_);
+  ompl::geometric::PathGeometric* path
+      = new ompl::geometric::PathGeometric(si_);
   Vertex v = target;
 
   while (v != source)

@@ -92,13 +92,18 @@ private:
   TreeValidityStatus evaluateSearchTree();
 
   /// Return the path from source to target vertices.
-  ompl::base::PathPtr constructSolution(const gls::datastructures::Vertex&, const gls::datastructures::Vertex&);
+  ompl::base::PathPtr constructSolution(
+      const gls::datastructures::Vertex&, const gls::datastructures::Vertex&);
 
   /// The pointer to the OMPL state space.
   const ompl::base::StateSpacePtr mSpace;
 
   /// Boost roadmap representation.
-  boost::shared_ptr<io::RoadmapFromFile<gls::datastructures::Graph, gls::datastructures::VPStateMap, gls::datastructures::State, gls::datastructures::EPLengthMap>> roadmapPtr;
+  boost::shared_ptr<io::RoadmapFromFile<gls::datastructures::Graph,
+                                        gls::datastructures::VPStateMap,
+                                        gls::datastructures::State,
+                                        gls::datastructures::EPLengthMap>>
+      roadmapPtr;
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;
