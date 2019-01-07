@@ -13,6 +13,7 @@
 #include <boost/property_map/dynamic_property_map.hpp>
 
 // GLS headers
+#include "gls/datastructures/State.hpp"
 #include "gls/datastructures/Types.hpp"
 
 namespace gls {
@@ -166,6 +167,12 @@ typedef std::shared_ptr<const Graph> ConstGraphPtr;
 
 /// Boost graph neighbor iterator
 typedef boost::graph_traits<Graph>::adjacency_iterator NeighborIter;
+
+/// Map each vertex to the underlying state [read from the graphml file]
+typedef boost::property_map<Graph, gls::datastructures::StatePtr VertexProperties::*>::type VPStateMap;
+
+/// Map each edge to its length
+typedef boost::property_map<Graph, double EdgeProperties::*>::type EPLengthMap;
 
 } // datastructures
 } // gls

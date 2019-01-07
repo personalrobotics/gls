@@ -23,7 +23,9 @@
 // GLS headers
 #include "gls/datastructures/Graph.hpp"
 #include "gls/datastructures/SearchQueue.hpp"
+#include "gls/datastructures/State.hpp"
 #include "gls/event/Event.hpp"
+#include "gls/io/RoadmapManager.hpp"
 #include "gls/selector/Selector.hpp"
 
 namespace gls {
@@ -94,6 +96,9 @@ private:
 
   /// The pointer to the OMPL state space.
   const ompl::base::StateSpacePtr mSpace;
+
+  /// Boost roadmap representation.
+  boost::shared_ptr<io::RoadmapFromFile<gls::datastructures::Graph, gls::datastructures::VPStateMap, gls::datastructures::State, gls::datastructures::EPLengthMap>> roadmapPtr;
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;

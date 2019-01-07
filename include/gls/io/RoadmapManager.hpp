@@ -1,3 +1,5 @@
+/* Authors: Aditya Vamsikrishna Mandalika */
+
 #ifndef GLS_INPUT_ROADMAPMANAGER_HPP_
 #define GLS_INPUT_ROADMAPMANAGER_HPP_
 
@@ -19,8 +21,8 @@
 #include <ompl/base/StateSpace.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 
-namespace LRAstar {
-namespace utils {
+namespace gls {
+namespace io {
 
 /* RoadmapFromFilePutStateMap */
 /// The map used to decode the .graphml file and populate the vertex states.
@@ -35,16 +37,17 @@ public:
   typedef std::string value_type;
   typedef std::string reference;
 
-  const PropMap mPropMap;
-  ompl::base::StateSpacePtr mSpace;
-  const size_t mDim;
-
   RoadmapFromFilePutStateMap(PropMap propMap, ompl::base::StateSpacePtr space, size_t dim)
   : mPropMap{propMap}
   , mSpace{space}
   , mDim{dim}
   {
+    // Do nothing.
   }
+
+  const PropMap mPropMap;
+  ompl::base::StateSpacePtr mSpace;
+  const size_t mDim;
 };
 
 // Do not allow calling get on this property map
@@ -73,83 +76,8 @@ put(const RoadmapFromFilePutStateMap<PropMap,StateWrapper> &map,
   }
 }
 
-/* RoadmapFromFilePutEdgeLengthMap */
-/// The map used to decode the .graphml file and populate the edge length
-/// \tparam PropMap The type of property map for vertex states
-template <class PropMap>
-class RoadmapFromFilePutEdgeLengthMap
-{
-public:
-  typedef boost::writable_property_map_tag category;
-  typedef typename boost::property_traits<PropMap>::key_type key_type;
-  typedef std::string value_type;
-  typedef std::string reference;
-  const PropMap mPropMap;
-
-  RoadmapFromFilePutEdgeLengthMap(PropMap propMap):
-    mPropMap(propMap)
-  {
-  }
-};
-
-/// Do not allow calling get on this property map
-template <class PropMap>
-inline std::string
-get(const RoadmapFromFilePutEdgeLengthMap<PropMap> &map,
-  const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type &k)
-{
-  abort();
-}
-
-template <class PropMap>
-inline void
-put(const RoadmapFromFilePutEdgeLengthMap<PropMap> &map,
-  const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type &k,
-  const std::string representation)
-{
-  put(map.mPropMap, k, stod(representation));
-}
-
-/* RoadmapFromFilePutEdgePriorMap */
-/// The map used to decode the .graphml file and populate the edge priors
-/// \tparam PropMap The type of property map for edge prior
-template <class PropMap>
-class RoadmapFromFilePutEdgePriorMap
-{
-public:
-  typedef boost::writable_property_map_tag category;
-  typedef typename boost::property_traits<PropMap>::key_type key_type;
-  typedef std::string value_type;
-  typedef std::string reference;
-  const PropMap mPropMap;
-
-  RoadmapFromFilePutEdgePriorMap(PropMap propMap):
-    mPropMap(propMap)
-  {
-  }
-};
-
-/// Do not allow calling get on this property map
-template <class PropMap>
-inline std::string
-get(const RoadmapFromFilePutEdgePriorMap<PropMap> &map,
-  const typename RoadmapFromFilePutEdgePriorMap<PropMap>::key_type &k)
-{
-  abort();
-}
-
-template <class PropMap>
-inline void
-put(const RoadmapFromFilePutEdgePriorMap<PropMap> &map,
-  const typename RoadmapFromFilePutEdgePriorMap<PropMap>::key_type &k,
-  const std::string representation)
-{
-  put(map.mPropMap, k, stod(representation));
-}
-
-
 /* RoadmapFromFile */
-template <class Graph, class VStateMap, class StateWrapper, class ELength, class EPrior>
+template <class Graph, class VStateMap, class StateWrapper, class ELength>
 class RoadmapFromFile
 {
   typedef boost::graph_traits<Graph> GraphTypes;
@@ -175,14 +103,15 @@ class RoadmapFromFile
       mBounds = mSpace->as<ompl::base::RealVectorStateSpace>()->getBounds();
     }
 
-    ~RoadmapFromFile() {}
+    ~RoadmapFromFile() 
+    {
+      // Do nothing.
+    }
 
-    void generate(Graph &g, VStateMap stateMap, ELength lengthMap, EPrior priorMap)
+    void generate(Graph &g, VStateMap stateMap, ELength lengthMap)
     {
       boost::dynamic_properties props;
       props.property("state", RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(stateMap, mSpace, mDim));
-      props.property("length", RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
-      props.property("prior", RoadmapFromFilePutEdgePriorMap<EPrior>(priorMap));
 
       std::ifstream fp;
       fp.open(mFilename.c_str());
@@ -204,7 +133,7 @@ class RoadmapFromFile
     const ompl::base::StateSpacePtr mSpace;
 };
 
-} // namespace utils
-} // namespace LRAstar
+} // namespace io
+} // namespace gls
 
-#endif // LRASTAR_UTILS_ROADMAPFROMFILE_HPP_
+#endif // GLS_INPUT_ROADMAPMANAGER_HPP_
