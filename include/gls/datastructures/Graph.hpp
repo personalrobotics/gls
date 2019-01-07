@@ -40,6 +40,10 @@ enum EvaluationStatus
 class VertexProperties
 {
 public:
+
+  // Get state wrapper around underlying OMPL state.
+  StatePtr getState();
+
   // Set cost-to-come.
   void setCostToCome(double cost);
 
@@ -99,6 +103,9 @@ public:
   // Get the collision status of the vertex.
   CollisionStatus getCollisionStatus();
 
+  /// Underlying state.
+  StatePtr mState; 
+
 private:
   /// Cost-to-Come.
   double mCostToCome;
@@ -140,10 +147,10 @@ public:
   // Get the collision status.
   CollisionStatus getCollisionStatus();
 
-private:
   /// The length of the edge using the space distance metric.
   double mLength;
 
+private:
   /// Evaluation status.
   EvaluationStatus mEvaluationStatus;
 
@@ -164,6 +171,12 @@ typedef std::shared_ptr<Graph> GraphPtr;
 
 /// Shared pointer to const Graph.
 typedef std::shared_ptr<const Graph> ConstGraphPtr;
+
+/// Boost vertex iterator
+typedef boost::graph_traits<Graph>::vertex_iterator VertexIter;
+
+/// Boost edge iterator
+typedef boost::graph_traits<Graph>::edge_iterator EdgeIter;
 
 /// Boost graph neighbor iterator
 typedef boost::graph_traits<Graph>::adjacency_iterator NeighborIter;

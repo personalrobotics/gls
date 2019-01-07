@@ -9,9 +9,13 @@
 
 using gls::datastructures::CollisionStatus;
 using gls::datastructures::Edge;
+using gls::datastructures::EdgeIter;
+using gls::datastructures::EdgeProperties;
 using gls::datastructures::EvaluationStatus;
 using gls::datastructures::NeighborIter;
 using gls::datastructures::Vertex;
+using gls::datastructures::VertexIter;
+using gls::datastructures::VertexProperties;
 using gls::datastructures::VisitStatus;
 
 namespace gls {
@@ -39,6 +43,28 @@ void GLS::setup()
 
   // TODO (avk): If the graph is not provided, use implicit representation
   // for the edges using the NearestNeighbor representation.
+  // Check if roadmap has been provided.
+
+  mRoadmap->generate(mGraph, get(&VertexProperties::mState, mGraph),
+                          get(&EdgeProperties::mLength, mGraph));
+
+  // Set default vertex values.
+  VertexIter vi, vi_end;
+  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
+  {
+    mGraph[*vi].setCostToCome(std::numeric_limits<double>::infinity());
+    mGraph[*vi].setHeuristic(0);
+    mGraph[*vi].setVisitStatus(VisitStatus::NotVisited);
+    mGraph[*vi].setCollisionStatus(CollisionStatus::Free);
+  }
+
+  // Set default edge values.
+  EdgeIter ei, ei_end;
+  for (boost::tie(ei, ei_end) = edges(mGraph); ei != ei_end; ++ei)
+  {
+    mGraph[*ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+    mGraph[*ei].setCollisionStatus(CollisionStatus::Free);
+  }
 }
 
 // ============================================================================

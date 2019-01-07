@@ -6,6 +6,12 @@ namespace gls {
 namespace datastructures {
 
 // ============================================================================
+StatePtr VertexProperties::getState()
+{
+  return mState;
+}
+
+// ============================================================================
 void VertexProperties::setCostToCome(double cost)
 {
   mCostToCome = cost;

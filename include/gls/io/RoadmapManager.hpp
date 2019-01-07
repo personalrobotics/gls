@@ -68,7 +68,7 @@ inline void put(
     const std::string representation)
 {
   get(map.mPropMap, k).reset(new StateWrapper(map.mSpace));
-  ompl::base::State* ver_state{get(map.mPropMap, k)->state};
+  ompl::base::State* ver_state{get(map.mPropMap, k)->getState()};
   double* values{
       ver_state->as<ompl::base::RealVectorStateSpace::StateType>()->values};
   std::stringstream ss(representation);
@@ -122,8 +122,8 @@ public:
     EdgeIter ei, ei_end;
     for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
     {
-      ompl::base::State* state1 = get(stateMap, source(*ei, g))->state;
-      ompl::base::State* state2 = get(stateMap, target(*ei, g))->state;
+      ompl::base::State* state1 = get(stateMap, source(*ei, g))->getState();
+      ompl::base::State* state2 = get(stateMap, target(*ei, g))->getState();
       put(lengthMap, *ei, mSpace->distance(state1, state2));
     }
   }

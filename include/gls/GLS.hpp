@@ -103,7 +103,7 @@ private:
                                         gls::datastructures::VPStateMap,
                                         gls::datastructures::State,
                                         gls::datastructures::EPLengthMap>>
-      roadmapPtr;
+      mRoadmap;
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;

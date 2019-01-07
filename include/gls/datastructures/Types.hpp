@@ -39,9 +39,6 @@ typedef std::shared_ptr<Path> PathPtr;
 /// Shared pointer to a const Path.
 typedef std::shared_ptr<const Path> ConstPathPtr;
 
-/// Boost vertex iterator
-typedef boost::graph_traits<BasicGraph>::vertex_iterator VertexIter;
-
 /// Boost edge
 typedef boost::graph_traits<BasicGraph>::edge_descriptor Edge;
 
@@ -50,9 +47,6 @@ typedef std::shared_ptr<Edge> EdgePtr;
 
 /// Shared pointer to a const Edge.
 typedef std::shared_ptr<const Edge> ConstEdgePtr;
-
-/// Boost edge iterator
-typedef boost::graph_traits<BasicGraph>::edge_iterator EdgeIter;
 
 } // datastructures
 } // gls
