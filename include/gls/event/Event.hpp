@@ -26,14 +26,14 @@ class Event
 {
 public:
   /// Constructor.
-  Event();
+  Event(gls::datastructures::GraphPtr mGraph, gls::datastructures::Vertex mSourceVertex, gls::datastructures::Vertex mTargetVertex);
 
   /// Destructor.
   virtual ~Event() = default;
 
   /// Return true if the event is triggered.
   /// \param[in] vertex Vertex that might cause the trigger.
-  bool isTriggered(const gls::datastructures::Vertex vertex) const;
+  virtual bool isTriggered(const gls::datastructures::Vertex vertex) const = 0;
 
   /// Update vertex properties
   /// Concrete classes specify the appropriate update rules.
