@@ -24,7 +24,7 @@ bool ShortestPathEvent::isTriggered(const Vertex vertex) const
 
 //==============================================================================
 void ShortestPathEvent::updateVertexProperties(
-    Vertex vertex, vertexUpdateOption cascade)
+    Vertex /*vertex*/, vertexUpdateOption /*cascade*/)
 {
   // Do nothing.
 }
