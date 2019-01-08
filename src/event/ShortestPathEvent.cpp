@@ -17,7 +17,10 @@ ShortestPathEvent::ShortestPathEvent(
 //==============================================================================
 bool ShortestPathEvent::isTriggered(const Vertex vertex) const
 {
-  return true;
+  if (v == mTargetVertex)
+    return true;
+
+  return false;
 }
 
 //==============================================================================
