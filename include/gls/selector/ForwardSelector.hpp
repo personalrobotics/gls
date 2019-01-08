@@ -20,7 +20,8 @@ public:
       gls::datastructures::Vertex target);
 
   /// Documentation inherited.
-  gls::datastructures::Path selectEdgesToEvaluate(gls::datastructures::Path path) override;
+  gls::datastructures::Path selectEdgesToEvaluate(
+      gls::datastructures::Path path) override;
 
   /// Documentation inherited.
   void rankEdgesByUtilityInEvaluation() override;

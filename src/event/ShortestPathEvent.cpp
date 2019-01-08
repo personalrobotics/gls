@@ -7,8 +7,7 @@ using gls::datastructures::Graph;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-ShortestPathEvent::ShortestPathEvent(
-    Graph& graph, Vertex source, Vertex target)
+ShortestPathEvent::ShortestPathEvent(Graph& graph, Vertex source, Vertex target)
   : Event(graph, source, target)
 {
   // Do nothing.

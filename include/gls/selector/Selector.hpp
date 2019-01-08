@@ -23,13 +23,18 @@ public:
   /// \param[in] graph Graph the selector is operating with.
   /// \param[in] source Source vertex in the graph the selector is attached to.
   /// \param[in] target Target vertex in the graph the selector is attached to.
-  Selector(gls::datastructures::Graph& graph, gls::datastructures::Vertex source, gls::datastructures::Vertex target);
+  Selector(
+      gls::datastructures::Graph& graph,
+      gls::datastructures::Vertex source,
+      gls::datastructures::Vertex target);
 
   /// Destructor.
   ~Selector() = default;
 
   /// Selects edges to evaluate from given path.
-  virtual gls::datastructures::Path selectEdgesToEvaluate(gls::datastructures::Path path) = 0;
+  virtual gls::datastructures::Path selectEdgesToEvaluate(
+      gls::datastructures::Path path)
+      = 0;
 
 protected:
   /// Ranks the edges.
