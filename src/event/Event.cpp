@@ -5,10 +5,11 @@
 namespace gls {
 namespace event {
 
-Event::Event(
-    gls::datastructures::GraphPtr graph,
-    gls::datastructures::Vertex source,
-    gls::datastructures::Vertex target)
+using gls::datastructures::GraphPtr;
+using gls::datastructures::Vertex;
+
+//==============================================================================
+Event::Event(GraphPtr graph, Vertex source, Vertex target)
   : mGraph(graph), mSourceVertex(source), mTargetVertex(target)
 {
   // Do nothing.

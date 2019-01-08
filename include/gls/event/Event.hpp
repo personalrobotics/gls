@@ -26,10 +26,13 @@ class Event
 {
 public:
   /// Constructor.
+  /// \param[in] graph Graph the event is operating with.
+  /// \param[in] source Source vertex in the graph the event is attached to.
+  /// \param[in] target Target vertex in the graph the event is attached to.
   Event(
-      gls::datastructures::GraphPtr mGraph,
-      gls::datastructures::Vertex mSourceVertex,
-      gls::datastructures::Vertex mTargetVertex);
+      gls::datastructures::GraphPtr graph,
+      gls::datastructures::Vertex source,
+      gls::datastructures::Vertex target);
 
   /// Destructor.
   virtual ~Event() = default;

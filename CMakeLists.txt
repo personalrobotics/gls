@@ -51,6 +51,7 @@ add_library(${PROJECT_NAME}
   src/datastructures/State.cpp
   src/GLS.cpp
   src/event/Event.cpp
+  src/event/ShortestPathEvent.cpp
   src/selector/Selector.cpp
 )
 
