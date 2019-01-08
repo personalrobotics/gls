@@ -26,7 +26,10 @@ class Event
 {
 public:
   /// Constructor.
-  Event(gls::datastructures::GraphPtr mGraph, gls::datastructures::Vertex mSourceVertex, gls::datastructures::Vertex mTargetVertex);
+  Event(
+      gls::datastructures::GraphPtr mGraph,
+      gls::datastructures::Vertex mSourceVertex,
+      gls::datastructures::Vertex mTargetVertex);
 
   /// Destructor.
   virtual ~Event() = default;
