@@ -7,6 +7,9 @@
 #include <utility> // std::pait
 #include <vector>  // std::vector
 
+#include "gls/datastructures/Graph.hpp"
+#include "gls/datastructures/Types.hpp"
+
 namespace gls {
 namespace selector {
 
@@ -17,7 +20,8 @@ class Selector
 {
 public:
   /// Constructor.
-  Selector();
+  /// \param[in] 
+  Selector(gls::datastructures::GraphPtr graph, gls::datastructures::Vertex source, gls::datastructures::Vertex target);
 
   /// Destructor.
   ~Selector() = default;
@@ -28,6 +32,9 @@ public:
 protected:
   /// Ranks the edges.
   virtual void rankEdgesByUtilityInEvaluation() = 0;
+
+  /// Pointer to the graph.
+  gls::datastructures::GraphPtr mGraph;
 
   /// Source vertex of the graph.
   gls::datastructures::Vertex mSourceVertex;
