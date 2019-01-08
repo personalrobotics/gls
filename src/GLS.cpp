@@ -12,6 +12,7 @@ using gls::datastructures::Edge;
 using gls::datastructures::EdgeIter;
 using gls::datastructures::EdgeProperties;
 using gls::datastructures::EvaluationStatus;
+using gls::datastructures::Path;
 using gls::datastructures::NeighborIter;
 using gls::datastructures::StatePtr;
 using gls::datastructures::Vertex;
@@ -194,6 +195,28 @@ ompl::base::PlannerStatus GLS::solve(
 }
 
 // ============================================================================
+Edge GLS::getEdge(Vertex u, Vertex v)
+{
+  Edge uv;
+  bool edgeExists;
+  boost::tie(uv, edgeExists) = edge(u, v, mGraph);
+
+  return uv;
+}
+
+// ============================================================================
+Path GLS::getPathToSource(Vertex u)
+{
+  Path pathToSource;
+  while (u != mSourceVertex)
+  {
+    pathToSource.emplace_back(u);
+    u = mGraph[u].getParent();
+  }
+  return pathToSource;
+}
+
+// ============================================================================
 // TODO (avk): I should be able to set the heuristic function from the demo
 // script.
 double GLS::getGraphHeuristic(Vertex v)
@@ -204,14 +227,12 @@ double GLS::getGraphHeuristic(Vertex v)
   return heuristic;
 }
 
-// ============================================================================
-Edge GLS::getEdge(Vertex u, Vertex v)
+// ===========================================================================================
+CollisionStatus GLS::evaluateEdge(const Edge&)
 {
-  Edge uv;
-  bool edgeExists;
-  boost::tie(uv, edgeExists) = edge(u, v, mGraph);
+  auto validityChecker = si_->getStateValidityChecker();
 
-  return uv;
+  return CollisionStatus::Free;
 }
 
 // ============================================================================
@@ -331,14 +352,35 @@ void GLS::extendSearchTree()
 void GLS::updateSearchTree()
 {
   // Do nothing
+  // If rewiring, make sure to change the mTreeValidityStatus back.
 }
 
 // ============================================================================
 void GLS::evaluateSearchTree()
 {
-  // Do nothing
-  // Set mPlannerStatus
-  // Set mTreeValidityStatus
+  Vertex u = mExtendQueue.getTopVertex();
+  Path edgesToEvaluate = mSelector->selectEdgesToEvaluate(getPathToSource(u));
+
+  for (std::size_t i = 0; i < edgesToEvaluate.size() - 1; ++i)
+  {
+    Edge e = getEdge(edgesToEvaluate[i], edgesToEvaluate[i + 1]);
+    mGraph[e].setEvaluationStatus(EvaluationStatus::Evaluated);
+    if (evaluateEdge(e) == CollisionStatus::Free)
+    {
+      mGraph[e].setCollisionStatus(CollisionStatus::Free);
+    }
+    else
+    {
+      mGraph[e].setCollisionStatus(CollisionStatus::Collision);
+      mTreeValidityStatus = TreeValidityStatus::NotValid;
+      return;
+    }
+  }
+
+  if (u == mTargetVertex)
+  {
+    mPlannerStatus == PlannerStatus::Solved;
+  }
 }
 
 // ============================================================================

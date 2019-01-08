@@ -91,8 +91,15 @@ private:
   gls::datastructures::Edge getEdge(
       gls::datastructures::Vertex, gls::datastructures::Vertex);
 
+  /// Returns the path from vertex to source.
+  gls::datastructures::Path getPathToSource(gls::datastructures::Vertex);
+
   /// Heuristic function.
   double getGraphHeuristic(gls::datastructures::Vertex v);
+
+  /// Evaluates an edge for collision.
+  gls::datastructures::CollisionStatus evaluateEdge(
+      const gls::datastructures::Edge& e);
 
   /// Extends the search tree forwards.
   void extendSearchTree();
