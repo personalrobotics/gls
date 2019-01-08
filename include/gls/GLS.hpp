@@ -85,6 +85,9 @@ private:
   gls::datastructures::Edge getEdge(
       gls::datastructures::Vertex, gls::datastructures::Vertex);
 
+  /// Heuristic function.
+  double getGraphHeuristic(gls::datastructures::Vertex v);
+
   /// Extends the search tree forwards.
   void extendSearchTree();
 
@@ -107,6 +110,9 @@ private:
                                         gls::datastructures::State,
                                         gls::datastructures::EPLengthMap>>
       mRoadmap;
+
+  /// Connection radius in the graph.
+  double mConnectionRadius;
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;

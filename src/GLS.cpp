@@ -24,7 +24,8 @@ namespace gls {
 GLS::GLS(const ompl::base::SpaceInformationPtr& si)
   : ompl::base::Planner(si, "GLS"), mSpace(si->getStateSpace())
 {
-  // Do Nothing.
+  // Set default values for data members.
+  mConnectionRadius = 0.0;
 }
 
 GLS::~GLS()
@@ -46,8 +47,10 @@ void GLS::setup()
   // for the edges using the NearestNeighbor representation.
   // Check if roadmap has been provided.
 
-  mRoadmap->generate(mGraph, get(&VertexProperties::mState, mGraph),
-                          get(&EdgeProperties::mLength, mGraph));
+  mRoadmap->generate(
+      mGraph,
+      get(&VertexProperties::mState, mGraph),
+      get(&EdgeProperties::mLength, mGraph));
 
   // Set default vertex values.
   VertexIter vi, vi_end;
@@ -83,28 +86,27 @@ void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
   addSourceAndTargetToGraph();
 }
 
+// ============================================================================
 void GLS::addSourceAndTargetToGraph()
 {
-  // TODO (avk): need mConnectionRadius
-  double mConnectionRadius = 0;
-
   StatePtr sourceState(new gls::datastructures::State(mSpace));
   mSpace->copyState(sourceState->getOMPLState(), pdef_->getStartState(0));
 
   StatePtr targetState(new gls::datastructures::State(mSpace));
-  mSpace->copyState(targetState->getOMPLState(), pdef_->getGoal()->as<ompl::base::GoalState>()->getState());
+  mSpace->copyState(
+      targetState->getOMPLState(),
+      pdef_->getGoal()->as<ompl::base::GoalState>()->getState());
 
   // Add start and goal vertices to the graph
-  // TODO (avk): Implement setState();
   mSourceVertex = boost::add_vertex(mGraph);
-  // mGraph[mSourceVertex].setState(sourceState);
+  mGraph[mSourceVertex].setState(sourceState);
 
   mTargetVertex = boost::add_vertex(mGraph);
-  // mGraph[mTargetVertex].setState(targetState);
+  mGraph[mTargetVertex].setState(targetState);
 
-  // Assign default values. // TODO (avk): Implement the heurstic function.
+  // Assign default values.
   mGraph[mSourceVertex].setCostToCome(0);
-  mGraph[mSourceVertex].setHeuristic(0);
+  mGraph[mSourceVertex].setHeuristic(getGraphHeuristic(mSourceVertex));
   mGraph[mSourceVertex].setVisitStatus(VisitStatus::NotVisited);
   mGraph[mSourceVertex].setCollisionStatus(CollisionStatus::Free);
   mGraph[mSourceVertex].setParent(-1);
@@ -117,16 +119,19 @@ void GLS::addSourceAndTargetToGraph()
   VertexIter vi, vi_end;
   for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
   {
-    double sourceDistance = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), sourceState->getOMPLState());
-    double targetDistance = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), targetState->getOMPLState());
+    double sourceDistance = mSpace->distance(
+        mGraph[*vi].getState()->getOMPLState(), sourceState->getOMPLState());
+    double targetDistance = mSpace->distance(
+        mGraph[*vi].getState()->getOMPLState(), targetState->getOMPLState());
 
     if (sourceDistance < mConnectionRadius)
     {
-      if(mSourceVertex == *vi)
+      if (mSourceVertex == *vi)
         continue;
 
-      std::pair<Edge, bool> newEdge = boost::add_edge(mSourceVertex, *vi, mGraph);
-      
+      std::pair<Edge, bool> newEdge
+          = boost::add_edge(mSourceVertex, *vi, mGraph);
+
       mGraph[newEdge.first].setLength(sourceDistance);
       mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
       mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
@@ -134,10 +139,11 @@ void GLS::addSourceAndTargetToGraph()
 
     if (targetDistance < mConnectionRadius)
     {
-      if(mTargetVertex == *vi)
+      if (mTargetVertex == *vi)
         continue;
 
-      std::pair<Edge,bool> newEdge = boost::add_edge(mTargetVertex, *vi, mGraph);
+      std::pair<Edge, bool> newEdge
+          = boost::add_edge(mTargetVertex, *vi, mGraph);
       mGraph[newEdge.first].setLength(targetDistance);
       mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
       mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
@@ -184,6 +190,17 @@ ompl::base::PlannerStatus GLS::solve(
     pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
     return ompl::base::PlannerStatus::EXACT_SOLUTION;
   }
+}
+
+// ============================================================================
+// TODO (avk): I should be able to set the heuristic function from the demo
+// script.
+double GLS::getGraphHeuristic(Vertex v)
+{
+  double heuristic = mSpace->distance(
+      mGraph[mTargetVertex].getState()->getOMPLState(),
+      mGraph[v].getState()->getOMPLState());
+  return heuristic;
 }
 
 // ============================================================================
@@ -299,8 +316,8 @@ void GLS::extendSearchTree()
       // Update the successor's properties.
       mGraph[v].setParent(u);
       mGraph[v].setCostToCome(mGraph[u].getCostToCome());
-      mGraph[v].setHeuristic(0); // TODO (avk): heuristicFunction(v) in graph.
-      // TODO (avk): We need to update the event-dependent attributes.
+      mGraph[v].setHeuristic(getGraphHeuristic(v));
+      mEvent->updateVertexProperties(v);
 
       // Add it to its new siblings
       mGraph[u].addChild(v);
