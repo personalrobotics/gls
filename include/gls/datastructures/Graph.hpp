@@ -43,6 +43,8 @@ enum EvaluationStatus
 class VertexProperties
 {
 public:
+  // Set state wrapper around underlying OMPL state.
+  void setState(StatePtr state);
 
   // Get state wrapper around underlying OMPL state.
   StatePtr getState();
@@ -107,7 +109,7 @@ public:
   CollisionStatus getCollisionStatus();
 
   /// Underlying state.
-  StatePtr mState; 
+  StatePtr mState;
 
 private:
   /// Cost-to-Come.

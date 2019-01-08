@@ -6,6 +6,12 @@ namespace gls {
 namespace datastructures {
 
 // ============================================================================
+void VertexProperties::setState(StatePtr state)
+{
+  mState = state;
+}
+
+// ============================================================================
 StatePtr VertexProperties::getState()
 {
   return mState;

@@ -52,9 +52,8 @@ public:
 // Do not allow calling get on this property map
 template <class PropMap, class StateWrapper>
 inline std::string get(
-    const RoadmapFromFilePutStateMap<PropMap, StateWrapper>& map,
-    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type&
-        k)
+    const RoadmapFromFilePutStateMap<PropMap, StateWrapper>&,
+    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type&)
 {
   abort();
 }
