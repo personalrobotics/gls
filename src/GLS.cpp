@@ -159,37 +159,38 @@ void GLS::clear()
 
 // ============================================================================
 ompl::base::PlannerStatus GLS::solve(
-    const ompl::base::PlannerTerminationCondition& ptc)
+    const ompl::base::PlannerTerminationCondition& /*ptc*/)
 {
   // TODO (avk): Use ptc to terminate the search.
-
-  bool solutionFound = false;
 
   // Add the source vertex to the search tree with zero cost-to-come.
   mGraph[mSourceVertex].setVisitStatus(VisitStatus::Visited);
   mExtendQueue.addVertexWithValue(mSourceVertex, 0);
 
   // Run in loop.
-  while (!solutionFound || !mExtendQueue.isEmpty())
+  while (!mExtendQueue.isEmpty())
   {
     // Extend the tree till the event is triggered.
     extendSearchTree();
 
-    // Evaluate the tree.
-    // TODO (avk): Think of the API here.
-    // if (evaluateSearchTree() == TreeValidityStatus::NotValid)
-    //   rewireSearchTree();
-    // else
-    //   updateSearchTree()
+    // Evaluate the extended search tree.
+    evaluateSearchTree();
+
+    // If the plan is successful, return.
+    if (mPlannerStatus == PlannerStatus::Solved)
+      break;
+
+    // Based on the evaluation, update the search tree.
+    updateSearchTree();
   }
 
-  // TODO (avk): Replace this with !solutionFound PlannerStatus::Failure
-  // if it exists.
-  if (solutionFound)
+  if (mPlannerStatus == PlannerStatus::Solved)
   {
     pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
     return ompl::base::PlannerStatus::EXACT_SOLUTION;
   }
+
+  return ompl::base::PlannerStatus::TIMEOUT;
 }
 
 // ============================================================================
@@ -327,15 +328,17 @@ void GLS::extendSearchTree()
 }
 
 // ============================================================================
-void GLS::rewireSearchTree()
+void GLS::updateSearchTree()
 {
   // Do nothing
 }
 
 // ============================================================================
-TreeValidityStatus GLS::evaluateSearchTree()
+void GLS::evaluateSearchTree()
 {
   // Do nothing
+  // Set mPlannerStatus
+  // Set mTreeValidityStatus
 }
 
 // ============================================================================

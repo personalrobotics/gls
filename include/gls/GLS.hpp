@@ -36,6 +36,12 @@ enum TreeValidityStatus
   NotValid
 };
 
+enum PlannerStatus
+{
+  Solved,
+  NotSolved
+};
+
 /// The OMPL Planner class that implements the algorithm.
 class GLS : public ompl::base::Planner
 {
@@ -92,10 +98,10 @@ private:
   void extendSearchTree();
 
   /// Rewires the search tree when edge costs change.
-  void rewireSearchTree();
+  void updateSearchTree();
 
   /// Evaluates the search tree when the extension pauses.
-  TreeValidityStatus evaluateSearchTree();
+  void evaluateSearchTree();
 
   /// Return the path from source to target vertices.
   ompl::base::PathPtr constructSolution(
@@ -113,6 +119,12 @@ private:
 
   /// Connection radius in the graph.
   double mConnectionRadius;
+
+  /// Flag to check if the planner succeeded.
+  PlannerStatus mPlannerStatus;
+
+  /// Flag to check the validity of the search tree.
+  TreeValidityStatus mTreeValidityStatus;
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;
