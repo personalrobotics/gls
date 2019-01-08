@@ -5,11 +5,11 @@
 namespace gls {
 namespace selector {
 
-using gls::datastructures::GraphPtr;
+using gls::datastructures::Graph;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-Selector::Selector(GraphPtr graph, Vertex source, Vertex target)
+Selector::Selector(Graph& graph, Vertex source, Vertex target)
   : mGraph(graph), mSourceVertex(source), mTargetVertex(target)
 {
   // Do nothing.

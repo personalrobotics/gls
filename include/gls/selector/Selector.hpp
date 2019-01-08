@@ -20,21 +20,23 @@ class Selector
 {
 public:
   /// Constructor.
-  /// \param[in] 
-  Selector(gls::datastructures::GraphPtr graph, gls::datastructures::Vertex source, gls::datastructures::Vertex target);
+  /// \param[in] graph Graph the selector is operating with.
+  /// \param[in] source Source vertex in the graph the selector is attached to.
+  /// \param[in] target Target vertex in the graph the selector is attached to.
+  Selector(gls::datastructures::Graph& graph, gls::datastructures::Vertex source, gls::datastructures::Vertex target);
 
   /// Destructor.
   ~Selector() = default;
 
   /// Selects edges to evaluate from given path.
-  virtual void selectEdgesToEvaluate(gls::datastructures::PathPtr path) = 0;
+  virtual gls::datastructures::Path selectEdgesToEvaluate(gls::datastructures::Path path) = 0;
 
 protected:
   /// Ranks the edges.
   virtual void rankEdgesByUtilityInEvaluation() = 0;
 
-  /// Pointer to the graph.
-  gls::datastructures::GraphPtr mGraph;
+  /// Reference to the graph.
+  gls::datastructures::Graph& mGraph;
 
   /// Source vertex of the graph.
   gls::datastructures::Vertex mSourceVertex;

@@ -3,12 +3,12 @@
 namespace gls {
 namespace event {
 
-using gls::datastructures::GraphPtr;
+using gls::datastructures::Graph;
 using gls::datastructures::Vertex;
 
 //==============================================================================
 ShortestPathEvent::ShortestPathEvent(
-    GraphPtr graph, Vertex source, Vertex target)
+    Graph& graph, Vertex source, Vertex target)
   : Event(graph, source, target)
 {
   // Do nothing.

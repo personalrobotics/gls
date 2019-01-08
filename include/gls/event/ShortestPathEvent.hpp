@@ -15,13 +15,14 @@ public:
   /// \param[in] source Source vertex in the graph the event is attached to.
   /// \param[in] target Target vertex in the graph the event is attached to.
   ShortestPathEvent(
-      gls::datastructures::GraphPtr graph,
+      gls::datastructures::Graph& graph,
       gls::datastructures::Vertex source,
       gls::datastructures::Vertex target);
 
   /// Documentation inherited.
   bool isTriggered(const gls::datastructures::Vertex vertex) const override;
 
+  /// Documentation inherited.
   void updateVertexProperties(
       gls::datastructures::Vertex vertex,
       vertexUpdateOption cascade = vertexUpdateOption::CascadeUpdate) override;

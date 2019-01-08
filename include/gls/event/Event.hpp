@@ -30,7 +30,7 @@ public:
   /// \param[in] source Source vertex in the graph the event is attached to.
   /// \param[in] target Target vertex in the graph the event is attached to.
   Event(
-      gls::datastructures::GraphPtr graph,
+      gls::datastructures::Graph& graph,
       gls::datastructures::Vertex source,
       gls::datastructures::Vertex target);
 
@@ -53,7 +53,7 @@ public:
 
 protected:
   /// Pointer to the graph.
-  gls::datastructures::GraphPtr mGraph;
+  gls::datastructures::Graph& mGraph;
 
   /// Source vertex of the graph.
   gls::datastructures::Vertex mSourceVertex;
