@@ -83,6 +83,18 @@ public:
   /// Returns the selector used by the algorithm.
   gls::selector::ConstSelectorPtr getSelector() const;
 
+  /// Set the connection radius of the graph.
+  void setConnectionRadius(double radius);
+
+  /// Get the connection radius of the graph.
+  double getConnectionRadius();
+
+  /// Set the RoadmapFilename pointing to the graph.
+  void setRoadmapFilename(std::string filename);
+
+  /// Get the filename containing the roadmap.
+  std::string getRoadmapFilename();
+
 private:
   /// Adds source and target vertices, and relevant edges to \c mGraph.
   void addSourceAndTargetToGraph();
@@ -126,6 +138,9 @@ private:
 
   /// Connection radius in the graph.
   double mConnectionRadius;
+
+  /// Filename containing the roadmap.
+  std::string mRoadmapFilename = "";  
 
   /// Flag to check if the planner succeeded.
   PlannerStatus mPlannerStatus;

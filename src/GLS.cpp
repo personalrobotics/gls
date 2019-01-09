@@ -4,6 +4,7 @@
 
 #include <algorithm> // std::reverse
 #include <cmath>     // pow, sqrt
+#include <iostream>  // std::invalid_argument
 #include <set>       // std::set
 #include <assert.h>  // debug
 
@@ -11,14 +12,18 @@ using gls::datastructures::CollisionStatus;
 using gls::datastructures::Edge;
 using gls::datastructures::EdgeIter;
 using gls::datastructures::EdgeProperties;
+using gls::datastructures::EPLengthMap;
 using gls::datastructures::EvaluationStatus;
+using gls::datastructures::Graph;
 using gls::datastructures::Path;
 using gls::datastructures::NeighborIter;
+using gls::datastructures::State;
 using gls::datastructures::StatePtr;
 using gls::datastructures::Vertex;
 using gls::datastructures::VertexIter;
 using gls::datastructures::VertexProperties;
 using gls::datastructures::VisitStatus;
+using gls::datastructures::VPStateMap;
 
 namespace gls {
 
@@ -47,6 +52,15 @@ void GLS::setup()
   // TODO (avk): If the graph is not provided, use implicit representation
   // for the edges using the NearestNeighbor representation.
   // Check if roadmap has been provided.
+
+  if (mRoadmapFilename == "")
+    std::invalid_argument("Roadmap Filename cannot be empty!");
+
+  mRoadmap = boost::shared_ptr<io::RoadmapFromFile<Graph,
+                                        VPStateMap,
+                                        State,
+                                        EPLengthMap>>
+                                        (new io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>(mSpace, mRoadmapFilename));
 
   mRoadmap->generate(
       mGraph,
