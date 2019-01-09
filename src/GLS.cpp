@@ -56,11 +56,10 @@ void GLS::setup()
   if (mRoadmapFilename == "")
     std::invalid_argument("Roadmap Filename cannot be empty!");
 
-  mRoadmap = boost::shared_ptr<io::RoadmapFromFile<Graph,
-                                        VPStateMap,
-                                        State,
-                                        EPLengthMap>>
-                                        (new io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>(mSpace, mRoadmapFilename));
+  mRoadmap = boost::
+      shared_ptr<io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>>(
+          new io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>(
+              mSpace, mRoadmapFilename));
 
   mRoadmap->generate(
       mGraph,
@@ -366,10 +365,10 @@ void GLS::updateSearchTree()
   // If rewiring, make sure to change the mTreeValidityStatus back.
   if (mTreeValidityStatus == TreeValidityStatus::Valid)
     return;
-    // cascadeUpdatesInTheTree();
+  // cascadeUpdatesInTheTree();
   else
     return;
-    // rewireSearchTree();
+  // rewireSearchTree();
 }
 
 // ============================================================================

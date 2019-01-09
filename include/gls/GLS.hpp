@@ -140,7 +140,7 @@ private:
   double mConnectionRadius;
 
   /// Filename containing the roadmap.
-  std::string mRoadmapFilename = "";  
+  std::string mRoadmapFilename = "";
 
   /// Flag to check if the planner succeeded.
   PlannerStatus mPlannerStatus;
