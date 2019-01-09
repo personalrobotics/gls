@@ -29,7 +29,8 @@ public:
   /// \param[in] graph Graph the selector is operating with.
   /// \param[in] source Source vertex in the graph the selector is attached to.
   /// \param[in] target Target vertex in the graph the selector is attached to.
-  void setup(gls::datastructures::Graph& graph,
+  void setup(
+      gls::datastructures::Graph& graph,
       gls::datastructures::Vertex source,
       gls::datastructures::Vertex target);
 

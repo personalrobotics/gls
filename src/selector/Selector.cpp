@@ -18,7 +18,7 @@ Selector::Selector()
 void Selector::setup(Graph& graph, Vertex source, Vertex target)
 {
   mGraph = graph;
-  mSourceVertex = source; 
+  mSourceVertex = source;
   mTargetVertex = target;
 }
 
