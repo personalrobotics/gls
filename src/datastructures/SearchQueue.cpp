@@ -82,9 +82,9 @@ bool SearchQueue::hasVertexWithValue(const Vertex vertex, double cost)
 }
 
 // ============================================================================
-bool queueComparison(
+bool SearchQueue::queueComparison(
     const std::pair<gls::datastructures::Vertex, double>& left,
-    const std::pair<gls::datastructures::Vertex, double>& right)
+    const std::pair<gls::datastructures::Vertex, double>& right) const
 {
   if (left.second < right.second)
     return true;
