@@ -11,13 +11,7 @@ class ForwardSelector : public Selector
 {
 public:
   /// Constructor.
-  /// \param[in] graph Graph the selector is operating with.
-  /// \param[in] source Source vertex in the graph the selector is attached to.
-  /// \param[in] target Target vertex in the graph the selector is attached to.
-  ForwardSelector(
-      gls::datastructures::Graph& graph,
-      gls::datastructures::Vertex source,
-      gls::datastructures::Vertex target);
+  ForwardSelector();
 
   /// Documentation inherited.
   gls::datastructures::Path selectEdgesToEvaluate(

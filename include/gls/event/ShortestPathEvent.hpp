@@ -11,13 +11,7 @@ class ShortestPathEvent : public Event
 {
 public:
   /// Constructor.
-  /// \param[in] graph Graph the event is operating with.
-  /// \param[in] source Source vertex in the graph the event is attached to.
-  /// \param[in] target Target vertex in the graph the event is attached to.
-  ShortestPathEvent(
-      gls::datastructures::Graph& graph,
-      gls::datastructures::Vertex source,
-      gls::datastructures::Vertex target);
+  ShortestPathEvent();
 
   /// Documentation inherited.
   bool isTriggered(const gls::datastructures::Vertex vertex) const override;

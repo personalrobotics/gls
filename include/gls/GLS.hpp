@@ -97,7 +97,8 @@ public:
 
 private:
   /// Adds source and target vertices, and relevant edges to \c mGraph.
-  void addSourceAndTargetToGraph();
+  /// Sets up the event and the selector.
+  void setupPreliminaries();
 
   /// Returns edge between source and target vertices.
   gls::datastructures::Edge getEdge(

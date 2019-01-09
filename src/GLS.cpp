@@ -97,11 +97,11 @@ void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
   // Mark the planner's problem to be defined.
   ompl::base::Planner::setProblemDefinition(pdef);
 
-  addSourceAndTargetToGraph();
+  setupPreliminaries();
 }
 
 // ============================================================================
-void GLS::addSourceAndTargetToGraph()
+void GLS::setupPreliminaries()
 {
   StatePtr sourceState(new gls::datastructures::State(mSpace));
   mSpace->copyState(sourceState->getOMPLState(), pdef_->getStartState(0));
@@ -163,6 +163,12 @@ void GLS::addSourceAndTargetToGraph()
       mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
     }
   }
+
+  // Setup the event.
+  mEvent->setup(mGraph, mSourceVertex, mTargetVertex);
+
+  // Setup the selector.
+  mSelector->setup(mGraph, mSourceVertex, mTargetVertex);
 }
 
 // ============================================================================

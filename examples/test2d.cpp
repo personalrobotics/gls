@@ -93,6 +93,11 @@ int main(int argc, char *argv[])
   gls::GLS planner(si);
   planner.setConnectionRadius(0.5);
   planner.setRoadmapFilename("/home/adityavk/workspaces/lab-ws/src/generalized_lazy_search/data/graph.graphml");
+
+  // auto event = std::make_shared<gls::event::ShortestPathEvent>()
+  // TODO (avk): Set event and selector.
+  // planner.setEvent()
+  // planner.setSelector()
   planner.setup();
   planner.setProblemDefinition(pdef);
 

@@ -26,16 +26,18 @@ class Event
 {
 public:
   /// Constructor.
-  /// \param[in] graph Graph the event is operating with.
-  /// \param[in] source Source vertex in the graph the event is attached to.
-  /// \param[in] target Target vertex in the graph the event is attached to.
-  Event(
-      gls::datastructures::Graph& graph,
-      gls::datastructures::Vertex source,
-      gls::datastructures::Vertex target);
+  Event();
 
   /// Destructor.
   virtual ~Event() = default;
+
+  /// Setup the event with required internal data members.
+  /// \param[in] graph Graph the event is operating with.
+  /// \param[in] source Source vertex in the graph the event is attached to.
+  /// \param[in] target Target vertex in the graph the event is attached to.
+  void setup(gls::datastructures::Graph& graph,
+      gls::datastructures::Vertex source,
+      gls::datastructures::Vertex target);
 
   /// Return true if the event is triggered.
   /// \param[in] vertex Vertex that might cause the trigger.
@@ -53,7 +55,7 @@ public:
 
 protected:
   /// Pointer to the graph.
-  gls::datastructures::Graph& mGraph;
+  gls::datastructures::Graph mGraph;
 
   /// Source vertex of the graph.
   gls::datastructures::Vertex mSourceVertex;

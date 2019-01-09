@@ -9,10 +9,17 @@ using gls::datastructures::Graph;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-Event::Event(Graph& graph, Vertex source, Vertex target)
-  : mGraph(graph), mSourceVertex(source), mTargetVertex(target)
+Event::Event()
 {
   // Do nothing.
+}
+
+//==============================================================================
+void Event::setup(Graph& graph, Vertex source, Vertex target)
+{
+  mGraph = graph;
+  mSourceVertex = source; 
+  mTargetVertex = target;
 }
 
 } // event

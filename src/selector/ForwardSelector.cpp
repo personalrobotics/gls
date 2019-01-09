@@ -10,8 +10,7 @@ using gls::datastructures::Path;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-ForwardSelector::ForwardSelector(Graph& graph, Vertex source, Vertex target)
-  : Selector(graph, source, target)
+ForwardSelector::ForwardSelector()
 {
   // Do nothing.
 }

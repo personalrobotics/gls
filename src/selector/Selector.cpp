@@ -9,10 +9,17 @@ using gls::datastructures::Graph;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-Selector::Selector(Graph& graph, Vertex source, Vertex target)
-  : mGraph(graph), mSourceVertex(source), mTargetVertex(target)
+Selector::Selector()
 {
   // Do nothing.
+}
+
+//==============================================================================
+void Selector::setup(Graph& graph, Vertex source, Vertex target)
+{
+  mGraph = graph;
+  mSourceVertex = source; 
+  mTargetVertex = target;
 }
 
 } // selector
