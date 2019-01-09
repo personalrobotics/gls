@@ -180,9 +180,6 @@ ompl::base::PlannerStatus GLS::solve(
     // If the plan is successful, return.
     if (mPlannerStatus == PlannerStatus::Solved)
       break;
-
-    // Based on the evaluation, update the search tree.
-    updateSearchTree();
   }
 
   if (mPlannerStatus == PlannerStatus::Solved)
@@ -353,6 +350,12 @@ void GLS::updateSearchTree()
 {
   // Do nothing
   // If rewiring, make sure to change the mTreeValidityStatus back.
+  if (mTreeValidityStatus == TreeValidityStatus::Valid)
+    return;
+    // cascadeUpdatesInTheTree();
+  else
+    return;
+    // rewireSearchTree();
 }
 
 // ============================================================================
@@ -381,6 +384,9 @@ void GLS::evaluateSearchTree()
   {
     mPlannerStatus == PlannerStatus::Solved;
   }
+
+  // Based on the evaluation, update the search tree.
+  updateSearchTree();
 }
 
 // ============================================================================
@@ -393,14 +399,13 @@ ompl::base::PathPtr GLS::constructSolution(
 
   while (v != source)
   {
-    // TODO (avk): Involve the state wrapper.
-    // path->append(graph[v].state->state);
+    path->append(mGraph[v].getState()->getOMPLState());
     v = mGraph[v].getParent();
   }
 
   if (v == source)
   {
-    // path->append(graph[start].state->state);
+    path->append(mGraph[source].getState()->getOMPLState());
   }
   path->reverse();
   return ompl::base::PathPtr(path);
