@@ -24,6 +24,10 @@ using gls::datastructures::VertexIter;
 using gls::datastructures::VertexProperties;
 using gls::datastructures::VisitStatus;
 using gls::datastructures::VPStateMap;
+using gls::event::ConstEventPtr;
+using gls::selector::ConstSelectorPtr;
+using gls::event::EventPtr;
+using gls::selector::SelectorPtr;
 
 namespace gls {
 
@@ -208,6 +212,30 @@ ompl::base::PlannerStatus GLS::solve(
   }
 
   return ompl::base::PlannerStatus::TIMEOUT;
+}
+
+// ============================================================================
+void GLS::setEvent(EventPtr event)
+{
+  mEvent = event;
+}
+
+// ============================================================================
+ConstEventPtr GLS::getEvent() const
+{
+  return mEvent;
+}
+
+// ============================================================================
+void GLS::setSelector(SelectorPtr selector)
+{
+  mSelector = selector;
+}
+
+// ============================================================================
+ConstSelectorPtr GLS::getSelector() const
+{
+  return mSelector;
 }
 
 // ============================================================================

@@ -128,9 +128,9 @@ public:
   }
 
 private:
-  size_t mDim;
-  ompl::base::RealVectorBounds mBounds;
   const ompl::base::StateSpacePtr mSpace;
+  ompl::base::RealVectorBounds mBounds;
+  size_t mDim;
 };
 
 } // namespace io
