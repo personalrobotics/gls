@@ -237,6 +237,30 @@ double GLS::getGraphHeuristic(Vertex v)
   return heuristic;
 }
 
+// ============================================================================
+void GLS::setConnectionRadius(double radius)
+{
+  mConnectionRadius = radius;
+}
+
+// ============================================================================
+double GLS::getConnectionRadius()
+{
+  return mConnectionRadius;
+}
+
+// ============================================================================
+void GLS::setRoadmapFilename(std::string filename)
+{
+  mRoadmapFilename = filename;
+}
+
+// ============================================================================
+std::string GLS::getRoadmapFilename()
+{
+  return mRoadmapFilename;
+}
+
 // ===========================================================================================
 CollisionStatus GLS::evaluateEdge(const Edge&)
 {

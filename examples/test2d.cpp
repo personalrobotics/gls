@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
   std::vector<float> target(vm["target"].as<std::vector< float> >());
 
   // Define the state space: R^2
-  boost::shared_ptr<ompl::base::RealVectorStateSpace> space(new ompl::base::RealVectorStateSpace(2));
+  auto space = std::make_shared<ompl::base::RealVectorStateSpace>(2);
   space->as<ompl::base::RealVectorStateSpace>()->setBounds(0.0, 1.0);
   space->setLongestValidSegmentFraction(0.1 / space->getMaximumExtent());
   space->setup();
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
   pdef->setGoalState(make_state(space, target[0], target[1]));
 
   // Setup planner
-  GLS::GLS planner(si);
+  gls::GLS planner(si);
   planner.setConnectionRadius(0.5);
   planner.setRoadmapFilename("/home/adityavk/workspaces/lab-ws/src/generalized_lazy_search/data/graph.graphml");
   planner.setup();
