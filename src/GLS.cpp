@@ -395,7 +395,7 @@ void GLS::evaluateSearchTree()
 
   if (u == mTargetVertex)
   {
-    mPlannerStatus == PlannerStatus::Solved;
+    mPlannerStatus = PlannerStatus::Solved;
   }
 
   // Based on the evaluation, update the search tree.
