@@ -53,6 +53,7 @@ add_library(${PROJECT_NAME}
   src/event/Event.cpp
   src/event/ShortestPathEvent.cpp
   src/selector/Selector.cpp
+  src/selector/ForwardSelector.cpp
 )
 
 install(TARGETS ${PROJECT_NAME}

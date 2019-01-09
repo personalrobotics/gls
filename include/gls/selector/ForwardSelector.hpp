@@ -24,7 +24,8 @@ public:
       gls::datastructures::Path path) override;
 
   /// Documentation inherited.
-  void rankEdgesByUtilityInEvaluation() override;
+  gls::datastructures::Path rankEdgesByUtilityInEvaluation(
+      gls::datastructures::Path& path) override;
 };
 
 } // namespace selector

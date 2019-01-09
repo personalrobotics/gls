@@ -17,7 +17,7 @@ ForwardSelector::ForwardSelector(Graph& graph, Vertex source, Vertex target)
 }
 
 //==============================================================================
-Path selectEdgesToEvaluate(gls::datastructures::Path path)
+Path ForwardSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
 {
   // If the path is to the target, evaluate the entire path.
   if (path[path.size() - 1] == mTargetVertex)
@@ -25,7 +25,7 @@ Path selectEdgesToEvaluate(gls::datastructures::Path path)
 
   // Else return the first unevaluated edge closest to source.
   Path edgesToEvaluate;
-  for (int i = 0; i < path.size() - 1; ++i)
+  for (std::size_t i = 0; i < path.size() - 1; ++i)
   {
     Edge uv;
     bool edgeExists;
@@ -42,8 +42,10 @@ Path selectEdgesToEvaluate(gls::datastructures::Path path)
 }
 
 //==============================================================================
-Path rankEdgesByUtilityInEvaluation(gls::datastructures::Path path)
+Path ForwardSelector::rankEdgesByUtilityInEvaluation(
+    gls::datastructures::Path& path)
 {
+  return path;
   // Do nothing.
 }
 

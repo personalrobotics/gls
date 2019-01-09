@@ -38,7 +38,9 @@ public:
 
 protected:
   /// Ranks the edges.
-  virtual void rankEdgesByUtilityInEvaluation() = 0;
+  virtual gls::datastructures::Path rankEdgesByUtilityInEvaluation(
+      gls::datastructures::Path& path)
+      = 0;
 
   /// Reference to the graph.
   gls::datastructures::Graph& mGraph;
