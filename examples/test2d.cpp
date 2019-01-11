@@ -94,12 +94,13 @@ int main(int argc, char *argv[])
   // Setup planner
   gls::GLS planner(si);
   planner.setConnectionRadius(0.5);
-  planner.setRoadmapFilename("/home/adityavk/workspaces/lab-ws/src/generalized_lazy_search/data/graph.graphml");
+  planner.setRoadmapFilename("/home/adityavk/workspaces/lab-ws/src/generalized_lazy_search/examples/graph.graphml");
 
   auto event = std::make_shared<gls::event::ShortestPathEvent>();
   auto selector = std::make_shared<gls::selector::ForwardSelector>();
   planner.setEvent(event);
   planner.setSelector(selector);
+
   planner.setup();
   planner.setProblemDefinition(pdef);
 
@@ -112,9 +113,9 @@ int main(int argc, char *argv[])
   // Obtain required data if plan was successful
   if (status == ompl::base::PlannerStatus::EXACT_SOLUTION)
   {
-    // Get planner data if required
+    std::cout << "Best Path Cost: " << planner.getBestPathCost() << std::endl;
     return 0;
   }
 
-  return 0;
+  return -1;
 }

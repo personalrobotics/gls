@@ -95,6 +95,12 @@ public:
   /// Get the filename containing the roadmap.
   std::string getRoadmapFilename();
 
+  /// Set the best path cost
+  void setBestPathCost(double cost);
+
+  /// Get the best path cost
+  double getBestPathCost();
+
 private:
   /// Adds source and target vertices, and relevant edges to \c mGraph.
   /// Sets up the event and the selector.
@@ -142,6 +148,9 @@ private:
 
   /// Filename containing the roadmap.
   std::string mRoadmapFilename = "";
+
+  /// Filename containing the roadmap.
+  double mBestPathCost{0};
 
   /// Flag to check if the planner succeeded.
   PlannerStatus mPlannerStatus;

@@ -207,6 +207,7 @@ ompl::base::PlannerStatus GLS::solve(
 
   if (mPlannerStatus == PlannerStatus::Solved)
   {
+    setBestPathCost(mGraph[mTargetVertex].getCostToCome());
     pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
     return ompl::base::PlannerStatus::EXACT_SOLUTION;
   }
@@ -293,6 +294,18 @@ void GLS::setRoadmapFilename(std::string filename)
 std::string GLS::getRoadmapFilename()
 {
   return mRoadmapFilename;
+}
+
+// ============================================================================
+void GLS::setBestPathCost(double cost)
+{
+  mBestPathCost = cost;;
+}
+
+// ============================================================================
+double GLS::getBestPathCost()
+{
+  return mBestPathCost;
 }
 
 // ===========================================================================================
@@ -405,7 +418,7 @@ void GLS::extendSearchTree()
 
       // Update the successor's properties.
       mGraph[v].setParent(u);
-      mGraph[v].setCostToCome(mGraph[u].getCostToCome());
+      mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
       mGraph[v].setHeuristic(getGraphHeuristic(v));
       mEvent->updateVertexProperties(v);
 
