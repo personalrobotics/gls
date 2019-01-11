@@ -5,6 +5,7 @@ namespace event {
 
 using gls::datastructures::Graph;
 using gls::datastructures::Vertex;
+using gls::datastructures::SearchQueue;
 
 //==============================================================================
 ShortestPathEvent::ShortestPathEvent()
@@ -24,6 +25,12 @@ bool ShortestPathEvent::isTriggered(const Vertex vertex) const
 //==============================================================================
 void ShortestPathEvent::updateVertexProperties(
     Vertex /*vertex*/, vertexUpdateOption /*cascade*/)
+{
+  // Do nothing.
+}
+
+//==============================================================================
+void ShortestPathEvent::updateVertexProperties(SearchQueue /*vertex*/)
 {
   // Do nothing.
 }

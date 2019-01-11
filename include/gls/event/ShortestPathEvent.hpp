@@ -19,7 +19,11 @@ public:
   /// Documentation inherited.
   void updateVertexProperties(
       gls::datastructures::Vertex vertex,
-      vertexUpdateOption cascade = vertexUpdateOption::CascadeUpdate) override;
+      vertexUpdateOption cascade = vertexUpdateOption::SingleUpdate) override;
+
+  /// Documentation inherited.
+  void updateVertexProperties(
+      gls::datastructures::SearchQueue vertexQueue) override;
 };
 
 } // namespace event

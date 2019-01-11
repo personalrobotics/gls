@@ -8,6 +8,7 @@
 #include <vector>  // std::vector
 
 #include "gls/datastructures/Graph.hpp"
+#include "gls/datastructures/SearchQueue.hpp"
 #include "gls/datastructures/Types.hpp"
 
 namespace gls {
@@ -51,7 +52,14 @@ public:
   /// downstream.
   virtual void updateVertexProperties(
       gls::datastructures::Vertex vertex,
-      vertexUpdateOption cascade = vertexUpdateOption::CascadeUpdate)
+      vertexUpdateOption cascade = vertexUpdateOption::SingleUpdate)
+      = 0;
+
+  /// Update vertex properties
+  /// Concrete classes specify the appropriate update rules.
+  /// \param[in] vertexQueue Queue of vertices whose subtrees need update.
+  virtual void updateVertexProperties(
+      gls::datastructures::SearchQueue vertexQueue)
       = 0;
 
 protected:
