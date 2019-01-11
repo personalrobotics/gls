@@ -123,8 +123,11 @@ private:
   /// Extends the search tree forwards.
   void extendSearchTree();
 
-  /// Rewires the search tree when edge costs change.
+  /// Updates the vertex properties in the search tree.
   void updateSearchTree();
+
+  /// Rewires the search tree when edge costs change.
+  void rewireSearchTree();
 
   /// Evaluates the search tree when the extension pauses.
   void evaluateSearchTree();
@@ -166,6 +169,9 @@ private:
 
   /// SearchQueue representing the search tree that needs repairing.
   gls::datastructures::SearchQueue mRewireQueue;
+
+  /// Set of vertices used for rewiring.
+  std::set<gls::datastructures::Vertex> mRewireSet;
 
   /// Event
   gls::event::EventPtr mEvent;

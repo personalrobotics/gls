@@ -299,7 +299,7 @@ std::string GLS::getRoadmapFilename()
 // ============================================================================
 void GLS::setBestPathCost(double cost)
 {
-  mBestPathCost = cost;;
+  mBestPathCost = cost;
 }
 
 // ============================================================================
@@ -436,10 +436,169 @@ void GLS::updateSearchTree()
   // If rewiring, make sure to change the mTreeValidityStatus back.
   if (mTreeValidityStatus == TreeValidityStatus::Valid)
     return;
-  // cascadeUpdatesInTheTree();
+  // mEvent->updateVertexProperties(mUpdateQueue);
   else
-    return;
-  // rewireSearchTree();
+    rewireSearchTree();
+}
+
+// ============================================================================
+void GLS::rewireSearchTree()
+{
+  // 1. Collect all the vertices that need to be rewired.
+  while (!mRewireQueue.isEmpty())
+  {
+    Vertex v = mRewireQueue.popTopVertex();
+
+    // Add all the children of the current node to mRewireQueue.
+    auto children = mGraph[v].getChildren();
+    for (auto iterS = children.begin(); iterS != children.end(); ++iterS)
+    {
+      mRewireQueue.addVertexWithValue(*iterS, mGraph[*iterS].getCostToCome());
+    }
+    mGraph[v].removeAllChildren();
+
+    // Add the vertex to set.
+    mRewireSet.insert(v);
+
+    // Remove from mExtendQueue.
+    // TODO (avk): Can this happen?
+    mExtendQueue.removeVertexWithValue(v, mGraph[v].getCostToCome());
+
+    // Assign default values
+    mGraph[v].setParent(v);
+    mGraph[v].setCostToCome(std::numeric_limits<double>::max());
+
+    // Mark it as not visited
+    mGraph[v].setVisitStatus(VisitStatus::NotVisited);
+  }
+
+  // 2. Assign the nodes keys
+  for (auto iterS = mRewireSet.begin(); iterS != mRewireSet.end(); ++iterS)
+  {
+    Vertex v = *iterS;
+
+    // If the vertex has been marked to be in collision, ignore.
+    if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision)
+      continue;
+
+    // Look for possible parents in the rest of the graph.
+    NeighborIter ni, ni_end;
+    for (boost::tie(ni, ni_end) = adjacent_vertices(v, mGraph); ni != ni_end;
+         ++ni)
+    {
+      // Get the possible parent.
+      Vertex u = *ni;
+
+      // If the parent has been marked in collision, ignore.
+      if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
+        continue;
+
+      // No point rewiring to the target vertex.
+      if (u == mTargetVertex)
+        continue;
+
+      // If the neighbor is one of the vertices to be rewires, ignore now.
+      if (mGraph[u].getCostToCome() == std::numeric_limits<double>::max())
+        continue;
+
+      // If the neighbor is currently not in search tree, ignore.
+      if (mGraph[u].getVisitStatus() == VisitStatus::NotVisited)
+        continue;
+
+      // If the parent is gonna trigger the event, ignore.
+      if (mEvent->isTriggered(u))
+        continue;
+
+      // If the parent is already in mExtendQueue, can be rewired later.
+      if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getCostToCome()))
+        continue;
+
+      assert(mRewireSet.find(u) == mRewireSet.end());
+
+      Edge uv = getEdge(u, v);
+      double edgeLength = mGraph[uv].getLength();
+
+      if (mGraph[uv].getCollisionStatus() == CollisionStatus::Free)
+      {
+        if (mGraph[v].getCostToCome() > mGraph[u].getCostToCome() + edgeLength
+            || (mGraph[v].getCostToCome()
+                    > mGraph[u].getCostToCome() + edgeLength
+                && u < mGraph[v].getParent()))
+        {
+          mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
+          mGraph[v].setParent(u);
+          mEvent->updateVertexProperties(v); // no need to cascade.
+        }
+      }
+    }
+    mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
+  }
+
+  // 3. Start Rewiring in the cost space
+  while (!mRewireQueue.isEmpty())
+  {
+    Vertex u = mRewireQueue.popTopVertex();
+
+    // Ignore loops.
+    if (u == mGraph[u].getParent())
+      continue;
+
+    // Since valid parent is found, mark as visited.
+    mGraph[u].setVisitStatus(VisitStatus::Visited);
+
+    // Let the parent know of its new child.
+    Vertex p = mGraph[u].getParent();
+    mGraph[p].addChild(u);
+
+    // Add u for further extension.
+    if (!mEvent->isTriggered(u))
+    {
+      mExtendQueue.addVertexWithValue(u, mGraph[u].getCostToCome());
+    }
+
+    // Check if u can be a better parent to the vertices being rewired.
+    NeighborIter ni, ni_end;
+    for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
+         ++ni)
+    {
+      Vertex v = *ni;
+
+      // TODO (avk): Is this necessary?
+      if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision)
+        continue;
+
+      // Vertex needs to be in set to update.
+      if (mRewireSet.find(v) == mRewireSet.end())
+        continue;
+
+      Edge uv = getEdge(u, v);
+      double edgeLength = mGraph[uv].getLength();
+
+      if (mGraph[uv].getCollisionStatus() == CollisionStatus::Free)
+      {
+        if (mGraph[v].getCostToCome() > mGraph[u].getCostToCome() + edgeLength
+            || (mGraph[v].getCostToCome()
+                    == mGraph[u].getCostToCome() + edgeLength
+                && u < mGraph[v].getParent()))
+        {
+          mRewireQueue.removeVertexWithValue(v, mGraph[v].getCostToCome());
+          if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getCostToCome()))
+          {
+            mGraph[v].setVisitStatus(VisitStatus::NotVisited);
+            mGraph[v].setCostToCome(std::numeric_limits<double>::max());
+            mGraph[v].setParent(v);
+            continue;
+          }
+
+          mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
+          mGraph[v].setParent(u);
+          mEvent->updateVertexProperties(v); // no need to cascade.
+          mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
+        }
+      }
+    }
+  }
+  mRewireSet.clear();
 }
 
 // ============================================================================
@@ -450,16 +609,20 @@ void GLS::evaluateSearchTree()
 
   for (std::size_t i = 0; i < edgesToEvaluate.size() - 1; ++i)
   {
-    Edge e = getEdge(edgesToEvaluate[i], edgesToEvaluate[i + 1]);
-    mGraph[e].setEvaluationStatus(EvaluationStatus::Evaluated);
-    if (evaluateEdge(e) == CollisionStatus::Free)
+    Vertex u = edgesToEvaluate[i];
+    Vertex v = edgesToEvaluate[i + 1];
+    Edge uv = getEdge(u, v);
+    mGraph[uv].setEvaluationStatus(EvaluationStatus::Evaluated);
+    if (evaluateEdge(uv) == CollisionStatus::Free)
     {
-      mGraph[e].setCollisionStatus(CollisionStatus::Free);
+      mGraph[uv].setCollisionStatus(CollisionStatus::Free);
+      mUpdateQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
     }
     else
     {
-      mGraph[e].setCollisionStatus(CollisionStatus::Collision);
+      mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
       mTreeValidityStatus = TreeValidityStatus::NotValid;
+      mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
       return;
     }
   }
