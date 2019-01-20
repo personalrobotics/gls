@@ -30,7 +30,7 @@ void ShortestPathEvent::updateVertexProperties(
 }
 
 //==============================================================================
-void ShortestPathEvent::updateVertexProperties(SearchQueue /*vertex*/)
+void ShortestPathEvent::updateVertexProperties(SearchQueue /*queue*/)
 {
   // Do nothing.
 }

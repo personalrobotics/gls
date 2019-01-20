@@ -28,14 +28,19 @@ bool ConstantDepthEvent::isTriggered(const Vertex vertex) const
 
 //==============================================================================
 void ConstantDepthEvent::updateVertexProperties(
-    Vertex /*vertex*/, vertexUpdateOption /*cascade*/)
+    Vertex vertex, vertexUpdateOption cascade)
 {
-	// Remove if it already exists in the map.
-  // Add again to the map.
+	// Remove vertex if it already exists in the map.
+	auto iterM = mVertexDepthMap.find(vertex);
+	if (iterM != mVertexDepthMap.end())
+		mVertexDepthMap.erase(iterM);
+
+	// Add updated vertex.
+	addVertexToMap(vertex);
 }
 
 //==============================================================================
-void ConstantDepthEvent::updateVertexProperties(SearchQueue /*vertex*/)
+void ConstantDepthEvent::updateVertexProperties(SearchQueue searchQueue)
 {
   // Do nothing.
 }
