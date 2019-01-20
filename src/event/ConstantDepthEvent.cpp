@@ -42,7 +42,17 @@ void ConstantDepthEvent::updateVertexProperties(
 //==============================================================================
 void ConstantDepthEvent::updateVertexProperties(SearchQueue searchQueue)
 {
-  // Do nothing.
+	Vertex vertex = searchQueue.popTopVertex();
+	updateVertexProperties(vertex);
+
+	auto children = mGraph[vertex].getChildren();
+	for (auto iterV = children.begin(); iterV != children.end(); ++iterV)
+	{
+		if (searchQueue.hasVertexWithValue(*iterV, mGraph[*iterV].getCostToCome()))
+			continue;
+		
+		updateVertexProperties(*iterV);
+	}
 }
 
 //==============================================================================

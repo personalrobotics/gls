@@ -54,10 +54,6 @@ public:
   /// Get top vertex value.
   double getTopVertexValue();
 
-  /// Returns true if vertex is in search queue.
-  /// \param[in] vertex Vertex to find in queue.
-  bool containsVertex(const gls::datastructures::Vertex vertex);
-
   /// Remove vertex from search queue.
   /// \param[in] vertex Vertex to remove from the queue.
   /// \param[in] cost Cost associated with the vertex.
