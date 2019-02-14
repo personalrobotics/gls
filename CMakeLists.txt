@@ -21,6 +21,7 @@ find_package(catkin REQUIRED
   cmake_modules)
 find_package(ompl REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options system)
+find_package(OpenCV REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -33,6 +34,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OMPL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -66,8 +68,13 @@ install(TARGETS ${PROJECT_NAME}
 # Example Scripts
 #================================================================================
 
+# Dummy Test Script
 add_executable(test2d examples/test2d.cpp)
 target_link_libraries(test2d ${PROJECT_NAME})
+
+# Correctness Test Script
+add_executable(test2d_image examples/test2d_image.cpp)
+target_link_libraries(test2d_image ${PROJECT_NAME} ${OpenCV_LIBS})
 
 #================================================================================
 # Formatting
