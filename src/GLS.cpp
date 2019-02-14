@@ -71,6 +71,7 @@ void GLS::setup()
       get(&EdgeProperties::mLength, mGraph));
 
   // Set default vertex values.
+  // TODO (avk): Why should this be done a-priori? Test that these are set by default.
   VertexIter vi, vi_end;
   for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
   {
@@ -134,6 +135,7 @@ void GLS::setupPreliminaries()
   mGraph[mTargetVertex].setVisitStatus(VisitStatus::NotVisited);
   mGraph[mTargetVertex].setCollisionStatus(CollisionStatus::Free);
 
+  // TODO (AVK): Make this kNN + R-disc. Additionally join the start and goal.
   VertexIter vi, vi_end;
   for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
   {
@@ -263,7 +265,8 @@ Path GLS::getPathToSource(Vertex u)
 
 // ============================================================================
 // TODO (avk): I should be able to set the heuristic function from the demo
-// script.
+// script. Create a Heuristic Class and send it in. Have a default heuristic
+// if nothing has been set.
 double GLS::getGraphHeuristic(Vertex v)
 {
   double heuristic = mSpace->distance(

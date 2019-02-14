@@ -113,10 +113,10 @@ public:
 
 private:
   /// Cost-to-Come.
-  double mCostToCome;
+  double mCostToCome{std::numeric_limits<double>::infinity()};
 
   /// Heuristic value.
-  double mHeuristic;
+  double mHeuristic{0};
 
   /// Parent.
   Vertex mParent;
@@ -125,10 +125,10 @@ private:
   std::set<Vertex> mChildren;
 
   /// Visitation status.
-  VisitStatus mVisitStatus;
+  VisitStatus mVisitStatus{VisitStatus::NotVisited};
 
   /// Collision status.
-  CollisionStatus mCollisionStatus;
+  CollisionStatus mCollisionStatus{CollisionStatus::Free};
 };
 
 class EdgeProperties
@@ -157,10 +157,10 @@ public:
 
 private:
   /// Evaluation status.
-  EvaluationStatus mEvaluationStatus;
+  EvaluationStatus mEvaluationStatus{EvaluationStatus::NotEvaluated};
 
   /// Collision status..
-  CollisionStatus mCollisionStatus;
+  CollisionStatus mCollisionStatus{CollisionStatus::Free};
 };
 
 /// Undirected Boost graph using the properties just defined.
