@@ -35,7 +35,6 @@ GLS::GLS(const ompl::base::SpaceInformationPtr& si)
   : ompl::base::Planner(si, "GLS"), mSpace(si->getStateSpace())
 {
   // Set default values for data members.
-  mConnectionRadius = 0.0;
 }
 
 GLS::~GLS()
@@ -108,6 +107,8 @@ void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
 // ============================================================================
 void GLS::setupPreliminaries()
 {
+  // Issue a warning if mConnectionRadius = 0.
+
   StatePtr sourceState(new gls::datastructures::State(mSpace));
   mSpace->copyState(sourceState->getOMPLState(), pdef_->getStartState(0));
 
@@ -260,6 +261,7 @@ Path GLS::getPathToSource(Vertex u)
     pathToSource.emplace_back(u);
     u = mGraph[u].getParent();
   }
+  pathToSource.emplace_back(mSourceVertex);
   return pathToSource;
 }
 
@@ -311,11 +313,50 @@ double GLS::getBestPathCost()
   return mBestPathCost;
 }
 
-// ===========================================================================================
-CollisionStatus GLS::evaluateEdge(const Edge&)
+// ============================================================================
+double GLS::getNumberOfEdgeEvaluations()
 {
+  return mNumberOfEdgeEvaluations;
+}
+
+// ============================================================================
+double GLS::getNumberOfEdgeRewires()
+{
+  return mNumberOfEdgeRewires;
+}
+
+// ===========================================================================================
+CollisionStatus GLS::evaluateEdge(const Edge& e)
+{
+  mNumberOfEdgeEvaluations++;
+
+  // Access the validity checker.
   auto validityChecker = si_->getStateValidityChecker();
 
+  // Collision check the start and goal.
+  Vertex startVertex = source(e, mGraph);
+  Vertex endVertex   = target(e, mGraph);
+  auto startState = mGraph[startVertex].getState()->getOMPLState();
+  auto endState = mGraph[endVertex].getState()->getOMPLState();
+
+  // Evaluate Start and End States.
+  if (!validityChecker->isValid(startState))
+  {
+    mGraph[startVertex].setCollisionStatus(CollisionStatus::Collision);
+    mGraph[e].setCollisionStatus(CollisionStatus::Collision);
+    mGraph[e].setLength(std::numeric_limits<double>::max());
+    return CollisionStatus::Collision;
+  }
+
+  if (!validityChecker->isValid(endState))
+  {
+    mGraph[endVertex].setCollisionStatus(CollisionStatus::Collision);
+    mGraph[e].setCollisionStatus(CollisionStatus::Collision);
+    mGraph[e].setLength(std::numeric_limits<double>::max());
+    return CollisionStatus::Collision;
+  }
+
+  // Edge is collision-free.
   return CollisionStatus::Free;
 }
 
@@ -610,6 +651,7 @@ void GLS::evaluateSearchTree()
   Vertex u = mExtendQueue.getTopVertex();
   Path edgesToEvaluate = mSelector->selectEdgesToEvaluate(getPathToSource(u));
 
+  // Assuming that the edge provided by the selector is unevaluated.
   for (std::size_t i = 0; i < edgesToEvaluate.size() - 1; ++i)
   {
     Vertex u = edgesToEvaluate[i];
