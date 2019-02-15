@@ -16,9 +16,9 @@ endif()
 # Link Libraries
 #================================================================================
 
-find_package(catkin REQUIRED
-  COMPONENTS
-  cmake_modules)
+find_package(catkin REQUIRED)
+#  COMPONENTS
+#  cmake_modules)
 find_package(ompl REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options system)
 find_package(OpenCV REQUIRED)
@@ -48,6 +48,7 @@ link_libraries(
 )
 
 add_library(${PROJECT_NAME}
+  src/datastructures/EdgeCollisionModel.cpp
   src/datastructures/Graph.cpp
   src/datastructures/SearchQueue.cpp
   src/datastructures/State.cpp
