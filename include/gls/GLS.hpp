@@ -128,10 +128,6 @@ private:
   /// Heuristic function.
   double getGraphHeuristic(gls::datastructures::Vertex v);
 
-  /// Setup collision model for the edge before evaluation.
-  // TODO (avk): Use the van der corput sequence generator if required.
-  void setupEdgeCollisionModel(const gls::datastructures::Edge& e);
-
   /// Evaluates an edge for collision.
   gls::datastructures::CollisionStatus evaluateEdge(
       const gls::datastructures::Edge& e);
