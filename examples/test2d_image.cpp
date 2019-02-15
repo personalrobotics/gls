@@ -126,8 +126,8 @@ int main(int argc, char *argv[])
 
   std::vector<float> source(vm["source"].as<std::vector< float> >());
   std::vector<float> target(vm["target"].as<std::vector< float> >());
-  std::string obstacleLocation = "/home/adityavk/workspaces/lab-ws/src/planning_dataset/two_wall//environment_images/world_5.png";
-  std::string graphLocation = "/home/adityavk/workspaces/lab-ws/src/planning_dataset/sanjiban_data/graph.graphml";
+  std::string obstacleLocation = "/home/adityavk/workspaces/lab-ws/src/planning_dataset/sanjiban_data/two_wall/environment_images/world_5.png";
+  std::string graphLocation = "/home/adityavk/workspaces/lab-ws/src/planning_dataset/scripts/generators/graph_500.graphml";
 
   // Define the state space: R^2
   auto space = std::make_shared<ompl::base::RealVectorStateSpace>(2);
@@ -170,6 +170,7 @@ int main(int argc, char *argv[])
     // Display path and specify path size
     auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(pdef->getSolutionPath());
     displayPath(obstacleLocation, path);
+    std::cout << "Solution Path Cost: " << planner.getBestPathCost();
     return 0;
   }
 
