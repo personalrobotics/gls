@@ -89,17 +89,29 @@ public:
   /// Get the connection radius of the graph.
   double getConnectionRadius();
 
+  /// Set the collision checking resolution along the edge.
+  void setCollisionCheckResolution(double resolution);
+
+  /// Get the connection radius of the graph.
+  double getCollisionCheckResolution();
+
   /// Set the RoadmapFilename pointing to the graph.
   void setRoadmapFilename(std::string filename);
 
   /// Get the filename containing the roadmap.
   std::string getRoadmapFilename();
 
-  /// Set the best path cost
+  /// Set the best path cost.
   void setBestPathCost(double cost);
 
-  /// Get the best path cost
+  /// Get the best path cost.
   double getBestPathCost();
+
+  /// Get the number of edges evaluated.
+  double getNumberOfEdgeEvaluations();
+
+  /// Get the number of edges rewired.
+  double getNumberOfEdgeRewires();
 
 private:
   /// Adds source and target vertices, and relevant edges to \c mGraph.
@@ -149,6 +161,9 @@ private:
   /// Connection radius in the graph.
   double mConnectionRadius;
 
+  /// Collision checking resolution for the edge.
+  double mCollisionCheckResolution;
+
   /// Filename containing the roadmap.
   std::string mRoadmapFilename = "";
 
@@ -187,6 +202,13 @@ private:
 
   /// Target vertex.
   gls::datastructures::Vertex mTargetVertex;
+
+  /// TODO (avk): Move these into PlannerStatus class.
+  /// Number of Edge Evaluations.
+  double mNumberOfEdgeEvaluations{0};
+
+  /// Number of Edge Rewires.
+  double mNumberOfEdgeRewires{0};
 };
 
 } // namespace gls

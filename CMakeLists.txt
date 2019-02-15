@@ -16,9 +16,7 @@ endif()
 # Link Libraries
 #================================================================================
 
-find_package(catkin REQUIRED
-  COMPONENTS
-  cmake_modules)
+find_package(catkin REQUIRED)
 find_package(ompl REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options system)
 find_package(OpenCV REQUIRED)

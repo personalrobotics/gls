@@ -19,7 +19,7 @@ ForwardSelector::ForwardSelector()
 Path ForwardSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
 {
   // If the path is to the target, evaluate the entire path.
-  if (path[path.size() - 1] == mTargetVertex)
+  if (path[0] == mTargetVertex)
     return path;
 
   // Else return the first unevaluated edge closest to source.
