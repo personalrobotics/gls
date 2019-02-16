@@ -171,7 +171,7 @@ private:
   double mBestPathCost{0};
 
   /// Flag to check if the planner succeeded.
-  PlannerStatus mPlannerStatus;
+  PlannerStatus mPlannerStatus{PlannerStatus::NotSolved};
 
   /// Flag to check the validity of the search tree.
   TreeValidityStatus mTreeValidityStatus;
