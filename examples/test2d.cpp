@@ -33,6 +33,10 @@ namespace po = boost::program_options;
 /// \param[in] state The ompl state to check for validity.
 bool isPointValid(const ompl::base::State *state)
 {
+  double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+  if (values[0] >= 0.15 && values[0] <= 0.85)
+    if (values[1] <= 0.85)
+      return false;
   return true;
 }
 
@@ -93,7 +97,7 @@ int main(int argc, char *argv[])
 
   // Setup planner
   gls::GLS planner(si);
-  planner.setConnectionRadius(0.5);
+  planner.setConnectionRadius(0.02);
   planner.setRoadmapFilename("/home/adityavk/workspaces/lab-ws/src/generalized_lazy_search/examples/graph.graphml");
 
   auto event = std::make_shared<gls::event::ShortestPathEvent>();
