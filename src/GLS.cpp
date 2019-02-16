@@ -70,7 +70,8 @@ void GLS::setup()
       get(&EdgeProperties::mLength, mGraph));
 
   // Set default vertex values.
-  // TODO (avk): Why should this be done a-priori? Test that these are set by default.
+  // TODO (avk): Why should this be done a-priori? Test that these are set by
+  // default.
   VertexIter vi, vi_end;
   for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
   {
@@ -335,7 +336,7 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
 
   // Collision check the start and goal.
   Vertex startVertex = source(e, mGraph);
-  Vertex endVertex   = target(e, mGraph);
+  Vertex endVertex = target(e, mGraph);
   auto startState = mGraph[startVertex].getState()->getOMPLState();
   auto endState = mGraph[endVertex].getState()->getOMPLState();
 
@@ -356,7 +357,8 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
   for (int i = 1; i < 10; ++i)
   {
     StatePtr midVertex(new gls::datastructures::State(mSpace));
-    mSpace->interpolate(startState, endState, 0.1*i, midVertex->getOMPLState());
+    mSpace->interpolate(
+        startState, endState, 0.1 * i, midVertex->getOMPLState());
     if (!validityChecker->isValid(midVertex->getOMPLState()))
     {
       return CollisionStatus::Collision;
@@ -657,7 +659,8 @@ void GLS::rewireSearchTree()
 void GLS::evaluateSearchTree()
 {
   Vertex bestVertex = mExtendQueue.getTopVertex();
-  Path edgesToEvaluate = mSelector->selectEdgesToEvaluate(getPathToSource(bestVertex));
+  Path edgesToEvaluate
+      = mSelector->selectEdgesToEvaluate(getPathToSource(bestVertex));
 
   for (std::size_t i = 0; i < edgesToEvaluate.size() - 1; ++i)
   {
@@ -685,7 +688,8 @@ void GLS::evaluateSearchTree()
     }
   }
 
-  if (mTreeValidityStatus == TreeValidityStatus::Valid && bestVertex == mTargetVertex)
+  if (mTreeValidityStatus == TreeValidityStatus::Valid
+      && bestVertex == mTargetVertex)
   {
     mPlannerStatus = PlannerStatus::Solved;
   }

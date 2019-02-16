@@ -1,6 +1,6 @@
 #include "gls/event/ConstantDepthEvent.hpp"
 
-#include <iostream>  // std::invalid_argument
+#include <iostream> // std::invalid_argument
 
 namespace gls {
 namespace event {
@@ -18,10 +18,10 @@ ConstantDepthEvent::ConstantDepthEvent()
 //==============================================================================
 bool ConstantDepthEvent::isTriggered(const Vertex vertex) const
 {
-	double depth = getDepth(vertex);
+  double depth = getDepth(vertex);
 
   if (depth == mDepthThreshold)
-  	return true;
+    return true;
 
   return false;
 }
@@ -30,46 +30,46 @@ bool ConstantDepthEvent::isTriggered(const Vertex vertex) const
 void ConstantDepthEvent::updateVertexProperties(
     Vertex vertex, vertexUpdateOption cascade)
 {
-	// Remove vertex if it already exists in the map.
-	auto iterM = mVertexDepthMap.find(vertex);
-	if (iterM != mVertexDepthMap.end())
-		mVertexDepthMap.erase(iterM);
+  // Remove vertex if it already exists in the map.
+  auto iterM = mVertexDepthMap.find(vertex);
+  if (iterM != mVertexDepthMap.end())
+    mVertexDepthMap.erase(iterM);
 
-	// Add updated vertex.
-	addVertexToMap(vertex);
+  // Add updated vertex.
+  addVertexToMap(vertex);
 }
 
 //==============================================================================
 void ConstantDepthEvent::updateVertexProperties(SearchQueue searchQueue)
 {
-	Vertex vertex = searchQueue.popTopVertex();
-	updateVertexProperties(vertex);
+  Vertex vertex = searchQueue.popTopVertex();
+  updateVertexProperties(vertex);
 
-	auto children = mGraph[vertex].getChildren();
-	for (auto iterV = children.begin(); iterV != children.end(); ++iterV)
-	{
-		if (searchQueue.hasVertexWithValue(*iterV, mGraph[*iterV].getCostToCome()))
-			continue;
-		
-		updateVertexProperties(*iterV);
-	}
+  auto children = mGraph[vertex].getChildren();
+  for (auto iterV = children.begin(); iterV != children.end(); ++iterV)
+  {
+    if (searchQueue.hasVertexWithValue(*iterV, mGraph[*iterV].getCostToCome()))
+      continue;
+
+    updateVertexProperties(*iterV);
+  }
 }
 
 //==============================================================================
 double ConstantDepthEvent::getDepth(Vertex vertex)
 {
-	auto iterM = mVertexDepthMap.find(vertex);
+  auto iterM = mVertexDepthMap.find(vertex);
 
-	if (iterM == mVertexDepthMap.end())
-		throw std::invalid_argument("Vertex has not been registered.")
+  if (iterM == mVertexDepthMap.end())
+    throw std::invalid_argument("Vertex has not been registered.")
 
-	return mVertexDepthMap(*iterM);
+        return mVertexDepthMap(*iterM);
 }
 
 //==============================================================================
 void ConstantDepthEvent::addVertexToMap(Vertex vertex)
 {
-	// Ensure the vertex does not already exist in the map.
+  // Ensure the vertex does not already exist in the map.
   assert(mVertexDepthMap.find(vertex) == mVertexDepthMap.end());
 
   // Determine the parent depth.

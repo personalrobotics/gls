@@ -29,7 +29,7 @@ Path ForwardSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
 
   // Else return the first unevaluated edge closest to source.
   Path edgesToEvaluate;
-  for (std::size_t i = path.size()-1; i > 0; --i)
+  for (std::size_t i = path.size() - 1; i > 0; --i)
   {
     Edge uv;
     bool edgeExists;
