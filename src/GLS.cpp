@@ -657,8 +657,6 @@ void GLS::rewireSearchTree()
 void GLS::evaluateSearchTree()
 {
   Vertex bestVertex = mExtendQueue.getTopVertex();
-  if (bestVertex != mTargetVertex)
-      std::cout << "We have  problem" << std::endl;
   Path edgesToEvaluate = mSelector->selectEdgesToEvaluate(getPathToSource(bestVertex));
 
   for (std::size_t i = 0; i < edgesToEvaluate.size() - 1; ++i)
