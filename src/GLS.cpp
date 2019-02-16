@@ -343,17 +343,24 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
   if (!validityChecker->isValid(startState))
   {
     mGraph[startVertex].setCollisionStatus(CollisionStatus::Collision);
-    mGraph[e].setCollisionStatus(CollisionStatus::Collision);
-    mGraph[e].setLength(std::numeric_limits<double>::max());
     return CollisionStatus::Collision;
   }
 
   if (!validityChecker->isValid(endState))
   {
     mGraph[endVertex].setCollisionStatus(CollisionStatus::Collision);
-    mGraph[e].setCollisionStatus(CollisionStatus::Collision);
-    mGraph[e].setLength(std::numeric_limits<double>::max());
     return CollisionStatus::Collision;
+  }
+
+  // Evaluate the state in between.
+  for (int i = 1; i < 10; ++i)
+  {
+    StatePtr midVertex(new gls::datastructures::State(mSpace));
+    mSpace->interpolate(startState, endState, 0.1*i, midVertex->getOMPLState());
+    if (!validityChecker->isValid(midVertex->getOMPLState()))
+    {
+      return CollisionStatus::Collision;
+    }
   }
 
   // Edge is collision-free.
@@ -476,13 +483,14 @@ void GLS::extendSearchTree()
 // ============================================================================
 void GLS::updateSearchTree()
 {
-  // Do nothing
-  // If rewiring, make sure to change the mTreeValidityStatus back.
   if (mTreeValidityStatus == TreeValidityStatus::Valid)
     return;
   // mEvent->updateVertexProperties(mUpdateQueue);
   else
+  {
     rewireSearchTree();
+    mTreeValidityStatus = TreeValidityStatus::Valid;
+  }
 }
 
 // ============================================================================
@@ -648,15 +656,21 @@ void GLS::rewireSearchTree()
 // ============================================================================
 void GLS::evaluateSearchTree()
 {
-  Vertex u = mExtendQueue.getTopVertex();
-  Path edgesToEvaluate = mSelector->selectEdgesToEvaluate(getPathToSource(u));
+  Vertex bestVertex = mExtendQueue.getTopVertex();
+  if (bestVertex != mTargetVertex)
+      std::cout << "We have  problem" << std::endl;
+  Path edgesToEvaluate = mSelector->selectEdgesToEvaluate(getPathToSource(bestVertex));
 
-  // Assuming that the edge provided by the selector is unevaluated.
   for (std::size_t i = 0; i < edgesToEvaluate.size() - 1; ++i)
   {
     Vertex u = edgesToEvaluate[i];
     Vertex v = edgesToEvaluate[i + 1];
     Edge uv = getEdge(u, v);
+
+    // Assume that the selector might return edges already evaluated.
+    if (mGraph[uv].getEvaluationStatus() == EvaluationStatus::Evaluated)
+      continue;
+
     mGraph[uv].setEvaluationStatus(EvaluationStatus::Evaluated);
     if (evaluateEdge(uv) == CollisionStatus::Free)
     {
@@ -666,13 +680,14 @@ void GLS::evaluateSearchTree()
     else
     {
       mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
+      mGraph[uv].setLength(std::numeric_limits<double>::max());
       mTreeValidityStatus = TreeValidityStatus::NotValid;
       mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
-      return;
+      break;
     }
   }
 
-  if (u == mTargetVertex)
+  if (mTreeValidityStatus == TreeValidityStatus::Valid && bestVertex == mTargetVertex)
   {
     mPlannerStatus = PlannerStatus::Solved;
   }
