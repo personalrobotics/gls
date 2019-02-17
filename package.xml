@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-    <name>generalized_lazy_search</name>
+    <name>gls</name>
     <version>0.0.0</version>
     <description>Generalized Lazy Search (GLS)</description>
     <author email="adityavk@cs.uw.edu">Aditya Vamsikrishna Mandalika</author>

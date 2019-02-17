@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(generalized_lazy_search)
+project(gls)
 
 #================================================================================
 # Compiler settings
