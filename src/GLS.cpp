@@ -291,6 +291,18 @@ double GLS::getConnectionRadius()
 }
 
 // ============================================================================
+void GLS::setCollisionCheckResolution(double resolution)
+{
+  mCollisionCheckResolution = resolution;
+}
+
+// ============================================================================
+double GLS::getCollisionCheckResolution()
+{
+  return mCollisionCheckResolution;
+}
+
+// ============================================================================
 void GLS::setRoadmapFilename(std::string filename)
 {
   mRoadmapFilename = filename;
@@ -354,11 +366,14 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
   }
 
   // Evaluate the state in between.
-  for (int i = 1; i < 10; ++i)
+  int maxSteps = 1.0/mCollisionCheckResolution;
+  for (int multiplier = 1; multiplier < maxSteps + 1; ++multiplier)
   {
+    double interpolationStep = mCollisionCheckResolution*multiplier;
+    assert(interpolationStep <= 1);
     StatePtr midVertex(new gls::datastructures::State(mSpace));
     mSpace->interpolate(
-        startState, endState, 0.1 * i, midVertex->getOMPLState());
+        startState, endState, interpolationStep, midVertex->getOMPLState());
     if (!validityChecker->isValid(midVertex->getOMPLState()))
     {
       return CollisionStatus::Collision;
