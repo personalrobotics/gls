@@ -85,7 +85,7 @@ if(CLANG_FORMAT_EXECUTABLE)
 
   file(GLOB_RECURSE ALL_SOURCE_FILES
     LIST_DIRECTORIES false
-    include/*.h include/*.hpp src/*.c src/*.cpp tests/*.cpp tests/*.hpp)
+    include/*.h include/*.hpp src/*.c src/*.cpp)
   list(LENGTH ALL_SOURCE_FILES NUM_SOURCE_FILES)
 
   add_custom_target(format
