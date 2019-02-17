@@ -72,6 +72,12 @@ bool SearchQueue::isEmpty()
 }
 
 // ============================================================================
+std::size_t SearchQueue::getSize()
+{
+  return mVertexQueue.size();
+}
+
+// ============================================================================
 bool SearchQueue::hasVertexWithValue(const Vertex vertex, double cost)
 {
   auto iterQ = mVertexQueue.find(std::make_pair(vertex, cost));

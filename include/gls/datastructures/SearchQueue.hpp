@@ -63,6 +63,9 @@ public:
   /// Returns true if queue is empty.
   bool isEmpty();
 
+  /// Returns the size of the queue.
+  std::size_t getSize();
+
   /// Returns true if queue has vertex.
   /// \param[in] vertex Vertex to search for in the queue.
   bool hasVertexWithValue(
