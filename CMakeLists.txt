@@ -56,11 +56,27 @@ add_library(${PROJECT_NAME}
   src/selector/ForwardSelector.cpp
 )
 
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#================================================================================
+# Installation
+#================================================================================
+
+install(TARGETS gls EXPORT glsConfig
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  )
+
+install(DIRECTORY include/ DESTINATION include)
+
+# This makes the project importable from the install directory
+install(EXPORT glsConfig DESTINATION share/gls/cmake)
+
+# This makes the project importable from the build directory
+export(TARGETS gls FILE glsConfig.cmake)
+
+# Install the package.xml file (to satisfy REP-136).
+install(FILES "package.xml"
+  DESTINATION "share/gls")
 
 #================================================================================
 # Example Scripts
