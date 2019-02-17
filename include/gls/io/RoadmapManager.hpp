@@ -87,50 +87,42 @@ class RoadmapFromFile
   typedef typename GraphTypes::edge_descriptor Edge;
   typedef typename GraphTypes::edge_iterator EdgeIter;
 
-public:
-  const std::string mFilename;
+  public:
+    const std::string mFilename;
 
-  RoadmapFromFile(const ompl::base::StateSpacePtr space, std::string filename)
-    : mSpace(space), mFilename(filename), mBounds(0)
-  {
-    if (mSpace->getType() != ompl::base::STATE_SPACE_REAL_VECTOR)
-      throw std::runtime_error("This only supports real vector state spaces!");
-
-    mDim = mSpace->getDimension();
-    mBounds = mSpace->as<ompl::base::RealVectorStateSpace>()->getBounds();
-  }
-
-  ~RoadmapFromFile()
-  {
-    // Do nothing.
-  }
-
-  void generate(Graph& g, VStateMap stateMap, ELength lengthMap)
-  {
-    boost::dynamic_properties props;
-    props.property(
-        "state",
-        RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(
-            stateMap, mSpace, mDim));
-
-    std::ifstream fp;
-    fp.open(mFilename.c_str());
-    boost::read_graphml(fp, g, props);
-    fp.close();
-
-    EdgeIter ei, ei_end;
-    for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
-    {
-      ompl::base::State* state1 = get(stateMap, source(*ei, g))->getOMPLState();
-      ompl::base::State* state2 = get(stateMap, target(*ei, g))->getOMPLState();
-      put(lengthMap, *ei, mSpace->distance(state1, state2));
+    RoadmapFromFile(
+      const ompl::base::StateSpacePtr space,
+      std::string filename)
+    : mSpace(space)
+    , mFilename(filename)
+    {     
+      mDim = mSpace->getDimension();
     }
-  }
 
-private:
-  const ompl::base::StateSpacePtr mSpace;
-  ompl::base::RealVectorBounds mBounds;
-  size_t mDim;
+    ~RoadmapFromFile() {}
+
+    void generate(Graph &g, VStateMap stateMap, ELength lengthMap)
+    {
+      boost::dynamic_properties props;
+      props.property("state", RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(stateMap, mSpace, mDim));
+
+      std::ifstream fp;
+      fp.open(mFilename.c_str());
+      boost::read_graphml(fp, g, props);
+      fp.close();
+
+      EdgeIter ei, ei_end;
+      for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
+      {
+        ompl::base::State *state1 = get(stateMap, source(*ei, g))->getOMPLState();
+        ompl::base::State *state2 = get(stateMap, target(*ei, g))->getOMPLState();
+        put(lengthMap, *ei, mSpace->distance(state1, state2));
+      }
+    }
+
+  private:
+    size_t mDim;
+    const ompl::base::StateSpacePtr mSpace;
 };
 
 } // namespace io

@@ -88,6 +88,7 @@ void GLS::setup()
     mGraph[*ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
     mGraph[*ei].setCollisionStatus(CollisionStatus::Free);
   }
+  OMPL_INFORM("Planner has been setup.");
 }
 
 // ============================================================================
@@ -103,6 +104,7 @@ void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
   ompl::base::Planner::setProblemDefinition(pdef);
 
   setupPreliminaries();
+  OMPL_INFORM("Problem Definition has been setup.");
 }
 
 // ============================================================================
@@ -208,7 +210,6 @@ ompl::base::PlannerStatus GLS::solve(
     if (mPlannerStatus == PlannerStatus::Solved)
       break;
   }
-
   if (mPlannerStatus == PlannerStatus::Solved)
   {
     setBestPathCost(mGraph[mTargetVertex].getCostToCome());
@@ -387,6 +388,9 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
 // ============================================================================
 void GLS::extendSearchTree()
 {
+  // Ideally extend search tree should not be called when the queue is empty.
+  assert(!mExtendQueue.isEmpty());
+  
   while (!mExtendQueue.isEmpty())
   {
     // Check if the popping the top vertex triggers the event.
