@@ -174,6 +174,14 @@ void GLS::setupPreliminaries()
     }
   }
 
+  // Additionally connect the source and target with a straight line to snap.
+  std::pair<Edge, bool> newEdge
+      = boost::add_edge(mSourceVertex, mTargetVertex, mGraph);
+  mGraph[newEdge.first].setLength(mSpace->distance(
+        sourceState->getOMPLState(), targetState->getOMPLState()));
+  mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+  mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
+
   // Setup the event.
   mEvent->setup(mGraph, mSourceVertex, mTargetVertex);
 
