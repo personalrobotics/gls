@@ -87,42 +87,44 @@ class RoadmapFromFile
   typedef typename GraphTypes::edge_descriptor Edge;
   typedef typename GraphTypes::edge_iterator EdgeIter;
 
-  public:
-    const std::string mFilename;
+public:
+  const std::string mFilename;
 
-    RoadmapFromFile(
-      const ompl::base::StateSpacePtr space,
-      std::string filename)
-    : mSpace(space)
-    , mFilename(filename)
-    {     
-      mDim = mSpace->getDimension();
-    }
+  RoadmapFromFile(const ompl::base::StateSpacePtr space, std::string filename)
+    : mSpace(space), mFilename(filename)
+  {
+    mDim = mSpace->getDimension();
+  }
 
-    ~RoadmapFromFile() {}
+  ~RoadmapFromFile()
+  {
+  }
 
-    void generate(Graph &g, VStateMap stateMap, ELength lengthMap)
+  void generate(Graph& g, VStateMap stateMap, ELength lengthMap)
+  {
+    boost::dynamic_properties props;
+    props.property(
+        "state",
+        RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(
+            stateMap, mSpace, mDim));
+
+    std::ifstream fp;
+    fp.open(mFilename.c_str());
+    boost::read_graphml(fp, g, props);
+    fp.close();
+
+    EdgeIter ei, ei_end;
+    for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
     {
-      boost::dynamic_properties props;
-      props.property("state", RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(stateMap, mSpace, mDim));
-
-      std::ifstream fp;
-      fp.open(mFilename.c_str());
-      boost::read_graphml(fp, g, props);
-      fp.close();
-
-      EdgeIter ei, ei_end;
-      for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
-      {
-        ompl::base::State *state1 = get(stateMap, source(*ei, g))->getOMPLState();
-        ompl::base::State *state2 = get(stateMap, target(*ei, g))->getOMPLState();
-        put(lengthMap, *ei, mSpace->distance(state1, state2));
-      }
+      ompl::base::State* state1 = get(stateMap, source(*ei, g))->getOMPLState();
+      ompl::base::State* state2 = get(stateMap, target(*ei, g))->getOMPLState();
+      put(lengthMap, *ei, mSpace->distance(state1, state2));
     }
+  }
 
-  private:
-    size_t mDim;
-    const ompl::base::StateSpacePtr mSpace;
+private:
+  size_t mDim;
+  const ompl::base::StateSpacePtr mSpace;
 };
 
 } // namespace io
