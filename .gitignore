@@ -34,3 +34,7 @@
 # Build directory
 build/
 *.txt.user
+
+# IDE
+CMakeLists.txt.user
+.vscode/
