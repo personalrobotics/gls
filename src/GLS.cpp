@@ -177,8 +177,9 @@ void GLS::setupPreliminaries()
   // Additionally connect the source and target with a straight line to snap.
   std::pair<Edge, bool> newEdge
       = boost::add_edge(mSourceVertex, mTargetVertex, mGraph);
-  mGraph[newEdge.first].setLength(mSpace->distance(
-        sourceState->getOMPLState(), targetState->getOMPLState()));
+  mGraph[newEdge.first].setLength(
+      mSpace->distance(
+          sourceState->getOMPLState(), targetState->getOMPLState()));
   mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
   mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
 
@@ -375,10 +376,10 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
   }
 
   // Evaluate the state in between.
-  int maxSteps = 1.0/mCollisionCheckResolution;
+  int maxSteps = 1.0 / mCollisionCheckResolution;
   for (int multiplier = 1; multiplier < maxSteps + 1; ++multiplier)
   {
-    double interpolationStep = mCollisionCheckResolution*multiplier;
+    double interpolationStep = mCollisionCheckResolution * multiplier;
     assert(interpolationStep <= 1);
     StatePtr midVertex(new gls::datastructures::State(mSpace));
     mSpace->interpolate(
@@ -398,7 +399,7 @@ void GLS::extendSearchTree()
 {
   // Ideally extend search tree should not be called when the queue is empty.
   assert(!mExtendQueue.isEmpty());
-  
+
   while (!mExtendQueue.isEmpty())
   {
     // Check if the popping the top vertex triggers the event.

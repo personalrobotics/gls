@@ -5,7 +5,7 @@ project(gls)
 # Compiler settings
 #================================================================================
 # Enforce the use of C++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wuninitialized -Wpedantic")
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 if(GENERALIZED_LAZY_SEARCH_TREAT_WARNINGS_AS_ERRORS)
