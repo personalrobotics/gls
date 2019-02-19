@@ -111,6 +111,8 @@ int main(int argc, char *argv[])
       ("help,h", "produce help message")
       ("source,s", po::value<std::vector<float> >()->multitoken(), "source configuration")
       ("target,t", po::value<std::vector<float> >()->multitoken(), "target configuration")
+      ("graph,g", po::value<std::string>()->multitoken(), "graph location")
+      ("obstacle,o", po::value<std::string>()->multitoken(), "obstacle location")
   ;
 
   // Read arguments
@@ -126,8 +128,8 @@ int main(int argc, char *argv[])
 
   std::vector<float> source(vm["source"].as<std::vector< float> >());
   std::vector<float> target(vm["target"].as<std::vector< float> >());
-  std::string obstacleLocation = "/home/adityavk/workspaces/lab-ws/src/planning_dataset/sanjiban_data/two_wall/environment_images/world_5.png";
-  std::string graphLocation = "/home/adityavk/workspaces/lab-ws/src/planning_dataset/scripts/generators/graph_400.graphml";
+  std::string graphLocation(vm["graph"].as<std::string>());
+  std::string obstacleLocation(vm["obstacle"].as<std::string>());
 
   // Define the state space: R^2
   auto space = std::make_shared<ompl::base::RealVectorStateSpace>(2);
