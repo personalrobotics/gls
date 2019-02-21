@@ -111,8 +111,8 @@ int main(int argc, char *argv[])
       ("help,h", "produce help message")
       ("source,s", po::value<std::vector<float> >()->multitoken(), "source configuration")
       ("target,t", po::value<std::vector<float> >()->multitoken(), "target configuration")
-      ("graph,g", po::value<std::string>()->multitoken(), "graph location")
-      ("obstacle,o", po::value<std::string>()->multitoken(), "obstacle location")
+      ("graph,g", po::value<std::string>()->required(), "graph location")
+      ("obstacle,o", po::value<std::string>()->required(), "obstacle location")
   ;
 
   // Read arguments
@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
   // Setup planner
   gls::GLS planner(si);
   planner.setConnectionRadius(0.04);
+  planner.setCollisionCheckResolution(0.1);
   planner.setRoadmapFilename(graphLocation);
 
   auto event = std::make_shared<gls::event::ShortestPathEvent>();
@@ -172,6 +173,7 @@ int main(int argc, char *argv[])
     // Display path and specify path size
     auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(pdef->getSolutionPath());
     std::cout << "Solution Path Cost: " << planner.getBestPathCost() << std::endl;
+    std::cout << "Number of Edge Evaluations: " << planner.getNumberOfEdgeEvaluations() << std::endl;
     displayPath(obstacleLocation, path);
     return 0;
   }

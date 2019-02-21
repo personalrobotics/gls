@@ -69,25 +69,6 @@ void GLS::setup()
       get(&VertexProperties::mState, mGraph),
       get(&EdgeProperties::mLength, mGraph));
 
-  // Set default vertex values.
-  // TODO (avk): Why should this be done a-priori? Test that these are set by
-  // default.
-  VertexIter vi, vi_end;
-  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
-  {
-    mGraph[*vi].setCostToCome(std::numeric_limits<double>::infinity());
-    mGraph[*vi].setHeuristic(0);
-    mGraph[*vi].setVisitStatus(VisitStatus::NotVisited);
-    mGraph[*vi].setCollisionStatus(CollisionStatus::Free);
-  }
-
-  // Set default edge values.
-  EdgeIter ei, ei_end;
-  for (boost::tie(ei, ei_end) = edges(mGraph); ei != ei_end; ++ei)
-  {
-    mGraph[*ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
-    mGraph[*ei].setCollisionStatus(CollisionStatus::Free);
-  }
   OMPL_INFORM("Planner has been setup.");
 }
 
