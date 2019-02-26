@@ -332,14 +332,18 @@ double GLS::getNumberOfEdgeRewires()
 // ===========================================================================================
 CollisionStatus GLS::evaluateEdge(const Edge& e)
 {
+  Vertex startVertex = source(e, mGraph);
+  Vertex endVertex = target(e, mGraph);
+
+  if (startVertex != mSourceVertex && endVertex != mTargetVertex)
+    return CollisionStatus::Free;
+
   mNumberOfEdgeEvaluations++;
 
   // Access the validity checker.
   auto validityChecker = si_->getStateValidityChecker();
 
   // Collision check the start and goal.
-  Vertex startVertex = source(e, mGraph);
-  Vertex endVertex = target(e, mGraph);
   auto startState = mGraph[startVertex].getState()->getOMPLState();
   auto endState = mGraph[endVertex].getState()->getOMPLState();
 
