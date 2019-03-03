@@ -59,17 +59,21 @@ void GLS::setup()
   if (mRoadmapFilename == "")
     std::invalid_argument("Roadmap Filename cannot be empty!");
 
+
+  
   mRoadmap = boost::
       shared_ptr<io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>>(
           new io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>(
               mSpace, mRoadmapFilename));
-
+      
+std::chrono::time_point<std::chrono::system_clock> startTime{std::chrono::system_clock::now()};
   mRoadmap->generate(
       mGraph,
       get(&VertexProperties::mState, mGraph),
       get(&EdgeProperties::mLength, mGraph));
-
-  OMPL_INFORM("Planner has been setup.");
+std::chrono::time_point<std::chrono::system_clock> endTime{std::chrono::system_clock::now()};
+std::chrono::duration<double> elapsedSeconds{endTime-startTime};
+std::cout << "Graph Loading Time: " << elapsedSeconds.count() << std::endl;
 }
 
 // ============================================================================
@@ -85,7 +89,6 @@ void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
   ompl::base::Planner::setProblemDefinition(pdef);
 
   setupPreliminaries();
-  OMPL_INFORM("Problem Definition has been setup.");
 }
 
 // ============================================================================
