@@ -90,26 +90,25 @@ public:
   typedef std::string reference;
   const PropMap mPropMap;
 
-  RoadmapFromFilePutEdgeLengthMap(PropMap propMap):
-    mPropMap(propMap)
+  RoadmapFromFilePutEdgeLengthMap(PropMap propMap) : mPropMap(propMap)
   {
   }
 };
 
 /// Do not allow calling get on this property map
 template <class PropMap>
-inline std::string
-get(const RoadmapFromFilePutEdgeLengthMap<PropMap> &map,
-  const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type &k)
+inline std::string get(
+    const RoadmapFromFilePutEdgeLengthMap<PropMap>& map,
+    const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type& k)
 {
   abort();
 }
 
 template <class PropMap>
-inline void
-put(const RoadmapFromFilePutEdgeLengthMap<PropMap> &map,
-  const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type &k,
-  const std::string representation)
+inline void put(
+    const RoadmapFromFilePutEdgeLengthMap<PropMap>& map,
+    const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type& k,
+    const std::string representation)
 {
   put(map.mPropMap, k, stod(representation));
 }
@@ -144,7 +143,8 @@ public:
         "state",
         RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(
             stateMap, mSpace, mDim));
-    props.property("length", RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
+    props.property(
+        "length", RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
 
     std::ifstream fp;
     fp.open(mFilename.c_str());
