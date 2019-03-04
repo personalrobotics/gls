@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
   gls::GLS planner(si);
   planner.setConnectionRadius(0.04);
   planner.setCollisionCheckResolution(0.1);
-  planner.setRoadmapFilename(graphLocation);
+  planner.setRoadmap(graphLocation);
 
   auto event = std::make_shared<gls::event::ShortestPathEvent>();
   auto selector = std::make_shared<gls::selector::ForwardSelector>();

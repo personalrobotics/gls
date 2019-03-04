@@ -52,22 +52,13 @@ void GLS::setup()
   // Mark the planner to have been setup.
   ompl::base::Planner::setup();
 
+  // Check if the graph has been setup.
+  if (!mGraphSetup)
+    std::invalid_argument("Graph has not been provided.");
+
   // TODO (avk): If the graph is not provided, use implicit representation
   // for the edges using the NearestNeighbor representation.
   // Check if roadmap has been provided.
-
-  if (mRoadmapFilename == "")
-    std::invalid_argument("Roadmap Filename cannot be empty!");
-
-  mRoadmap = boost::
-      shared_ptr<io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>>(
-          new io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>(
-              mSpace, mRoadmapFilename));
-
-  mRoadmap->generate(
-      mGraph,
-      get(&VertexProperties::mState, mGraph),
-      get(&EdgeProperties::mLength, mGraph));
 
   OMPL_INFORM("Planner has been setup.");
 }
@@ -294,15 +285,24 @@ double GLS::getCollisionCheckResolution()
 }
 
 // ============================================================================
-void GLS::setRoadmapFilename(std::string filename)
+void GLS::setRoadmap(std::string filename)
 {
-  mRoadmapFilename = filename;
-}
+  if (filename == "")
+    std::invalid_argument("Roadmap Filename cannot be empty!");
 
-// ============================================================================
-std::string GLS::getRoadmapFilename()
-{
-  return mRoadmapFilename;
+  // Load the graph.
+  mRoadmap = boost::
+      shared_ptr<io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>>(
+          new io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>(
+              mSpace, filename));
+
+  mRoadmap->generate(
+      mGraph,
+      get(&VertexProperties::mState, mGraph),
+      get(&EdgeProperties::mLength, mGraph));
+
+  // Mark the graph to have been setup.
+  mGraphSetup = true;
 }
 
 // ============================================================================
