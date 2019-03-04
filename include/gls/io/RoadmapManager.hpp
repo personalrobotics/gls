@@ -77,6 +77,43 @@ inline void put(
   }
 }
 
+/* RoadmapFromFilePutEdgeLengthMap */
+/// The map used to decode the .graphml file and populate the edge length
+/// \tparam PropMap The type of property map for vertex states
+template <class PropMap>
+class RoadmapFromFilePutEdgeLengthMap
+{
+public:
+  typedef boost::writable_property_map_tag category;
+  typedef typename boost::property_traits<PropMap>::key_type key_type;
+  typedef std::string value_type;
+  typedef std::string reference;
+  const PropMap mPropMap;
+
+  RoadmapFromFilePutEdgeLengthMap(PropMap propMap):
+    mPropMap(propMap)
+  {
+  }
+};
+
+/// Do not allow calling get on this property map
+template <class PropMap>
+inline std::string
+get(const RoadmapFromFilePutEdgeLengthMap<PropMap> &map,
+  const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type &k)
+{
+  abort();
+}
+
+template <class PropMap>
+inline void
+put(const RoadmapFromFilePutEdgeLengthMap<PropMap> &map,
+  const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type &k,
+  const std::string representation)
+{
+  put(map.mPropMap, k, stod(representation));
+}
+
 /* RoadmapFromFile */
 template <class Graph, class VStateMap, class StateWrapper, class ELength>
 class RoadmapFromFile
@@ -107,19 +144,12 @@ public:
         "state",
         RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(
             stateMap, mSpace, mDim));
+    props.property("length", RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
 
     std::ifstream fp;
     fp.open(mFilename.c_str());
     boost::read_graphml(fp, g, props);
     fp.close();
-
-    EdgeIter ei, ei_end;
-    for (boost::tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
-    {
-      ompl::base::State* state1 = get(stateMap, source(*ei, g))->getOMPLState();
-      ompl::base::State* state2 = get(stateMap, target(*ei, g))->getOMPLState();
-      put(lengthMap, *ei, mSpace->distance(state1, state2));
-    }
   }
 
 private:
