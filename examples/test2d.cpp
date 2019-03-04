@@ -23,8 +23,6 @@
 
 // Custom header files
 #include "gls/GLS.hpp"
-#include "gls/event/ShortestPathEvent.hpp"
-#include "gls/selector/ForwardSelector.hpp"
 
 namespace po = boost::program_options;
 

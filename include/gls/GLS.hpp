@@ -20,13 +20,11 @@
 #include <ompl/datastructures/NearestNeighborsGNAT.h>
 #include <ompl/geometric/PathGeometric.h>
 
-// GLS headers
-#include "gls/datastructures/Graph.hpp"
-#include "gls/datastructures/SearchQueue.hpp"
-#include "gls/datastructures/State.hpp"
-#include "gls/event/Event.hpp"
-#include "gls/io/RoadmapManager.hpp"
-#include "gls/selector/Selector.hpp"
+// GLS headers. Include all the headers.
+#include "gls/datastructures.hpp"
+#include "gls/event.hpp"
+#include "gls/io.hpp"
+#include "gls/selector.hpp"
 
 namespace gls {
 
