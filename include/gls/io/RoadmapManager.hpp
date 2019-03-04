@@ -98,8 +98,8 @@ public:
 /// Do not allow calling get on this property map
 template <class PropMap>
 inline std::string get(
-    const RoadmapFromFilePutEdgeLengthMap<PropMap>& map,
-    const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type& k)
+    const RoadmapFromFilePutEdgeLengthMap<PropMap>&,
+    const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type&)
 {
   abort();
 }
