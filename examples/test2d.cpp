@@ -23,8 +23,6 @@
 
 // Custom header files
 #include "gls/GLS.hpp"
-#include "gls/event/ShortestPathEvent.hpp"
-#include "gls/selector/ForwardSelector.hpp"
 
 namespace po = boost::program_options;
 
@@ -98,7 +96,7 @@ int main(int argc, char *argv[])
   // Setup planner
   gls::GLS planner(si);
   planner.setConnectionRadius(0.02);
-  planner.setRoadmapFilename("/home/adityavk/workspaces/lab-ws/src/generalized_lazy_search/examples/graph.graphml");
+  planner.setRoadmap("/home/adityavk/workspaces/lab-ws/src/generalized_lazy_search/examples/graph.graphml");
 
   auto event = std::make_shared<gls::event::ShortestPathEvent>();
   auto selector = std::make_shared<gls::selector::ForwardSelector>();

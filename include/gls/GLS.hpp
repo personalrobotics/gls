@@ -20,13 +20,11 @@
 #include <ompl/datastructures/NearestNeighborsGNAT.h>
 #include <ompl/geometric/PathGeometric.h>
 
-// GLS headers
-#include "gls/datastructures/Graph.hpp"
-#include "gls/datastructures/SearchQueue.hpp"
-#include "gls/datastructures/State.hpp"
-#include "gls/event/Event.hpp"
-#include "gls/io/RoadmapManager.hpp"
-#include "gls/selector/Selector.hpp"
+// GLS headers. Include all the headers.
+#include "gls/datastructures.hpp"
+#include "gls/event.hpp"
+#include "gls/io.hpp"
+#include "gls/selector.hpp"
 
 namespace gls {
 
@@ -95,11 +93,8 @@ public:
   /// Get the connection radius of the graph.
   double getCollisionCheckResolution();
 
-  /// Set the RoadmapFilename pointing to the graph.
-  void setRoadmapFilename(std::string filename);
-
-  /// Get the filename containing the roadmap.
-  std::string getRoadmapFilename();
+  /// Set the roadmap. Loads the graph.
+  void setRoadmap(std::string filename);
 
   /// Set the best path cost.
   void setBestPathCost(double cost);
@@ -164,8 +159,8 @@ private:
   /// Collision checking resolution for the edge.
   double mCollisionCheckResolution;
 
-  /// Filename containing the roadmap.
-  std::string mRoadmapFilename = "";
+  /// Boolean denoting if the graph has been setup.
+  bool mGraphSetup{false};
 
   /// Filename containing the roadmap.
   double mBestPathCost{0};
