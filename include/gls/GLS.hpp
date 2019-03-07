@@ -102,6 +102,12 @@ public:
   /// Get the best path cost.
   double getBestPathCost();
 
+  /// Set status of the planner.
+  void setPlannerStatus(PlannerStatus);
+
+  /// Get status of the planner.
+  PlannerStatus getPlannerStatus();
+
   /// Get the number of edges evaluated.
   double getNumberOfEdgeEvaluations();
 

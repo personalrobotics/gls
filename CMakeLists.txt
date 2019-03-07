@@ -83,12 +83,12 @@ install(FILES "package.xml"
 #================================================================================
 
 # Dummy Test Script
-add_executable(test2d examples/test2d.cpp)
-target_link_libraries(test2d ${PROJECT_NAME})
+#add_executable(test2d examples/test2d.cpp)
+#target_link_libraries(test2d ${PROJECT_NAME})
 
 # Correctness Test Script
-add_executable(test2d_image examples/test2d_image.cpp)
-target_link_libraries(test2d_image ${PROJECT_NAME} ${OpenCV_LIBS})
+#add_executable(test2d_image examples/test2d_image.cpp)
+#target_link_libraries(test2d_image ${PROJECT_NAME} ${OpenCV_LIBS})
 
 #================================================================================
 # Formatting

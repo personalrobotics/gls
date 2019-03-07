@@ -165,7 +165,33 @@ void GLS::setupPreliminaries()
 // ============================================================================
 void GLS::clear()
 {
-  // TODO (avk): implement resetVertexProperties() and resetEdgeProperties()
+  // Clear the queues.
+  mExtendQueue.clear();
+  mRewireQueue.clear();
+  mRewireSet.clear();
+
+  // Reset the vertices and edges.
+  VertexIter vi, vi_end;
+  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
+  {
+    mGraph[*vi].setCostToCome(std::numeric_limits<double>::infinity());
+    mGraph[*vi].setHeuristic(0);
+    mGraph[*vi].removeAllChildren();
+    mGraph[*vi].setVisitStatus(VisitStatus::NotVisited);
+    mGraph[*vi].setCollisionStatus(CollisionStatus::Free);
+  }
+
+  EdgeIter ei, ei_end;
+  for (boost::tie(ei, ei_end) = edges(mGraph); ei != ei_end; ++ei)
+  {
+    mGraph[*ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+    mGraph[*ei].setCollisionStatus(CollisionStatus::Free);
+  }
+
+  setBestPathCost(0);
+  setPlannerStatus(PlannerStatus::NotSolved);
+
+  OMPL_INFORM("Cleared Everything");
 }
 
 // ============================================================================
@@ -188,15 +214,17 @@ ompl::base::PlannerStatus GLS::solve(
     evaluateSearchTree();
 
     // If the plan is successful, return.
-    if (mPlannerStatus == PlannerStatus::Solved)
+    if (getPlannerStatus() == PlannerStatus::Solved)
       break;
   }
-  if (mPlannerStatus == PlannerStatus::Solved)
+  if (getPlannerStatus() == PlannerStatus::Solved)
   {
     setBestPathCost(mGraph[mTargetVertex].getCostToCome());
     pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
     return ompl::base::PlannerStatus::EXACT_SOLUTION;
   }
+  else
+    OMPL_INFORM("No Solution Found.");
 
   return ompl::base::PlannerStatus::TIMEOUT;
 }
@@ -315,6 +343,18 @@ void GLS::setBestPathCost(double cost)
 double GLS::getBestPathCost()
 {
   return mBestPathCost;
+}
+
+// ============================================================================
+void GLS::setPlannerStatus(PlannerStatus status)
+{
+  mPlannerStatus = status;
+}
+
+// ============================================================================
+PlannerStatus GLS::getPlannerStatus()
+{
+  return mPlannerStatus;
 }
 
 // ============================================================================
@@ -700,7 +740,7 @@ void GLS::evaluateSearchTree()
   if (mTreeValidityStatus == TreeValidityStatus::Valid
       && bestVertex == mTargetVertex)
   {
-    mPlannerStatus = PlannerStatus::Solved;
+    setPlannerStatus(PlannerStatus::Solved);
   }
 
   // Based on the evaluation, update the search tree.
