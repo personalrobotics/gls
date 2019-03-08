@@ -104,7 +104,7 @@ void GLS::setupPreliminaries()
   mGraph[mSourceVertex].setHeuristic(getGraphHeuristic(mSourceVertex));
   mGraph[mSourceVertex].setVisitStatus(VisitStatus::NotVisited);
   mGraph[mSourceVertex].setCollisionStatus(CollisionStatus::Free);
-  mGraph[mSourceVertex].setParent(-1);
+  mGraph[mSourceVertex].setParent(mSourceVertex);
 
   mGraph[mTargetVertex].setCostToCome(std::numeric_limits<double>::infinity());
   mGraph[mTargetVertex].setHeuristic(0);
