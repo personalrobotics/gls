@@ -178,7 +178,7 @@ void GLS::clear()
   for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
   {
     mGraph[*vi].setCostToCome(std::numeric_limits<double>::infinity());
-    mGraph[*vi].setHeuristic(0);
+    mGraph[*vi].setHeuristic(std::numeric_limits<double>::infinity());
     mGraph[*vi].removeAllChildren();
     mGraph[*vi].setVisitStatus(VisitStatus::NotVisited);
     mGraph[*vi].setCollisionStatus(CollisionStatus::Free);

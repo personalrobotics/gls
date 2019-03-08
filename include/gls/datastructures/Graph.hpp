@@ -116,7 +116,7 @@ private:
   double mCostToCome{std::numeric_limits<double>::infinity()};
 
   /// Heuristic value.
-  double mHeuristic{0};
+  double mHeuristic{std::numeric_limits<double>::infinity()};
 
   /// Parent.
   Vertex mParent;
