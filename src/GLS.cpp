@@ -165,6 +165,9 @@ void GLS::setupPreliminaries()
 // ============================================================================
 void GLS::clear()
 {
+  // Call the base clear
+  ompl::base::Planner::clear();
+
   // Clear the queues.
   mExtendQueue.clear();
   mRewireQueue.clear();
@@ -189,7 +192,8 @@ void GLS::clear()
   }
 
   setBestPathCost(0);
-  setPlannerStatus(PlannerStatus::NotSolved);
+  mTreeValidityStatus = TreeValidityStatus::NotValid;
+  mPlannerStatus = PlannerStatus::NotSolved;
 
   OMPL_INFORM("Cleared Everything");
 }
@@ -214,10 +218,10 @@ ompl::base::PlannerStatus GLS::solve(
     evaluateSearchTree();
 
     // If the plan is successful, return.
-    if (getPlannerStatus() == PlannerStatus::Solved)
+    if (mPlannerStatus == PlannerStatus::Solved)
       break;
   }
-  if (getPlannerStatus() == PlannerStatus::Solved)
+  if (mPlannerStatus == PlannerStatus::Solved)
   {
     setBestPathCost(mGraph[mTargetVertex].getCostToCome());
     pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
@@ -380,6 +384,7 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
   // Collision check the start and goal.
   Vertex startVertex = source(e, mGraph);
   Vertex endVertex = target(e, mGraph);
+
   auto startState = mGraph[startVertex].getState()->getOMPLState();
   auto endState = mGraph[endVertex].getState()->getOMPLState();
 
@@ -454,6 +459,10 @@ void GLS::extendSearchTree()
 
       // Enforce prevention of loops.
       if (v == mGraph[u].getParent())
+        continue;
+
+      // Never come back to the source.
+      if (v == mSourceVertex)
         continue;
 
       // Get the edge between the two vertices.
@@ -740,7 +749,7 @@ void GLS::evaluateSearchTree()
   if (mTreeValidityStatus == TreeValidityStatus::Valid
       && bestVertex == mTargetVertex)
   {
-    setPlannerStatus(PlannerStatus::Solved);
+    mPlannerStatus = PlannerStatus::Solved;
   }
 
   // Based on the evaluation, update the search tree.
