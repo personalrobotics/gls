@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(gls)
+list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
 
 #================================================================================
 # Compiler settings
@@ -57,6 +58,15 @@ add_library(${PROJECT_NAME}
 )
 
 #================================================================================
+# Example Scripts
+#================================================================================
+
+# Correctness Test Script
+add_executable(test2d_image examples/test2d_image.cpp)
+target_link_libraries(test2d_image ${PROJECT_NAME} ${OpenCV_LIBS})
+install(TARGETS test2d_image RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+#================================================================================
 # Installation
 #================================================================================
 
@@ -79,49 +89,19 @@ install(FILES "package.xml"
   DESTINATION "share/gls")
 
 #================================================================================
-# Example Scripts
-#================================================================================
-
-# Dummy Test Script
-#add_executable(test2d examples/test2d.cpp)
-#target_link_libraries(test2d ${PROJECT_NAME})
-
-# Correctness Test Script
-#add_executable(test2d_image examples/test2d_image.cpp)
-#target_link_libraries(test2d_image ${PROJECT_NAME} ${OpenCV_LIBS})
-
-#================================================================================
 # Formatting
 #================================================================================
+include(ClangFormat)
 
-find_program(CLANG_FORMAT_EXECUTABLE NAMES clang-format-3.8)
+clang_format_setup(VERSION 3.8)
 
-if(CLANG_FORMAT_EXECUTABLE)
-  message(STATUS "Found clang-format.")
+if (CLANG_FORMAT_EXECUTABLE)
+  FILE(GLOB_RECURSE gls_headers "include/*.hpp")
+  FILE(GLOB_RECURSE gls_srcs "include/*.cpp")
+  clang_format_add_sources(${gls_headers})
+  clang_format_add_sources(${gls_srcs})
 
-  file(GLOB_RECURSE ALL_SOURCE_FILES
-    LIST_DIRECTORIES false
-    include/*.h include/*.hpp src/*.c src/*.cpp)
-  list(LENGTH ALL_SOURCE_FILES NUM_SOURCE_FILES)
-
-  add_custom_target(format
-    COMMAND ${CMAKE_COMMAND} -E echo "Formatting ${NUM_SOURCE_FILES} files..."
-    COMMAND ${CLANG_FORMAT_EXECUTABLE} -style=file -i ${ALL_SOURCE_FILES}
-    COMMAND ${CMAKE_COMMAND} -E echo "Done."
-    DEPENDS ${CLANG_FORMAT_EXECUTABLE}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
-  add_custom_target(check-format
-    COMMAND ${CMAKE_COMMAND} -E echo "Checking code style of"
-            "${NUM_SOURCE_FILES} files... "
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/check_format.sh
-            ${CLANG_FORMAT_EXECUTABLE} ${ALL_SOURCE_FILES}
-    COMMAND ${CMAKE_COMMAND} -E echo "Done."
-    DEPENDS ${CLANG_FORMAT_EXECUTABLE}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-else()
-  message(STATUS "Looking for clang-format - NOT found, please install "
-      "clang-format to enable automatic code formatting.")
+  clang_format_add_targets()
 endif()
 
 #================================================================================
