@@ -19,6 +19,14 @@ Example:
 
 An example graph and an environment have been provided to run with `examples/test2d_image.cpp`.
 
-./test2d_image -s (sourcex, sourcey) -t (targetx, targety) -o (obstacle_location) -g (graph_location)
+```
+rosrun  -s <source_x> <source_y> -t <target_x> <target_y> -o <obstacle_file.png> -g <graph.graphml>
+```
 
-The source and target locations are assumed to be in [0, 1]
+* The source and target locations are assumed to be in [0, 1]
+* The obstacle file is for visualization purposes, and should correspond with the GraphML file.
+* A short-cut to the default graph and obstacle files in the `examples` folder can be run with the following launch file:
+```
+roslaunch gls test.launch
+```
+Parameters: `graph`, `obstacles`, `start_x`, `start_y`, `target_x`, `target_y`
