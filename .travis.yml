@@ -15,10 +15,10 @@ matrix:
   include:
     - os: linux
       compiler: gcc
-      env: BUILD_TYPE=Debug CODECOV=ON CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DGENERALIZED_LAZY_SEARCH_TREAT_WARNINGS_AS_ERRORS=ON"
+      env: BUILD_TYPE=Debug CODECOV=ON CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DGLS_TREAT_WARNINGS_AS_ERRORS=ON"
     - os: linux
       compiler: gcc
-      env: BUILD_TYPE=Release CODECOV=OFF CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release -DGENERALIZED_LAZY_SEARCH_TREAT_WARNINGS_AS_ERRORS=ON"
+      env: BUILD_TYPE=Release CODECOV=OFF CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release -DGLS_TREAT_WARNINGS_AS_ERRORS=ON"
 
 # Install test fixture dependencies.
 before_install:
@@ -37,14 +37,14 @@ script:
   - ./scripts/internal-build.sh ${PACKAGE_NAMES}
   - ./scripts/internal-test.sh ${PACKAGE_NAMES}
   # Check code style
-  - ./scripts/internal-run.sh catkin build --no-status --no-deps -p 1 -i --make-args check-format -- generalized_lazy_search
-  # Manually build generalized_lazy_search's tests; they are not run automatically because it is not a Catkin package.
-  # - ./scripts/internal-run.sh catkin build --no-status --no-deps -p 1 -i --cmake-args -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DGENERALIZED_LAZY_SEARCH_TREAT_WARNINGS_AS_ERRORS=ON -DCODECOV=$CODECOV --make-args tests -- generalized_lazy_search
+  - ./scripts/internal-run.sh catkin build --no-status --no-deps -p 1 -i --make-args check-format -- gls
+  # Manually build gls's tests; they are not run automatically because it is not a Catkin package.
+  # - ./scripts/internal-run.sh catkin build --no-status --no-deps -p 1 -i --cmake-args -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DGLS_TREAT_WARNINGS_AS_ERRORS=ON -DCODECOV=$CODECOV --make-args tests -- gls
   # Measure test coverage if CodeCov is on; otherwise, just run tests.
-  # - if [ $CODECOV = ON ]; then ./scripts/internal-run.sh make -C build/generalized_lazy_search generalized_lazy_search_coverage; else ./scripts/internal-run.sh make -C build/generalized_lazy_search test; fi
+  # - if [ $CODECOV = ON ]; then ./scripts/internal-run.sh make -C build/gls gls_coverage; else ./scripts/internal-run.sh make -C build/gls test; fi
   # Uploading code coverage report to CodeCov
   # - if [ $CODECOV = ON ]; then bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports."; fi
 
 after_failure:
-  - cat ./build/generalized_lazy_search/Testing/Temporary/LastTest.log
-  - cat ./build/generalized_lazy_search/Testing/Temporary/LastTestsFailed.log
+  - cat ./build/gls/Testing/Temporary/LastTest.log
+  - cat ./build/gls/Testing/Temporary/LastTestsFailed.log
