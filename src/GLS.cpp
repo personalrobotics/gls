@@ -391,8 +391,6 @@ double GLS::getNumberOfEdgeRewires()
 // ============================================================================
 CollisionStatus GLS::evaluateEdge(const Edge& e)
 {
-
-  // return CollisionStatus::Free;
   mNumberOfEdgeEvaluations++;
 
   // Access the validity checker.
