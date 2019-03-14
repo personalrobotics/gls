@@ -72,7 +72,7 @@ bool SearchQueue::isEmpty()
 }
 
 // ============================================================================
-std::size_t SearchQueue::getSize()
+std::size_t SearchQueue::getSize() const
 {
   return mVertexQueue.size();
 }
@@ -94,8 +94,26 @@ bool SearchQueue::queueComparison(
 {
   if (left.second < right.second)
     return true;
-  else
+  else if (left.second > right.second)
     return false;
+  else
+  {
+    return left.first < right.first; 
+  }
+}
+
+// ============================================================================
+void SearchQueue::printQueue() const
+{
+  std::cout << "--------------------" << std::endl;
+  std::cout << "Queue Size: " << mVertexQueue.size() << std::endl;
+  std::cout << "--------------------" << std::endl;
+  for (auto iterQ = mVertexQueue.begin(); iterQ != mVertexQueue.end(); ++iterQ)
+  {
+    auto pair = *iterQ;
+    std::cout << "Vertex: " << pair.first << " " << "Cost: " << pair.second << std::endl; 
+  }
+  std::cout << "--------------------" << std::endl;
 }
 
 } // datastructures
