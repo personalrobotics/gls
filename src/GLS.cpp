@@ -810,8 +810,6 @@ void GLS::evaluateSearchTree()
     else
     {
       mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
-      mGraph[uv].setLength(std::numeric_limits<double>::max());
-     
       mTreeValidityStatus = TreeValidityStatus::NotValid;
      
       auto previousSize = mRewireQueue.getSize();
