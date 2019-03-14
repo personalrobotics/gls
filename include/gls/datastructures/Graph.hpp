@@ -109,6 +109,7 @@ public:
   CollisionStatus getCollisionStatus();
 
   /// Underlying state.
+  /// TODO (avk): why is this public?
   StatePtr mState;
 
 private:
@@ -153,6 +154,7 @@ public:
   CollisionStatus getCollisionStatus();
 
   /// The length of the edge using the space distance metric.
+  /// TODO (avk): Why is this public?
   double mLength;
 
 private:
