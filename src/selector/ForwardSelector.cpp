@@ -49,8 +49,8 @@ Path ForwardSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
 Path ForwardSelector::rankEdgesByUtilityInEvaluation(
     gls::datastructures::Path& path)
 {
-  return path;
   // Do nothing.
+  return path;
 }
 
 } // namespace selector

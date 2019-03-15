@@ -55,6 +55,7 @@ add_library(${PROJECT_NAME}
   src/event/Event.cpp
   src/event/ShortestPathEvent.cpp
   src/selector/Selector.cpp
+  src/selector/BackwardSelector.cpp
   src/selector/ForwardSelector.cpp
 )
 

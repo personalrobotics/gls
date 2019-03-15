@@ -35,12 +35,15 @@ public:
       gls::datastructures::Vertex target);
 
   /// Selects edges to evaluate from given path.
+  /// \param[in] path The list of vertices along the path.
+  /// The vertices are from leaf to source.
   virtual gls::datastructures::Path selectEdgesToEvaluate(
       gls::datastructures::Path path)
       = 0;
 
 protected:
   /// Ranks the edges.
+  /// \param[in] path The list of vertices along the path.
   virtual gls::datastructures::Path rankEdgesByUtilityInEvaluation(
       gls::datastructures::Path& path)
       = 0;
