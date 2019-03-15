@@ -130,6 +130,10 @@ private:
   double getGraphHeuristic(gls::datastructures::Vertex v);
 
   /// Evaluates an edge for collision.
+  gls::datastructures::CollisionStatus evaluateVertex(
+      gls::datastructures::Vertex v);
+
+  /// Evaluates an edge for collision.
   gls::datastructures::CollisionStatus evaluateEdge(
       const gls::datastructures::Edge& e);
 
@@ -171,11 +175,14 @@ private:
   /// Filename containing the roadmap.
   double mBestPathCost{0};
 
+  /// Connected Components.
+  std::size_t mConnectedComponents;
+
   /// Flag to check if the planner succeeded.
   PlannerStatus mPlannerStatus{PlannerStatus::NotSolved};
 
   /// Flag to check the validity of the search tree.
-  TreeValidityStatus mTreeValidityStatus;
+  TreeValidityStatus mTreeValidityStatus{TreeValidityStatus::Valid};
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;
