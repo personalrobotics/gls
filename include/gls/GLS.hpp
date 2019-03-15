@@ -130,6 +130,10 @@ private:
   double getGraphHeuristic(gls::datastructures::Vertex v);
 
   /// Evaluates an edge for collision.
+  gls::datastructures::CollisionStatus evaluateVertex(
+      gls::datastructures::Vertex v);
+
+  /// Evaluates an edge for collision.
   gls::datastructures::CollisionStatus evaluateEdge(
       const gls::datastructures::Edge& e);
 
@@ -178,7 +182,7 @@ private:
   PlannerStatus mPlannerStatus{PlannerStatus::NotSolved};
 
   /// Flag to check the validity of the search tree.
-  TreeValidityStatus mTreeValidityStatus;
+  TreeValidityStatus mTreeValidityStatus{TreeValidityStatus::Valid};
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;

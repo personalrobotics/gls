@@ -210,7 +210,7 @@ void GLS::clear()
   setBestPathCost(0);
   mNumberOfEdgeEvaluations = 0;
   mNumberOfEdgeRewires = 0;
-  mTreeValidityStatus = TreeValidityStatus::NotValid;
+  mTreeValidityStatus = TreeValidityStatus::Valid;
   mPlannerStatus = PlannerStatus::NotSolved;
 
   // TODO(avk): Clear the selector and event.
@@ -224,6 +224,14 @@ ompl::base::PlannerStatus GLS::solve(
 {
   // TODO (avk): Use ptc to terminate the search.
 
+  // Return if source or target are in collision.
+  if (evaluateVertex(mSourceVertex) == CollisionStatus::Collision)
+    return ompl::base::PlannerStatus::INVALID_START;
+
+  if (evaluateVertex(mTargetVertex) == CollisionStatus::Collision)
+    return ompl::base::PlannerStatus::INVALID_GOAL;
+
+  // Return if we do not have a single connected component.
   std::vector<int> component (boost::num_vertices (mGraph));
   mConnectedComponents = boost::connected_components (mGraph, &component[0]);
   if (mConnectedComponents != 1)
@@ -234,7 +242,7 @@ ompl::base::PlannerStatus GLS::solve(
 
   assert(mExtendQueue.isEmpty());
   auto previousSize = mExtendQueue.getSize();
-  mExtendQueue.addVertexWithValue(mSourceVertex, 0);
+  mExtendQueue.addVertexWithValue(mSourceVertex, mGraph[mSourceVertex].getEstimatedTotalCost());
   auto currentSize = mExtendQueue.getSize();
   assert(currentSize - previousSize == 1);
 
@@ -410,6 +418,21 @@ double GLS::getNumberOfEdgeRewires()
 }
 
 // ============================================================================
+CollisionStatus GLS::evaluateVertex(Vertex v)
+{
+  // Access the validity checker.
+  auto validityChecker = si_->getStateValidityChecker();
+  
+  auto state = mGraph[v].getState()->getOMPLState();
+
+  // Evaluate the state.
+  if (!validityChecker->isValid(state))
+    return CollisionStatus::Collision;
+
+  return CollisionStatus::Free;
+}
+
+// ============================================================================
 CollisionStatus GLS::evaluateEdge(const Edge& e)
 {
   mNumberOfEdgeEvaluations++;
@@ -514,7 +537,7 @@ void GLS::extendSearchTree()
         assert(v != mSourceVertex);
         mGraph[v].setVisitStatus(VisitStatus::Visited);
         assert(
-            mExtendQueue.hasVertexWithValue(v, mGraph[v].getCostToCome())
+            mExtendQueue.hasVertexWithValue(v, mGraph[v].getEstimatedTotalCost())
             == false);
       }
       else
@@ -541,10 +564,10 @@ void GLS::extendSearchTree()
         mGraph[previousParent].removeChild(v);
 
         // Remove the previous version of the vertex from possible queues.
-        if (mExtendQueue.hasVertexWithValue(v, oldCostToCome))
+        if (mExtendQueue.hasVertexWithValue(v, mGraph[v].getEstimatedTotalCost()))
         {
           auto previousSize = mExtendQueue.getSize();
-          mExtendQueue.removeVertexWithValue(v, oldCostToCome);
+          mExtendQueue.removeVertexWithValue(v, mGraph[v].getEstimatedTotalCost());
           auto currentSize = mExtendQueue.getSize();
           assert(previousSize - currentSize == 1);
         }
@@ -562,11 +585,11 @@ void GLS::extendSearchTree()
           {
             mGraph[*iterS].setVisitStatus(VisitStatus::NotVisited);
             subtree.emplace_back(*iterS);
-            if (mExtendQueue.hasVertexWithValue(*iterS, mGraph[*iterS].getCostToCome()))
+            if (mExtendQueue.hasVertexWithValue(*iterS, mGraph[*iterS].getEstimatedTotalCost()))
             {
               auto previousSize = mExtendQueue.getSize();
               mExtendQueue.removeVertexWithValue(
-                  *iterS, mGraph[*iterS].getCostToCome());
+                  *iterS, mGraph[*iterS].getEstimatedTotalCost());
               auto currentSize = mExtendQueue.getSize();
               assert(currentSize - previousSize == -1);
             }
@@ -585,7 +608,7 @@ void GLS::extendSearchTree()
       mGraph[u].addChild(v);
 
       auto previousSize = mExtendQueue.getSize();
-      mExtendQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
+      mExtendQueue.addVertexWithValue(v, mGraph[v].getEstimatedTotalCost());
       auto currentSize = mExtendQueue.getSize();
       assert(currentSize - previousSize == 1);
     }
@@ -631,10 +654,10 @@ void GLS::rewireSearchTree()
 
     // Remove from mExtendQueue.
     // TODO (avk): Can this happen?
-    if (mExtendQueue.hasVertexWithValue(v, mGraph[v].getCostToCome()))
+    if (mExtendQueue.hasVertexWithValue(v, mGraph[v].getEstimatedTotalCost()))
     {
       auto previousSize = mExtendQueue.getSize();
-      mExtendQueue.removeVertexWithValue(v, mGraph[v].getCostToCome());
+      mExtendQueue.removeVertexWithValue(v, mGraph[v].getEstimatedTotalCost());
       auto currentSize = mExtendQueue.getSize();
       assert(currentSize - previousSize == -1);
     }
@@ -686,7 +709,7 @@ void GLS::rewireSearchTree()
         continue;
 
       // If the parent is already in mExtendQueue, can be rewired later.
-      if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getCostToCome()))
+      if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getEstimatedTotalCost()))
         continue;
 
       assert(mRewireSet.find(u) == mRewireSet.end());
@@ -730,7 +753,7 @@ void GLS::rewireSearchTree()
     mGraph[p].addChild(u);
 
     auto previousSize = mExtendQueue.getSize();
-    mExtendQueue.addVertexWithValue(u, mGraph[u].getCostToCome());
+    mExtendQueue.addVertexWithValue(u, mGraph[u].getEstimatedTotalCost());
     auto currentSize = mExtendQueue.getSize();
     assert(currentSize - previousSize == 1);
 
@@ -767,7 +790,7 @@ void GLS::rewireSearchTree()
             assert(currentSize - previousSize == -1);
           }
 
-          if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getCostToCome()))
+          if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getEstimatedTotalCost()))
           {
             mGraph[v].setVisitStatus(VisitStatus::NotVisited);
             mGraph[v].setCostToCome(std::numeric_limits<double>::max());
@@ -775,9 +798,11 @@ void GLS::rewireSearchTree()
             continue;
           }
 
+          // Update the vertex.
           mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
           mGraph[v].setParent(u);
           mEvent->updateVertexProperties(v); // no need to cascade.
+          
           auto previousSize = mRewireQueue.getSize();
           mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
           auto currentSize = mRewireQueue.getSize();
@@ -787,6 +812,7 @@ void GLS::rewireSearchTree()
     }
   }
   mRewireSet.clear();
+  assert(mRewireQueue.isEmpty());
 }
 
 // ============================================================================
@@ -822,7 +848,12 @@ void GLS::evaluateSearchTree()
     {
       mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
       mTreeValidityStatus = TreeValidityStatus::NotValid;
+
+      // Let the old parent know that the child has been removed.
+      Vertex previousParent = mGraph[v].getParent();
+      mGraph[previousParent].removeChild(v);
      
+      // Add to the rewire queue.
       auto previousSize = mRewireQueue.getSize();
       mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
       auto currentSize = mRewireQueue.getSize();
