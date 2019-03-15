@@ -8,6 +8,8 @@
 #include <set>       // std::set
 #include <assert.h>  // debug
 
+#include <boost/graph/connected_components.hpp> // connected_components
+
 using gls::datastructures::CollisionStatus;
 using gls::datastructures::Edge;
 using gls::datastructures::EdgeIter;
@@ -222,6 +224,11 @@ ompl::base::PlannerStatus GLS::solve(
 {
   // TODO (avk): Use ptc to terminate the search.
 
+  std::vector<int> component (boost::num_vertices (mGraph));
+  mConnectedComponents = boost::connected_components (mGraph, &component[0]);
+  if (mConnectedComponents != 1)
+    return ompl::base::PlannerStatus::TIMEOUT;
+
   // Add the source vertex to the search tree with zero cost-to-come.
   mGraph[mSourceVertex].setVisitStatus(VisitStatus::Visited);
 
@@ -253,6 +260,9 @@ ompl::base::PlannerStatus GLS::solve(
   }
   else
   {
+    Edge uv = getEdge(mSourceVertex, mTargetVertex);
+    assert(mGraph[uv].getEvaluationStatus() == EvaluationStatus::Evaluated);
+    assert(mGraph[uv].getCollisionStatus() == CollisionStatus::Collision);
     OMPL_INFORM("No Solution Found.");
     return ompl::base::PlannerStatus::TIMEOUT;
   }
@@ -436,10 +446,9 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
     StatePtr midVertex(new gls::datastructures::State(mSpace));
     mSpace->interpolate(
         startState, endState, interpolationStep, midVertex->getOMPLState());
+
     if (!validityChecker->isValid(midVertex->getOMPLState()))
-    {
       return CollisionStatus::Collision;
-    }
   }
 
   // Edge is collision-free.
@@ -532,10 +541,13 @@ void GLS::extendSearchTree()
         mGraph[previousParent].removeChild(v);
 
         // Remove the previous version of the vertex from possible queues.
-        auto previousSize = mExtendQueue.getSize();
-        mExtendQueue.removeVertexWithValue(v, oldCostToCome);
-        auto currentSize = mExtendQueue.getSize();
-        assert(previousSize - currentSize == 1);
+        if (mExtendQueue.hasVertexWithValue(v, oldCostToCome))
+        {
+          auto previousSize = mExtendQueue.getSize();
+          mExtendQueue.removeVertexWithValue(v, oldCostToCome);
+          auto currentSize = mExtendQueue.getSize();
+          assert(previousSize - currentSize == 1);
+        }
 
         // Cascade the updates to all the descendents.
         // Replace this with getDescendents() function.
@@ -686,7 +698,7 @@ void GLS::rewireSearchTree()
       {
         if (mGraph[v].getCostToCome() > mGraph[u].getCostToCome() + edgeLength
             || (mGraph[v].getCostToCome()
-                    > mGraph[u].getCostToCome() + edgeLength
+                    == mGraph[u].getCostToCome() + edgeLength
                 && u < mGraph[v].getParent()))
         {
           mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
@@ -717,14 +729,10 @@ void GLS::rewireSearchTree()
     Vertex p = mGraph[u].getParent();
     mGraph[p].addChild(u);
 
-    // Add u for further extension.
-    if (!mEvent->isTriggered(u))
-    {
-      auto previousSize = mExtendQueue.getSize();
-      mExtendQueue.addVertexWithValue(u, mGraph[u].getCostToCome());
-      auto currentSize = mExtendQueue.getSize();
-      assert(currentSize - previousSize == 1);
-    }
+    auto previousSize = mExtendQueue.getSize();
+    mExtendQueue.addVertexWithValue(u, mGraph[u].getCostToCome());
+    auto currentSize = mExtendQueue.getSize();
+    assert(currentSize - previousSize == 1);
 
     // Check if u can be a better parent to the vertices being rewired.
     NeighborIter ni, ni_end;
@@ -784,6 +792,9 @@ void GLS::rewireSearchTree()
 // ============================================================================
 void GLS::evaluateSearchTree()
 {
+  if (mExtendQueue.isEmpty())
+    return;
+
   Vertex bestVertex = mExtendQueue.getTopVertex();
   Path edgesToEvaluate
       = mSelector->selectEdgesToEvaluate(getPathToSource(bestVertex));

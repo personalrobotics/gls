@@ -171,6 +171,9 @@ private:
   /// Filename containing the roadmap.
   double mBestPathCost{0};
 
+  /// Connected Components.
+  std::size_t mConnectedComponents;
+
   /// Flag to check if the planner succeeded.
   PlannerStatus mPlannerStatus{PlannerStatus::NotSolved};
 
