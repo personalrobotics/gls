@@ -1,7 +1,5 @@
 #include "gls/selector/BackwardSelector.hpp"
 
-#include <algorithm> // std::reverse
-
 namespace gls {
 namespace selector {
 
