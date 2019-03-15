@@ -127,7 +127,7 @@ public:
   const std::string mFilename;
 
   RoadmapFromFile(const ompl::base::StateSpacePtr space, std::string filename)
-    : mSpace(space), mFilename(filename)
+    : mFilename(filename), mSpace(space)
   {
     mDim = mSpace->getDimension();
   }

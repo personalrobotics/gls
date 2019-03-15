@@ -26,6 +26,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+// roscpp
+#include "ros/ros.h"
+
 // Custom header files
 #include "gls/GLS.hpp"
 
@@ -104,13 +107,14 @@ make_state(const ompl::base::StateSpacePtr space, double x, double y)
 /// The main function.
 int main(int argc, char *argv[])
 {
+  ros::init(argc, argv, "test2d_image");
   po::options_description desc("2D Map Planner Options");
   desc.add_options()
       ("help,h", "produce help message")
       ("source,s", po::value<std::vector<float> >()->multitoken(), "source configuration")
       ("target,t", po::value<std::vector<float> >()->multitoken(), "target configuration")
-      ("graph,g", po::value<std::string>()->required(), "graph location")
-      ("obstacle,o", po::value<std::string>()->required(), "obstacle location")
+      ("graph,g", po::value<std::string>()->required(), "graph specification")
+      ("obstacle,o", po::value<std::string>()->required(), "obstacle image (for visualization)")
   ;
 
   // Read arguments

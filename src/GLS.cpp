@@ -591,7 +591,7 @@ void GLS::extendSearchTree()
               mExtendQueue.removeVertexWithValue(
                   *iterS, mGraph[*iterS].getEstimatedTotalCost());
               auto currentSize = mExtendQueue.getSize();
-              assert(currentSize - previousSize == -1);
+              assert(previousSize - currentSize == 1);
             }
           }
           children.clear();
@@ -659,7 +659,7 @@ void GLS::rewireSearchTree()
       auto previousSize = mExtendQueue.getSize();
       mExtendQueue.removeVertexWithValue(v, mGraph[v].getEstimatedTotalCost());
       auto currentSize = mExtendQueue.getSize();
-      assert(currentSize - previousSize == -1);
+      assert(previousSize - currentSize == 1);
     }
 
     // Assign default values
@@ -787,7 +787,7 @@ void GLS::rewireSearchTree()
             auto previousSize = mRewireQueue.getSize();
             mRewireQueue.removeVertexWithValue(v, mGraph[v].getCostToCome());
             auto currentSize = mRewireQueue.getSize();
-            assert(currentSize - previousSize == -1);
+            assert(previousSize - currentSize == 1);
           }
 
           if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getEstimatedTotalCost()))
