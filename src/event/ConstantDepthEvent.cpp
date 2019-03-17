@@ -10,17 +10,16 @@ using gls::datastructures::Vertex;
 using gls::datastructures::SearchQueue;
 
 //==============================================================================
-ConstantDepthEvent::ConstantDepthEvent()
+ConstantDepthEvent::ConstantDepthEvent(std::size_t depth)
+: mDepthThreshold(depth)
 {
   // Do nothing.
 }
 
 //==============================================================================
-bool ConstantDepthEvent::isTriggered(const Vertex vertex) const
+bool ConstantDepthEvent::isTriggered(const Vertex vertex)
 {
-  std::size_t depth = getDepth(vertex);
-
-  if (depth == mDepthThreshold)
+  if (getDepth(vertex) == mDepthThreshold)
     return true;
 
   if (vertex == mTargetVertex)
@@ -59,14 +58,13 @@ void ConstantDepthEvent::updateVertexProperties(SearchQueue searchQueue)
 }
 
 //==============================================================================
-double ConstantDepthEvent::getDepth(Vertex vertex)
+std::size_t ConstantDepthEvent::getDepth(Vertex vertex)
 {
   auto iterM = mVertexDepthMap.find(vertex);
+  assert(iterM == mVertexDepthMap.end());
 
-  if (iterM == mVertexDepthMap.end())
-    throw std::invalid_argument("Vertex has not been registered.")
-
-  return mVertexDepthMap(*iterM);
+  auto depth = mVertexDepthMap[vertex];
+  return depth;
 }
 
 //==============================================================================
@@ -76,11 +74,13 @@ void ConstantDepthEvent::addVertexToMap(Vertex vertex)
   assert(mVertexDepthMap.find(vertex) == mVertexDepthMap.end());
 
   // Determine the parent depth.
-  auto iterM = mVertexDepthMap.find(mGraph[vertex].getParent());
-  assert(iterM != mVertexDepthMap.end());
+  Vertex parent = mGraph[vertex].getParent();
+
+  // Ensure the parent exists in the map.
+  assert(mVertexDepthMap.find(parent) != mVertexDepthMap.end());
 
   // Increment depth by 1 over the parent's depth and add to map.
-  mVertexDepthMap.emplace(vertex, mVertexDepthMap(*iterM) + 1);
+  mVertexDepthMap.emplace(vertex, mVertexDepthMap[parent] + 1);
 }
 
 } // namespace event

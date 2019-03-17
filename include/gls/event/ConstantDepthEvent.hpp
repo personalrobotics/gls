@@ -17,7 +17,7 @@ public:
   explicit ConstantDepthEvent(std::size_t depth);
 
   /// Documentation inherited.
-  bool isTriggered(const gls::datastructures::Vertex vertex) const override;
+  bool isTriggered(const gls::datastructures::Vertex vertex) override;
 
   /// Documentation inherited.
   void updateVertexProperties(
@@ -30,7 +30,7 @@ public:
 
 private:
   /// Get the depth of the vertex.
-  double getDepth(gls::datastructures::Vertex vertex);
+  std::size_t getDepth(gls::datastructures::Vertex vertex);
 
   /// Add vertex to the map.
   void addVertexToMap(gls::datastructures::Vertex vertex);

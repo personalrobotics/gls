@@ -43,7 +43,7 @@ public:
 
   /// Return true if the event is triggered.
   /// \param[in] vertex Vertex that might cause the trigger.
-  virtual bool isTriggered(const gls::datastructures::Vertex vertex) const = 0;
+  virtual bool isTriggered(const gls::datastructures::Vertex vertex) = 0;
 
   /// Update vertex properties
   /// Concrete classes specify the appropriate update rules.
