@@ -15,7 +15,7 @@ public:
   AlternateSelector();
 
   /// Documentation inherited.
-  gls::datastructures::Path selectEdgesToEvaluate(
+  gls::datastructures::Edge selectEdgeToEvaluate(
       gls::datastructures::Path path) override;
 
 private:

@@ -14,7 +14,7 @@ public:
   BackwardSelector();
 
   /// Documentation inherited.
-  gls::datastructures::Path selectEdgesToEvaluate(
+  gls::datastructures::Edge selectEdgeToEvaluate(
       gls::datastructures::Path path) override;
 };
 

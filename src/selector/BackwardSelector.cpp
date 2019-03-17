@@ -5,9 +5,7 @@ namespace selector {
 
 using gls::datastructures::Edge;
 using gls::datastructures::EvaluationStatus;
-using gls::datastructures::Graph;
 using gls::datastructures::Path;
-using gls::datastructures::Vertex;
 
 //==============================================================================
 BackwardSelector::BackwardSelector()
@@ -16,14 +14,9 @@ BackwardSelector::BackwardSelector()
 }
 
 //==============================================================================
-Path BackwardSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
+Edge BackwardSelector::selectEdgeToEvaluate(Path path)
 {
-  // If the path is to the target, evaluate the entire path.
-  if (path[0] == mTargetVertex)
-    return path;
-
-  // Else return the first unevaluated edge closest to target.
-  Path edgesToEvaluate;
+  // Return the first unevaluated edge closest to target.
   for (std::size_t i = 0; i < path.size() - 1; ++i)
   {
     Edge uv;
@@ -31,13 +24,8 @@ Path BackwardSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
     boost::tie(uv, edgeExists) = edge(path[i + 1], path[i], mGraph);
 
     if (mGraph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
-    {
-      edgesToEvaluate.emplace_back(path[i + 1]);
-      edgesToEvaluate.emplace_back(path[i]);
-      break;
-    }
+      return uv;
   }
-  return edgesToEvaluate;
 }
 
 } // namespace selector
