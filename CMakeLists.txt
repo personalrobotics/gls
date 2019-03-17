@@ -54,6 +54,7 @@ add_library(${PROJECT_NAME}
   src/GLS.cpp
   src/event/Event.cpp
   src/event/ShortestPathEvent.cpp
+  src/event/ConstantDepthEvent.cpp
   src/selector/Selector.cpp
   src/selector/AlternateSelector.cpp
   src/selector/BackwardSelector.cpp

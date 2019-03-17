@@ -18,9 +18,12 @@ ConstantDepthEvent::ConstantDepthEvent()
 //==============================================================================
 bool ConstantDepthEvent::isTriggered(const Vertex vertex) const
 {
-  double depth = getDepth(vertex);
+  std::size_t depth = getDepth(vertex);
 
   if (depth == mDepthThreshold)
+    return true;
+
+  if (vertex == mTargetVertex)
     return true;
 
   return false;
@@ -63,7 +66,7 @@ double ConstantDepthEvent::getDepth(Vertex vertex)
   if (iterM == mVertexDepthMap.end())
     throw std::invalid_argument("Vertex has not been registered.")
 
-        return mVertexDepthMap(*iterM);
+  return mVertexDepthMap(*iterM);
 }
 
 //==============================================================================

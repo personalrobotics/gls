@@ -9,11 +9,12 @@ namespace gls {
 namespace event {
 
 /// Event that triggers when the search tree reaches a particular depth.
+/// Additionally, the event also triggers when the vertex is the target.
 class ConstantDepthEvent : public Event
 {
 public:
   /// Constructor.
-  explicit ConstantDepthEvent(double depth);
+  explicit ConstantDepthEvent(std::size_t depth);
 
   /// Documentation inherited.
   bool isTriggered(const gls::datastructures::Vertex vertex) const override;
@@ -35,10 +36,10 @@ private:
   void addVertexToMap(gls::datastructures::Vertex vertex);
 
   /// The threshold over depth.
-  double mDepthThreshold;
+  std::size_t mDepthThreshold;
 
   /// The map from vertex to depth in the search tree.
-  std::unordered_map<gls::datastructures::Vertex, double> mVertexDepthMap;
+  std::unordered_map<gls::datastructures::Vertex, std::size_t> mVertexDepthMap;
 };
 
 } // namespace event
