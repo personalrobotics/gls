@@ -40,13 +40,5 @@ Path BackwardSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
   return edgesToEvaluate;
 }
 
-//==============================================================================
-Path BackwardSelector::rankEdgesByUtilityInEvaluation(
-    gls::datastructures::Path& path)
-{
-  // Do nothing.
-  return path;
-}
-
 } // namespace selector
 } // namespace gls

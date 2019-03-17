@@ -27,10 +27,6 @@ public:
   gls::datastructures::Path selectEdgesToEvaluate(
       gls::datastructures::Path path) override;
 
-  /// Documentation inherited.
-  gls::datastructures::Path rankEdgesByUtilityInEvaluation(
-      gls::datastructures::Path& path) override;
-
 protected:
   /// Map that stores the priors.
   const edgeToPriorMap mPriorMap;

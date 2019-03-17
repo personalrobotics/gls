@@ -18,10 +18,6 @@ public:
   gls::datastructures::Path selectEdgesToEvaluate(
       gls::datastructures::Path path) override;
 
-  /// Documentation inherited.
-  gls::datastructures::Path rankEdgesByUtilityInEvaluation(
-      gls::datastructures::Path& path) override;
-
 private:
   /// Iteration index to switch between forward and backward.
   bool mUseForwardSelector{false};

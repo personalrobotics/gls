@@ -42,12 +42,6 @@ public:
       = 0;
 
 protected:
-  /// Ranks the edges.
-  /// \param[in] path The list of vertices along the path.
-  virtual gls::datastructures::Path rankEdgesByUtilityInEvaluation(
-      gls::datastructures::Path& path)
-      = 0;
-
   /// Reference to the graph.
   gls::datastructures::Graph mGraph;
 

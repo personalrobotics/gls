@@ -20,13 +20,5 @@ Path FailFastSelector::selectEdgesToEvaluate(Path path)
   return path;
 }
 
-//==============================================================================
-Path FailFastSelector::rankEdgesByUtilityInEvaluation(
-    gls::datastructures::Path& path)
-{
-  // Do nothing.
-  return path;
-}
-
 } // namespace selector
 } // namespace gls

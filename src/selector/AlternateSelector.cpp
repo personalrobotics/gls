@@ -32,13 +32,5 @@ Path AlternateSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
     return mBackwardSelector->selectEdgesToEvaluate(path);
 }
 
-//==============================================================================
-Path AlternateSelector::rankEdgesByUtilityInEvaluation(
-    gls::datastructures::Path& path)
-{
-  // Do nothing.
-  return path;
-}
-
 } // namespace selector
 } // namespace gls
