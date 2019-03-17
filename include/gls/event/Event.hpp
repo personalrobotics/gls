@@ -48,18 +48,16 @@ public:
   /// Update vertex properties
   /// Concrete classes specify the appropriate update rules.
   /// \param[in] vertex Vertex whose properties need to be updated.
-  /// \param[in] cascade Set to true if the update needs to be cascaded
   /// downstream.
   virtual void updateVertexProperties(
-      gls::datastructures::Vertex vertex,
-      vertexUpdateOption cascade = vertexUpdateOption::SingleUpdate)
+      gls::datastructures::Vertex vertex)
       = 0;
 
   /// Update vertex properties
   /// Concrete classes specify the appropriate update rules.
   /// \param[in] vertexQueue Queue of vertices whose subtrees need update.
   virtual void updateVertexProperties(
-      gls::datastructures::SearchQueue vertexQueue)
+      gls::datastructures::SearchQueue& vertexQueue)
       = 0;
 
 protected:

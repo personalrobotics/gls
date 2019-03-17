@@ -23,16 +23,16 @@ bool ShortestPathEvent::isTriggered(const Vertex vertex)
 }
 
 //==============================================================================
-void ShortestPathEvent::updateVertexProperties(
-    Vertex /*vertex*/, vertexUpdateOption /*cascade*/)
+void ShortestPathEvent::updateVertexProperties(Vertex /*vertex*/)
 {
   // Do nothing.
 }
 
 //==============================================================================
-void ShortestPathEvent::updateVertexProperties(SearchQueue /*queue*/)
+void ShortestPathEvent::updateVertexProperties(SearchQueue& queue)
 {
-  // Do nothing.
+	// Clear the queue since there is nothing to update.
+	queue.clear();
 }
 
 } // namespace event

@@ -29,8 +29,7 @@ bool ConstantDepthEvent::isTriggered(const Vertex vertex)
 }
 
 //==============================================================================
-void ConstantDepthEvent::updateVertexProperties(
-    Vertex vertex, vertexUpdateOption cascade)
+void ConstantDepthEvent::updateVertexProperties(Vertex vertex)
 {
   // Remove vertex if it already exists in the map.
   auto iterM = mVertexDepthMap.find(vertex);
@@ -42,7 +41,7 @@ void ConstantDepthEvent::updateVertexProperties(
 }
 
 //==============================================================================
-void ConstantDepthEvent::updateVertexProperties(SearchQueue searchQueue)
+void ConstantDepthEvent::updateVertexProperties(SearchQueue& searchQueue)
 {
   Vertex vertex = searchQueue.popTopVertex();
   updateVertexProperties(vertex);
