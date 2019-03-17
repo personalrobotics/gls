@@ -163,7 +163,7 @@ void GLS::setupPreliminaries()
   mEvent->setup(mGraph, mSourceVertex, mTargetVertex);
 
   // Setup the selector.
-  mSelector->setup(mGraph, mSourceVertex, mTargetVertex);
+  mSelector->setup(mGraph);
 }
 
 // ============================================================================
@@ -822,44 +822,40 @@ void GLS::evaluateSearchTree()
     return;
 
   Vertex bestVertex = mExtendQueue.getTopVertex();
-  Path edgesToEvaluate
-      = mSelector->selectEdgesToEvaluate(getPathToSource(bestVertex));
+  Edge edgeToEvaluate
+      = mSelector->selectEdgeToEvaluate(getPathToSource(bestVertex));
 
-  for (std::size_t i = 0; i < edgesToEvaluate.size() - 1; ++i)
+  Vertex u = source(edgeToEvaluate, mGraph);
+  Vertex v = target(edgeToEvaluate, mGraph);
+  Edge uv = getEdge(u, v);
+
+  // Assume that the selector might return edges already evaluated.
+  assert(mGraph[uv].getEvaluationStatus() != EvaluationStatus::Evaluated);
+
+  // Evaluate the edge.
+  mGraph[uv].setEvaluationStatus(EvaluationStatus::Evaluated);
+  if (evaluateEdge(uv) == CollisionStatus::Free)
   {
-    Vertex u = edgesToEvaluate[i];
-    Vertex v = edgesToEvaluate[i + 1];
-    Edge uv = getEdge(u, v);
+    mGraph[uv].setCollisionStatus(CollisionStatus::Free);
+    auto previousSize = mUpdateQueue.getSize();
+    mUpdateQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
+    auto currentSize = mUpdateQueue.getSize();
+    assert(currentSize - previousSize == 1);
+  }
+  else
+  {
+    mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
+    mTreeValidityStatus = TreeValidityStatus::NotValid;
 
-    // Assume that the selector might return edges already evaluated.
-    if (mGraph[uv].getEvaluationStatus() == EvaluationStatus::Evaluated)
-      continue;
-
-    mGraph[uv].setEvaluationStatus(EvaluationStatus::Evaluated);
-    if (evaluateEdge(uv) == CollisionStatus::Free)
-    {
-      mGraph[uv].setCollisionStatus(CollisionStatus::Free);
-      auto previousSize = mUpdateQueue.getSize();
-      mUpdateQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
-      auto currentSize = mUpdateQueue.getSize();
-      assert(currentSize - previousSize == 1);
-    }
-    else
-    {
-      mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
-      mTreeValidityStatus = TreeValidityStatus::NotValid;
-
-      // Let the old parent know that the child has been removed.
-      Vertex previousParent = mGraph[v].getParent();
-      mGraph[previousParent].removeChild(v);
-     
-      // Add to the rewire queue.
-      auto previousSize = mRewireQueue.getSize();
-      mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
-      auto currentSize = mRewireQueue.getSize();
-      assert(currentSize - previousSize == 1);
-      break;
-    }
+    // Let the old parent know that the child has been removed.
+    Vertex previousParent = mGraph[v].getParent();
+    mGraph[previousParent].removeChild(v);
+   
+    // Add to the rewire queue.
+    auto previousSize = mRewireQueue.getSize();
+    mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
+    auto currentSize = mRewireQueue.getSize();
+    assert(currentSize - previousSize == 1);
   }
 
   if (mTreeValidityStatus == TreeValidityStatus::Valid
