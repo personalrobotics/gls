@@ -49,9 +49,7 @@ public:
   /// Concrete classes specify the appropriate update rules.
   /// \param[in] vertex Vertex whose properties need to be updated.
   /// downstream.
-  virtual void updateVertexProperties(
-      gls::datastructures::Vertex vertex)
-      = 0;
+  virtual void updateVertexProperties(gls::datastructures::Vertex vertex) = 0;
 
   /// Update vertex properties
   /// Concrete classes specify the appropriate update rules.
