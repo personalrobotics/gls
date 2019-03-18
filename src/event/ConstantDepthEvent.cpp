@@ -41,19 +41,22 @@ void ConstantDepthEvent::updateVertexProperties(Vertex vertex)
 }
 
 //==============================================================================
-void ConstantDepthEvent::updateVertexProperties(SearchQueue& searchQueue)
+void ConstantDepthEvent::updateVertexProperties(SearchQueue& updateQueue)
 {
-  Vertex vertex = searchQueue.popTopVertex();
-  updateVertexProperties(vertex);
+	while (!updateQueue.isEmpty())
+	{
+		// Update the top vertex.
+		Vertex vertex = searchQueue.popTopVertex();	
+		updateVertexProperties(vertex);
 
-  auto children = mGraph[vertex].getChildren();
-  for (auto iterV = children.begin(); iterV != children.end(); ++iterV)
-  {
-    if (searchQueue.hasVertexWithValue(*iterV, mGraph[*iterV].getCostToCome()))
-      continue;
-
-    updateVertexProperties(*iterV);
-  }
+		auto children = mGraph[vertex].getChildren();
+	  for (auto iterV = children.begin(); iterV != children.end(); ++iterV)
+	  {
+	  	// Add the children into the queue for update.
+	    assert(!searchQueue.hasVertexWithValue(*iterV, mGraph[*iterV].getCostToCome()));
+    	updateQueue.addVertexWithValue(*iterV, mGraph[*iterV].getCostToCome());
+	  }
+	}
 }
 
 //==============================================================================
