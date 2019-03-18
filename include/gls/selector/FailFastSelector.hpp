@@ -29,7 +29,7 @@ public:
 
 protected:
   /// Evaluate the prior of given edge.
-  double evaluatePrior(gls::datastructures::Edge edge);
+  double getPrior(gls::datastructures::Edge edge);
 
   /// Map that stores the priors.
   edgeToPriorMap mPriorMap;

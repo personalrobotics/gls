@@ -21,8 +21,8 @@ Edge FailFastSelector::selectEdgeToEvaluate(Path path)
   // Priority Function: g-value
   auto cmp = [&](const Edge& left, const Edge& right)
   {
-    double estimateLeft = evaluatePrior(left);
-    double estimateRight = evaluatePrior(right);
+    double estimateLeft = getPrior(left);
+    double estimateRight = getPrior(right);
 
     if (estimateRight > estimateLeft)
       return true;
@@ -51,7 +51,7 @@ Edge FailFastSelector::selectEdgeToEvaluate(Path path)
 }
 
 //==============================================================================
-double FailFastSelector::evaluatePrior(Edge edge)
+double FailFastSelector::getPrior(Edge edge)
 {
   Vertex u = source(edge, mGraph);
   Vertex v = target(edge, mGraph);
