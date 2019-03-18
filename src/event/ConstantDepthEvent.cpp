@@ -1,7 +1,5 @@
 #include "gls/event/ConstantDepthEvent.hpp"
 
-#include <iostream> // std::invalid_argument
-
 namespace gls {
 namespace event {
 
