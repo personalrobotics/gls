@@ -21,7 +21,7 @@ class SubPathExistenceEvent : public Event
 {
 public:
   /// Constructor.
-  SubPathExistence(edgeToPriorMap& priorMap, double existenceThreshold);
+  SubPathExistenceEvent(edgeToPriorMap& priorMap, double existenceThreshold);
 
   /// Documentation inherited.
   bool isTriggered(const gls::datastructures::Vertex vertex) override;

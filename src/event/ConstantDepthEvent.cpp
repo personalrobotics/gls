@@ -3,6 +3,9 @@
 namespace gls {
 namespace event {
 
+using gls::datastructures::CollisionStatus;
+using gls::datastructures::Edge;
+using gls::datastructures::EvaluationStatus;
 using gls::datastructures::Graph;
 using gls::datastructures::Vertex;
 using gls::datastructures::SearchQueue;
