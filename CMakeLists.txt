@@ -20,7 +20,6 @@ endif()
 find_package(catkin REQUIRED COMPONENTS roscpp)
 find_package(ompl REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options system)
-find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 catkin_package(
