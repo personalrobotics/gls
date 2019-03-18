@@ -44,14 +44,14 @@ void ConstantDepthEvent::updateVertexProperties(SearchQueue& updateQueue)
 	while (!updateQueue.isEmpty())
 	{
 		// Update the top vertex.
-		Vertex vertex = searchQueue.popTopVertex();	
+		Vertex vertex = updateQueue.popTopVertex();	
 		updateVertexProperties(vertex);
 
 		auto children = mGraph[vertex].getChildren();
 	  for (auto iterV = children.begin(); iterV != children.end(); ++iterV)
 	  {
 	  	// Add the children into the queue for update.
-	    assert(!searchQueue.hasVertexWithValue(*iterV, mGraph[*iterV].getCostToCome()));
+	    assert(!updateQueue.hasVertexWithValue(*iterV, mGraph[*iterV].getCostToCome()));
     	updateQueue.addVertexWithValue(*iterV, mGraph[*iterV].getCostToCome());
 	  }
 	}

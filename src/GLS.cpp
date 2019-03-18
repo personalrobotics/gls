@@ -602,6 +602,8 @@ void GLS::extendSearchTree()
       mGraph[v].setParent(u);
       mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
       mGraph[v].setHeuristic(getGraphHeuristic(v));
+
+      // Update the vertex property associated with the event.
       mEvent->updateVertexProperties(v);
 
       // Add it to its new siblings
@@ -620,12 +622,16 @@ void GLS::updateSearchTree()
 {
   if (mTreeValidityStatus == TreeValidityStatus::Valid)
   {
-    // TODO (avk): What about updating the data held by event/selector?
-    return;
+    // Update the vertex properties of the entire search tree.
+    mEvent->updateVertexProperties(mUpdateQueue);
+    assert(mUpdateQueue.isEmpty());
   }
   else
   {
+    // Rewire the search tree.
     rewireSearchTree();
+
+    // With successful rewire, mark the tree to be valid again.
     mTreeValidityStatus = TreeValidityStatus::Valid;
   }
 }
@@ -724,9 +730,12 @@ void GLS::rewireSearchTree()
                     == mGraph[u].getCostToCome() + edgeLength
                 && u < mGraph[v].getParent()))
         {
+          // Update the vertex.
           mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
           mGraph[v].setParent(u);
-          mEvent->updateVertexProperties(v); // no need to cascade.
+
+          // Update the vertex property associated with the event.
+          mEvent->updateVertexProperties(v);
         }
       }
     }
@@ -801,7 +810,9 @@ void GLS::rewireSearchTree()
           // Update the vertex.
           mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
           mGraph[v].setParent(u);
-          mEvent->updateVertexProperties(v); // no need to cascade.
+
+          // Update the vertex property associated with the event.
+          mEvent->updateVertexProperties(v);
           
           auto previousSize = mRewireQueue.getSize();
           mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
@@ -836,7 +847,10 @@ void GLS::evaluateSearchTree()
   mGraph[uv].setEvaluationStatus(EvaluationStatus::Evaluated);
   if (evaluateEdge(uv) == CollisionStatus::Free)
   {
+    // Set the edge collision status.
     mGraph[uv].setCollisionStatus(CollisionStatus::Free);
+
+    // Populate the queue to update the search tree.
     auto previousSize = mUpdateQueue.getSize();
     mUpdateQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
     auto currentSize = mUpdateQueue.getSize();
