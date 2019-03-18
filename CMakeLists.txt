@@ -66,13 +66,13 @@ add_library(${PROJECT_NAME}
 #================================================================================
 
 # Correctness Test Script
-# add_executable(test2d_image examples/test2d_image.cpp)
-# target_link_libraries(test2d_image ${PROJECT_NAME} ${OpenCV_LIBS})
-# install(TARGETS test2d_image RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-# 
-# add_executable(test_cycle examples/test_cycle.cpp)
-# target_link_libraries(test_cycle ${PROJECT_NAME} ${OpenCV_LIBS})
-# install(TARGETS test_cycle RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+add_executable(test2d_image examples/test2d_image.cpp)
+target_link_libraries(test2d_image ${PROJECT_NAME} ${OpenCV_LIBS})
+install(TARGETS test2d_image RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+add_executable(test_cycle examples/test_cycle.cpp)
+target_link_libraries(test_cycle ${PROJECT_NAME} ${OpenCV_LIBS})
+install(TARGETS test_cycle RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #================================================================================
 # Installation
