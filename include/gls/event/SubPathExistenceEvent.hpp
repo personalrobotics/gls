@@ -40,6 +40,12 @@ private:
   /// Add vertex to the map.
   void addVertexToMap(gls::datastructures::Vertex vertex);
 
+  /// Evaluate the prior of given edge.
+  double getPrior(gls::datastructures::Edge edge);
+
+  /// Map that stores the priors.
+  edgeToPriorMap mPriorMap;
+
   /// The threshold over depth.
   std::size_t mExistenceThreshold;
 
