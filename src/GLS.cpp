@@ -86,6 +86,7 @@ void GLS::setupPreliminaries()
 {
   // Issue a warning if mConnectionRadius = 0.
 
+  // TODO (avk): Should I kill these pointers manually?
   StatePtr sourceState(new gls::datastructures::State(mSpace));
   mSpace->copyState(sourceState->getOMPLState(), pdef_->getStartState(0));
 
