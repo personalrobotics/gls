@@ -325,6 +325,23 @@ Path GLS::getPathToSource(Vertex u)
 }
 
 // ============================================================================
+bool GLS::foundPathToGoal()
+{
+  if (mGraph[mTargetVertex].getVisitStatus() == VisitStatus::NotVisited)
+    return false;
+
+  Path pathToGoal = getPathToSource(mTargetVertex);
+  for (std::size_t i = 0; i < pathToGoal.size() - 1; ++i)
+  {
+    Edge e = getEdge(pathToGoal[i+1], pathToGoal[i]);
+    if (mGraph[e].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
+      return false;
+  }
+
+  return true;
+}
+
+// ============================================================================
 // TODO (avk): I should be able to set the heuristic function from the demo
 // script. Create a Heuristic Class and send it in. Have a default heuristic
 // if nothing has been set.
@@ -833,12 +850,13 @@ void GLS::evaluateSearchTree()
     return;
 
   Vertex bestVertex = mExtendQueue.getTopVertex();
-  Edge edgeToEvaluate
+  Edge uv
       = mSelector->selectEdgeToEvaluate(getPathToSource(bestVertex));
 
-  Vertex u = source(edgeToEvaluate, mGraph);
-  Vertex v = target(edgeToEvaluate, mGraph);
-  Edge uv = getEdge(u, v);
+  std::cout << uv << std::endl;
+
+  Vertex u = source(uv, mGraph);
+  Vertex v = target(uv, mGraph);
 
   // Assume that the selector might return edges already evaluated.
   assert(mGraph[uv].getEvaluationStatus() != EvaluationStatus::Evaluated);
@@ -847,6 +865,7 @@ void GLS::evaluateSearchTree()
   mGraph[uv].setEvaluationStatus(EvaluationStatus::Evaluated);
   if (evaluateEdge(uv) == CollisionStatus::Free)
   {
+    std::cout << __LINE__ << " " << __FILE__ << std::endl;
     // Set the edge collision status.
     mGraph[uv].setCollisionStatus(CollisionStatus::Free);
 
@@ -858,6 +877,7 @@ void GLS::evaluateSearchTree()
   }
   else
   {
+    std::cout << __LINE__ << " " << __FILE__ << std::endl;
     mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
     mTreeValidityStatus = TreeValidityStatus::NotValid;
 
@@ -872,11 +892,15 @@ void GLS::evaluateSearchTree()
     assert(currentSize - previousSize == 1);
   }
 
-  if (mTreeValidityStatus == TreeValidityStatus::Valid
-      && bestVertex == mTargetVertex)
+  if (bestVertex == mTargetVertex && mTreeValidityStatus == TreeValidityStatus::Valid)
   {
-    // Planning problem has been solved!
-    mPlannerStatus = PlannerStatus::Solved;
+    std::cout << __LINE__ << " " << __FILE__ << std::endl;
+    if (foundPathToGoal())
+    {
+      std::cout << __LINE__ << " " << __FILE__ << std::endl;
+      // Planning problem has been solved!
+      mPlannerStatus = PlannerStatus::Solved;
+    }
   }
 
   // Based on the evaluation, update the search tree.
