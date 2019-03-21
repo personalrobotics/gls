@@ -761,7 +761,6 @@ void GLS::rewireSearchTree()
   }
 
   // 3. Start Rewiring in the cost space
-  mRewireQueue.printQueue();
   while (!mRewireQueue.isEmpty())
   {
     Vertex u = mRewireQueue.popTopVertex();
