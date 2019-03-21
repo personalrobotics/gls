@@ -501,17 +501,7 @@ void GLS::extendSearchTree()
     // Check if the popping the top vertex triggers the event.
     Vertex u = mExtendQueue.getTopVertex();
     if (mEvent->isTriggered(u))
-    {
-      std::cout << "Triggered with " << u << std::endl;
-      Path p = getPathToSource(u);
-      for (auto& vert : p)
-      {
-        std::cout << vert << " ";
-      }
-      std::cout << std::endl;
-      // std::cin.get();
       break;
-    }
 
     // Pop the top vertex in the queue to extend the search tree.
     u = mExtendQueue.popTopVertex();
@@ -525,33 +515,20 @@ void GLS::extendSearchTree()
 
     // Get the neighbors and extend.
     // TODO (avk): Have a wrapper in case the implicit vs explicit.
-
-    if (u == 81 || u == 41)
-      std::cout << "Considering the kids of " << u << std::endl;    
     NeighborIter ni, ni_end;
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
          ++ni)
     {
       Vertex v = *ni;
-      if (u == 81 || u == 41 || v == 185)
-        std::cout << v << "considering parent " << u << ". ";
 
       // If the successor has been previously marked to be in collision,
       // continue to the next successor.
       if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision)
-      {
-        if (u == 81 || u == 41 || v == 185)
-          std::cout << "in collision" << std::endl;
         continue;
-      }
 
       // Enforce prevention of loops.
       if (v == mGraph[u].getParent())
-      {
-        if (u == 81 || u == 41 || v == 185)
-          std::cout << "parent" << std::endl;
         continue;
-      }
 
       // Never come back to the source.
       if (v == mSourceVertex)
@@ -563,17 +540,11 @@ void GLS::extendSearchTree()
       // If the edge has been previously marked to be in collision,
       // continue to the next successor.
       if (mGraph[uv].getCollisionStatus() == CollisionStatus::Collision)
-      {
-        if (u == 81 || u == 41 || v == 185)
-          std::cout << "edge in collision" << std::endl;
         continue;
-      }
 
       double edgeLength = mGraph[uv].getLength();
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited)
       {
-        if (u == 81 || u == 41 || v == 185)
-          std::cout << "Not visited before. ";
         assert(v != mSourceVertex);
         mGraph[v].setVisitStatus(VisitStatus::Visited);
         assert(
@@ -587,9 +558,6 @@ void GLS::extendSearchTree()
 
         // Use the parent ID to break ties.
         Vertex previousParent = mGraph[v].getParent();
-
-        if (u == 81 || u == 41 || v == 185)
-          std::cout << "Costs are " << oldCostToCome << "(" << previousParent << ")" << newCostToCome << ". ";
 
         // If the previous cost-to-come is lower, continue.
         if (oldCostToCome < newCostToCome)
@@ -646,9 +614,6 @@ void GLS::extendSearchTree()
       mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
       mGraph[v].setHeuristic(getGraphHeuristic(v));
 
-      if (u == 81 || u == 41 || v == 185)
-        std::cout << "Parent: " << u << ". Cost To Come: " << mGraph[u].getCostToCome() + edgeLength << std::endl;
-
       // Update the vertex property associated with the event.
       mEvent->updateVertexProperties(v);
 
@@ -659,11 +624,6 @@ void GLS::extendSearchTree()
       mExtendQueue.addVertexWithValue(v, mGraph[v].getEstimatedTotalCost());
       auto currentSize = mExtendQueue.getSize();
       assert(currentSize - previousSize == 1);
-    }
-    if (u == 81 || u == 41)
-    {
-      std::cout << "Finished considering the kids of 81" << std::endl;
-      mExtendQueue.printQueue(); 
     }
   }
 }
@@ -694,8 +654,6 @@ void GLS::rewireSearchTree()
   while (!mRewireQueue.isEmpty())
   {
     Vertex v = mRewireQueue.popTopVertex();
-    if (v == 185)
-      std::cout << "Going to rewire 185. Current parent is " << mGraph[v].getParent() << ". ";
 
     // Add all the children of the current node to mRewireQueue.
     auto children = mGraph[v].getChildren();
@@ -748,16 +706,9 @@ void GLS::rewireSearchTree()
       // Get the possible parent.
       Vertex u = *ni;
 
-      if (v == 185)
-        std::cout << "Considering rewiring to " << u << ". ";
-
       // If the parent has been marked in collision, ignore.
       if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
-      {
-        if (v == 185)
-          std::cout << "Parent in collision" << std::endl;
         continue;
-      }
 
       // No point rewiring to the target vertex.
       if (u == mTargetVertex)
@@ -765,38 +716,22 @@ void GLS::rewireSearchTree()
 
       // If the neighbor is one of the vertices to be rewires, ignore now.
       if (mGraph[u].getCostToCome() == std::numeric_limits<double>::max())
-      {
-        if (v == 185)
-          std::cout << "Cost to come to u is infinity" << std::endl;
         continue;
-      }
 
       // If the neighbor is currently not in search tree, ignore.
       if (mGraph[u].getVisitStatus() == VisitStatus::NotVisited)
-      {
-        if (v == 185)
-          std::cout << "Parent not visited" << std::endl;
         continue;
-      }
 
       // If the parent is gonna trigger the event, ignore.
       if (mEvent->isTriggered(u))
       {
-        if (v == 185)
-          std::cout << "Parent in going to trigger" << std::endl;
         assert(mExtendQueue.hasVertexWithValue(u, mGraph[u].getEstimatedTotalCost()));
         continue;
       }
 
       // If the parent is already in mExtendQueue, can be rewired later.
       if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getEstimatedTotalCost()))
-      {
-        if (v == 185)
-        {
-          std::cout << "Parent in extend" << std::endl;
-        }
         continue;
-      }
 
       assert(mRewireSet.find(u) == mRewireSet.end());
 
@@ -813,9 +748,6 @@ void GLS::rewireSearchTree()
           // Update the vertex.
           mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
           mGraph[v].setParent(u);
-
-          if (v == 185)
-            std::cout << "Rewiring temp to " << u << ". ";
 
           // Update the vertex property associated with the event.
           mEvent->updateVertexProperties(v);
@@ -845,12 +777,6 @@ void GLS::rewireSearchTree()
     Vertex p = mGraph[u].getParent();
     mGraph[p].addChild(u);
 
-    if (u == 185)
-    {
-      std::cout << "Rewiring permenantly to " << p << std::endl;
-      mExtendQueue.printQueue();
-    }
-
     auto previousSize = mExtendQueue.getSize();
     mExtendQueue.addVertexWithValue(u, mGraph[u].getEstimatedTotalCost());
     auto currentSize = mExtendQueue.getSize();
@@ -863,24 +789,13 @@ void GLS::rewireSearchTree()
     {
       Vertex v = *ni;
 
-      if (v == 185)
-      {
-        std::cout << "3rd step: Considering possible parent to rewire to " << u << std::endl;
-      }
-
       // TODO (avk): Is this necessary?
       if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision)
         continue;
 
       // Vertex needs to be in set to update.
       if (mRewireSet.find(v) == mRewireSet.end())
-      {
-        if (v == 185)
-        {
-          std::cout << "3rd step: Continuing since 185 is not in rewire set" << std::endl;
-        }        
         continue;
-      }
 
       Edge uv = getEdge(u, v);
       double edgeLength = mGraph[uv].getLength();
@@ -892,10 +807,6 @@ void GLS::rewireSearchTree()
                     == mGraph[u].getCostToCome() + edgeLength
                 && u < mGraph[v].getParent()))
         {
-
-          if (v == 185)
-            std::cout << "Looking like " << u << " with " << mGraph[u].getCostToCome() + edgeLength << " is better than " << mGraph[v].getParent() << " with " << mGraph[v].getCostToCome() << std::endl;
-
           if (mRewireQueue.hasVertexWithValue(v, mGraph[v].getCostToCome()))
           {
             auto previousSize = mRewireQueue.getSize();
@@ -978,16 +889,6 @@ void GLS::evaluateSearchTree()
     {
       // Planning problem has been solved!
       mPlannerStatus = PlannerStatus::Solved;
-      auto c185 = mGraph[185].getChildren();
-      auto c77 = mGraph[77].getChildren();
-      for (auto& c : c185)
-        std::cout << c << " ";
-      std::cout << std::endl;
-      for (auto& c : c77)
-        std::cout << c << " ";
-      std::cout << std::endl;
-
-      std::cout << "185 " << mGraph[185].getParent() << " " << mGraph[185].getVisitStatus() << " " << mGraph[185].getCostToCome() << " " << mGraph[81].getCostToCome() << std::endl;
     }
   }
 
