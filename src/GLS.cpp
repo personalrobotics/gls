@@ -85,6 +85,7 @@ void GLS::setupPreliminaries()
 {
   // Issue a warning if mConnectionRadius = 0.
 
+  // TODO (avk): Should I kill these pointers manually?
   StatePtr sourceState(new gls::datastructures::State(mSpace));
   mSpace->copyState(sourceState->getOMPLState(), pdef_->getStartState(0));
 
@@ -902,18 +903,6 @@ void GLS::rewireSearchTree()
             auto currentSize = mRewireQueue.getSize();
             assert(previousSize - currentSize == 1);
           }
-
-          assert(mExtendQueue.hasVertexWithValue(u, mGraph[u].getEstimatedTotalCost()));
-          // if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getEstimatedTotalCost()))
-          // {
-            // if (v == 185)
-              // std::cout << "Since " << u << "is in the extend queue, we will remove rewiring of " << v << std::endl;
-            // mGraph[v].setVisitStatus(VisitStatus::NotVisited);
-            // mGraph[v].setCostToCome(std::numeric_limits<double>::max());
-            // mGraph[v].setParent(v);
-            // mEvent->updateVertexProperties(v);
-            // continue;
-          // }
 
           // Update the vertex.
           mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
