@@ -55,7 +55,7 @@ Path FailFastSelector::selectEdgeToEvaluate(Path path)
   // when the selector is called.
   assert(qEdges.size() == 2);
   Edge eTop = *qEdges.begin();
-  mGraph[eTop].setEvaluationStatus(EvaluationStatus::Evaluated);
+  graph[eTop].setEvaluationStatus(EvaluationStatus::Evaluated);
 
   Path edgeToEvaluate;
   edgeToEvaluate.emplace_back(source(eTop, graph));
@@ -67,6 +67,8 @@ Path FailFastSelector::selectEdgeToEvaluate(Path path)
 //==============================================================================
 double FailFastSelector::getPrior(Edge edge)
 {
+  auto graph = *mGraph;
+  
   Vertex u = source(edge, graph);
   Vertex v = target(edge, graph);
 
