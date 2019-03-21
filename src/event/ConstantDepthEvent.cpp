@@ -20,10 +20,10 @@ ConstantDepthEvent::ConstantDepthEvent(std::size_t depth)
 //==============================================================================
 bool ConstantDepthEvent::isTriggered(const Vertex vertex)
 {
-  if (getDepth(vertex) == mDepthThreshold)
+  if (vertex == mTargetVertex)
     return true;
 
-  if (vertex == mTargetVertex)
+  if (getDepth(vertex) == mDepthThreshold)
     return true;
 
   return false;
@@ -38,20 +38,20 @@ void ConstantDepthEvent::updateVertexProperties(Vertex vertex)
     mVertexDepthMap.erase(iterM);
 
   // Add updated vertex.
-  addVertexToMap(vertex);
+  updateVertexInMap(vertex);
 }
 
 //==============================================================================
 std::size_t ConstantDepthEvent::getDepth(Vertex vertex)
 {
   auto iterM = mVertexDepthMap.find(vertex);
-  assert(iterM == mVertexDepthMap.end());
+  assert(iterM != mVertexDepthMap.end() || vertex == mTargetVertex);
 
   return mVertexDepthMap[vertex];
 }
 
 //==============================================================================
-void ConstantDepthEvent::addVertexToMap(Vertex vertex)
+void ConstantDepthEvent::updateVertexInMap(Vertex vertex)
 {
   // Access the graph.
   auto graph = *mGraph;
@@ -59,8 +59,25 @@ void ConstantDepthEvent::addVertexToMap(Vertex vertex)
   // Ensure the vertex does not already exist in the map.
   assert(mVertexDepthMap.find(vertex) == mVertexDepthMap.end());
 
+  // Add the vertex if it is the source vertex.
+  if (vertex == mSourceVertex)
+  {
+    // Increment depth by 1 over the parent's depth and add to map.
+    mVertexDepthMap.emplace(vertex, 0);
+    return;    
+  }
+
   // Determine the parent depth.
   Vertex parent = graph[vertex].getParent();
+
+  // If the parent is same as vertex, remove the vertex from the map.
+  if (parent == vertex)
+  {
+    auto iterM = mVertexDepthMap.find(vertex);
+    if (iterM != mVertexDepthMap.end())
+      mVertexDepthMap.erase(iterM);
+    return;
+  }
 
   // Ensure the parent exists in the map.
   assert(mVertexDepthMap.find(parent) != mVertexDepthMap.end());

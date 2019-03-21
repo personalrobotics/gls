@@ -27,7 +27,7 @@ private:
   std::size_t getDepth(gls::datastructures::Vertex vertex);
 
   /// Add vertex to the map.
-  void addVertexToMap(gls::datastructures::Vertex vertex);
+  void updateVertexInMap(gls::datastructures::Vertex vertex);
 
   /// The threshold over depth.
   std::size_t mDepthThreshold;
