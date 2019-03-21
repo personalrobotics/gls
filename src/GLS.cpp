@@ -791,14 +791,6 @@ void GLS::rewireSearchTree()
             assert(previousSize - currentSize == 1);
           }
 
-          if (mExtendQueue.hasVertexWithValue(u, mGraph[u].getEstimatedTotalCost()))
-          {
-            mGraph[v].setVisitStatus(VisitStatus::NotVisited);
-            mGraph[v].setCostToCome(std::numeric_limits<double>::max());
-            mGraph[v].setParent(v);
-            continue;
-          }
-
           // Update the vertex.
           mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
           mGraph[v].setParent(u);
