@@ -21,7 +21,7 @@ AlternateSelector::AlternateSelector()
 }
 
 //==============================================================================
-Edge AlternateSelector::selectEdgeToEvaluate(Path path)
+Path AlternateSelector::selectEdgeToEvaluate(Path path)
 {
   // Flip the boolean.
   mUseForwardSelector = !mUseForwardSelector;

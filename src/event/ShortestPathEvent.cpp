@@ -28,12 +28,5 @@ void ShortestPathEvent::updateVertexProperties(Vertex /*vertex*/)
   // Do nothing.
 }
 
-//==============================================================================
-void ShortestPathEvent::updateVertexProperties(SearchQueue& queue)
-{
-	// Clear the queue since there is nothing to update.
-	queue.clear();
-}
-
 } // namespace event
 } // namespace gls

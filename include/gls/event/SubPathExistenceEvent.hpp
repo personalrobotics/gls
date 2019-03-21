@@ -29,10 +29,6 @@ public:
   /// Documentation inherited.
   void updateVertexProperties(gls::datastructures::Vertex vertex) override;
 
-  /// Documentation inherited.
-  void updateVertexProperties(
-      gls::datastructures::SearchQueue& vertexQueue) override;
-
 private:
   /// Get the probability of the path to the vertex.
   double getExistenceProbability(gls::datastructures::Vertex vertex);

@@ -55,9 +55,9 @@ add_library(${PROJECT_NAME}
   src/event/ShortestPathEvent.cpp
   src/event/ConstantDepthEvent.cpp
   src/selector/Selector.cpp
-  src/selector/AlternateSelector.cpp
-  src/selector/BackwardSelector.cpp
-  src/selector/FailFastSelector.cpp
+  # src/selector/AlternateSelector.cpp
+  # src/selector/BackwardSelector.cpp
+  # src/selector/FailFastSelector.cpp
   src/selector/ForwardSelector.cpp
 )
 

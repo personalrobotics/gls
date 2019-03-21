@@ -22,10 +22,6 @@ public:
   /// Documentation inherited.
   void updateVertexProperties(gls::datastructures::Vertex vertex) override;
 
-  /// Documentation inherited.
-  void updateVertexProperties(
-      gls::datastructures::SearchQueue& vertexQueue) override;
-
 private:
   /// Get the depth of the vertex.
   std::size_t getDepth(gls::datastructures::Vertex vertex);

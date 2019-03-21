@@ -2,7 +2,6 @@
 
 #include "gls/GLS.hpp"
 
-#include <algorithm> // std::reverse
 #include <cmath>     // pow, sqrt
 #include <iostream>  // std::invalid_argument
 #include <set>       // std::set
@@ -160,10 +159,10 @@ void GLS::setupPreliminaries()
   mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
 
   // Setup the event.
-  mEvent->setup(mGraph, mSourceVertex, mTargetVertex);
+  mEvent->setup(&mGraph, mSourceVertex, mTargetVertex);
 
   // Setup the selector.
-  mSelector->setup(mGraph);
+  mSelector->setup(&mGraph);
 }
 
 // ============================================================================
@@ -850,13 +849,15 @@ void GLS::evaluateSearchTree()
     return;
 
   Vertex bestVertex = mExtendQueue.getTopVertex();
-  Edge uv
+  Path edgeToEvaluate
       = mSelector->selectEdgeToEvaluate(getPathToSource(bestVertex));
 
-  std::cout << uv << std::endl;
+  // Only one edge should have been selected for evaluation.
+  assert(edgeToEvaluate.size() == 2);
 
-  Vertex u = source(uv, mGraph);
-  Vertex v = target(uv, mGraph);
+  Vertex u = edgeToEvaluate[0];
+  Vertex v = edgeToEvaluate[1];
+  Edge uv = getEdge(u, v);
 
   // Assume that the selector might return edges already evaluated.
   assert(mGraph[uv].getEvaluationStatus() != EvaluationStatus::Evaluated);
@@ -865,7 +866,6 @@ void GLS::evaluateSearchTree()
   mGraph[uv].setEvaluationStatus(EvaluationStatus::Evaluated);
   if (evaluateEdge(uv) == CollisionStatus::Free)
   {
-    std::cout << __LINE__ << " " << __FILE__ << std::endl;
     // Set the edge collision status.
     mGraph[uv].setCollisionStatus(CollisionStatus::Free);
 
@@ -877,7 +877,6 @@ void GLS::evaluateSearchTree()
   }
   else
   {
-    std::cout << __LINE__ << " " << __FILE__ << std::endl;
     mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
     mTreeValidityStatus = TreeValidityStatus::NotValid;
 
@@ -894,10 +893,8 @@ void GLS::evaluateSearchTree()
 
   if (bestVertex == mTargetVertex && mTreeValidityStatus == TreeValidityStatus::Valid)
   {
-    std::cout << __LINE__ << " " << __FILE__ << std::endl;
     if (foundPathToGoal())
     {
-      std::cout << __LINE__ << " " << __FILE__ << std::endl;
       // Planning problem has been solved!
       mPlannerStatus = PlannerStatus::Solved;
     }

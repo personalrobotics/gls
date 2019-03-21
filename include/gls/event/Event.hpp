@@ -37,7 +37,7 @@ public:
   /// \param[in] source Source vertex in the graph the event is attached to.
   /// \param[in] target Target vertex in the graph the event is attached to.
   void setup(
-      gls::datastructures::Graph& graph,
+      gls::datastructures::Graph* graph,
       gls::datastructures::Vertex source,
       gls::datastructures::Vertex target);
 
@@ -52,15 +52,14 @@ public:
   virtual void updateVertexProperties(gls::datastructures::Vertex vertex) = 0;
 
   /// Update vertex properties
-  /// Concrete classes specify the appropriate update rules.
-  /// \param[in] vertexQueue Queue of vertices whose subtrees need update.
-  virtual void updateVertexProperties(
-      gls::datastructures::SearchQueue& vertexQueue)
-      = 0;
+  /// Updates the tree by recursively calling update on each vertex.
+  /// \param[in] updateQueue Queue of vertices whose subtrees need update.
+  void updateVertexProperties(
+      gls::datastructures::SearchQueue& updateQueue);
 
 protected:
   /// Pointer to the graph.
-  gls::datastructures::Graph mGraph;
+  gls::datastructures::Graph* mGraph;
 
   /// Source vertex of the graph.
   gls::datastructures::Vertex mSourceVertex;

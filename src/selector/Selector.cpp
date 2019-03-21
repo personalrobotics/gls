@@ -14,7 +14,7 @@ Selector::Selector()
 }
 
 //==============================================================================
-void Selector::setup(Graph& graph)
+void Selector::setup(Graph* graph)
 {
   mGraph = graph;
 }

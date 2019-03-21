@@ -43,25 +43,6 @@ void SubPathExistenceEvent::updateVertexProperties(Vertex vertex)
 }
 
 //==============================================================================
-void SubPathExistenceEvent::updateVertexProperties(SearchQueue& updateQueue)
-{
-	while (!updateQueue.isEmpty())
-	{
-		// Update the top vertex.
-		Vertex vertex = updateQueue.popTopVertex();	
-		updateVertexProperties(vertex);
-
-		auto children = mGraph[vertex].getChildren();
-	  for (auto iterV = children.begin(); iterV != children.end(); ++iterV)
-	  {
-	  	// Add the children into the queue for update.
-	    assert(!updateQueue.hasVertexWithValue(*iterV, mGraph[*iterV].getCostToCome()));
-    	updateQueue.addVertexWithValue(*iterV, mGraph[*iterV].getCostToCome());
-	  }
-	}
-}
-
-//==============================================================================
 double SubPathExistenceEvent::getExistenceProbability(Vertex vertex)
 {
   auto iterM = mSubPathExistenceMap.find(vertex);
@@ -73,11 +54,14 @@ double SubPathExistenceEvent::getExistenceProbability(Vertex vertex)
 //==============================================================================
 void SubPathExistenceEvent::addVertexToMap(Vertex vertex)
 {
+  // Access the graph.
+  auto graph = *mGraph;
+
   // Ensure the vertex does not already exist in the map.
   assert(mSubPathExistenceMap.find(vertex) == mSubPathExistenceMap.end());
 
   // Determine the parent probability.
-  Vertex parent = mGraph[vertex].getParent();
+  Vertex parent = graph[vertex].getParent();
 
   // Ensure the parent exists in the map.
   assert(mSubPathExistenceMap.find(parent) != mSubPathExistenceMap.end());
@@ -85,15 +69,15 @@ void SubPathExistenceEvent::addVertexToMap(Vertex vertex)
   // Get the edge and update the existenceProbability appropriately.
   Edge uv;
   bool edgeExists;
-  boost::tie(uv, edgeExists) = edge(parent, vertex, mGraph);
+  boost::tie(uv, edgeExists) = edge(parent, vertex, graph);
 
-  if (mGraph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
+  if (graph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
   {
     mSubPathExistenceMap.emplace(vertex, mSubPathExistenceMap[parent]*getPrior(uv));
   }
   else
   {
-    assert(mGraph[uv].getCollisionStatus() == CollisionStatus::Free);
+    assert(graph[uv].getCollisionStatus() == CollisionStatus::Free);
     mSubPathExistenceMap.emplace(vertex, mSubPathExistenceMap[parent]);
   }
 }
@@ -101,8 +85,8 @@ void SubPathExistenceEvent::addVertexToMap(Vertex vertex)
 //==============================================================================
 double SubPathExistenceEvent::getPrior(Edge edge)
 {
-  Vertex u = source(edge, mGraph);
-  Vertex v = target(edge, mGraph);
+  Vertex u = source(edge, graph);
+  Vertex v = target(edge, graph);
 
   return mPriorMap[std::make_pair(u, v)];
 }

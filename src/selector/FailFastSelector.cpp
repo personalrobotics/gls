@@ -16,8 +16,10 @@ FailFastSelector::FailFastSelector(edgeToPriorMap& priorMap)
 }
 
 //==============================================================================
-Edge FailFastSelector::selectEdgeToEvaluate(Path path)
+Path FailFastSelector::selectEdgeToEvaluate(Path path)
 {
+  auto graph = *mGraph;
+
   // Priority Function: g-value
   auto cmp = [&](const Edge& left, const Edge& right)
   {
@@ -41,20 +43,32 @@ Edge FailFastSelector::selectEdgeToEvaluate(Path path)
   {
     Edge uv;
     bool edgeExists;
-    boost::tie(uv, edgeExists) = edge(path[i], path[i - 1], mGraph);
+    boost::tie(uv, edgeExists) = edge(path[i], path[i - 1], graph);
 
-    if (mGraph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
+    if (graph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
     {
       qEdges.insert(uv);
     }
   }
+
+  // There should always exist at least one unevaluated edge
+  // when the selector is called.
+  assert(qEdges.size() == 2);
+  Edge eTop = *qEdges.begin();
+  mGraph[eTop].setEvaluationStatus(EvaluationStatus::Evaluated);
+
+  Path edgeToEvaluate;
+  edgeToEvaluate.emplace_back(source(eTop, graph));
+  edgeToEvaluate.emplace_back(target(eTop, graph));
+
+  return edgeToEvaluate;
 }
 
 //==============================================================================
 double FailFastSelector::getPrior(Edge edge)
 {
-  Vertex u = source(edge, mGraph);
-  Vertex v = target(edge, mGraph);
+  Vertex u = source(edge, graph);
+  Vertex v = target(edge, graph);
 
   return mPriorMap[std::make_pair(u, v)];
 }
