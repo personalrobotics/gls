@@ -54,8 +54,7 @@ public:
   /// Update vertex properties
   /// Updates the tree by recursively calling update on each vertex.
   /// \param[in] updateQueue Queue of vertices whose subtrees need update.
-  void updateVertexProperties(
-      gls::datastructures::SearchQueue& updateQueue);
+  void updateVertexProperties(gls::datastructures::SearchQueue& updateQueue);
 
 protected:
   /// Pointer to the graph.
