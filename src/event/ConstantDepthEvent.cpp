@@ -45,7 +45,7 @@ void ConstantDepthEvent::updateVertexProperties(Vertex vertex)
 std::size_t ConstantDepthEvent::getDepth(Vertex vertex)
 {
   auto iterM = mVertexDepthMap.find(vertex);
-  assert(iterM != mVertexDepthMap.end() || vertex == mTargetVertex);
+  assert(iterM != mVertexDepthMap.end());
 
   return mVertexDepthMap[vertex];
 }
@@ -71,6 +71,7 @@ void ConstantDepthEvent::updateVertexInMap(Vertex vertex)
   Vertex parent = graph[vertex].getParent();
 
   // If the parent is same as vertex, remove the vertex from the map.
+  // This is not really required but we do it to decrease the map size.
   if (parent == vertex)
   {
     auto iterM = mVertexDepthMap.find(vertex);
@@ -82,11 +83,13 @@ void ConstantDepthEvent::updateVertexInMap(Vertex vertex)
   // Ensure the parent exists in the map.
   assert(mVertexDepthMap.find(parent) != mVertexDepthMap.end());
 
-  // Get the edge and update the existenceProbability appropriately.
+  // Get the edge and update the depth appropriately.
   Edge uv;
   bool edgeExists;
   boost::tie(uv, edgeExists) = edge(parent, vertex, graph);
 
+  // Edge should not have been considered if it was evaluated in collision.
+  assert(graph[uv].getCollisionStatus() == CollisionStatus::Free);
   if (graph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
   {
     // Increment depth by 1 over the parent's depth and add to map.
@@ -94,9 +97,6 @@ void ConstantDepthEvent::updateVertexInMap(Vertex vertex)
   }
   else
   {
-    // Edge should not have been considered if it was evaluated in collision.
-    assert(graph[uv].getCollisionStatus() == CollisionStatus::Free);
-
     // Same depth as parent if the edge to vertex was evaluated.
     mVertexDepthMap.emplace(vertex, mVertexDepthMap[parent]);
   }
