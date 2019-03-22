@@ -840,14 +840,11 @@ void GLS::evaluateSearchTree()
     return;
 
   Vertex bestVertex = mExtendQueue.getTopVertex();
-  Path edgeToEvaluate
+  Edge edgeToEvaluate
       = mSelector->selectEdgeToEvaluate(getPathToSource(bestVertex));
 
-  // Only one edge should have been selected for evaluation.
-  assert(edgeToEvaluate.size() == 2);
-
-  Vertex u = edgeToEvaluate[0];
-  Vertex v = edgeToEvaluate[1];
+  Vertex u = source(edgeToEvaluate, mGraph);
+  Vertex v = target(edgeToEvaluate, mGraph);
   Edge uv = getEdge(u, v);
 
   // Assume that the selector might return edges already evaluated.

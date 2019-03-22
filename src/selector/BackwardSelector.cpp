@@ -14,31 +14,22 @@ BackwardSelector::BackwardSelector()
 }
 
 //==============================================================================
-Path BackwardSelector::selectEdgeToEvaluate(Path path)
+Edge BackwardSelector::selectEdgeToEvaluate(Path path)
 {
   // Access the graph.
   auto graph = *mGraph;
-
-  Path edgeToEvaluate;
+  Edge edgeToEvaluate;
 
   // Return the first unevaluated edge closest to target.
   for (std::size_t i = 0; i < path.size() - 1; ++i)
   {
-    Edge uv;
     bool edgeExists;
-    boost::tie(uv, edgeExists) = edge(path[i + 1], path[i], graph);
+    boost::tie(edgeToEvaluate, edgeExists) = edge(path[i + 1], path[i], graph);
 
-    if (graph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
-    {
-      edgeToEvaluate.emplace_back(path[i + 1]);
-      edgeToEvaluate.emplace_back(path[i]);
+    if (graph[edgeToEvaluate].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
       break;
-    }
   }
-
-  // There should always exist at least one unevaluated edge
-  // when the selector is called.
-  assert(edgeToEvaluate.size() == 2);
+  
   return edgeToEvaluate;
 }
 

@@ -16,27 +16,12 @@ FailFastSelector::FailFastSelector(edgeToPriorMap& priorMap)
 }
 
 //==============================================================================
-Path FailFastSelector::selectEdgeToEvaluate(Path path)
+Edge FailFastSelector::selectEdgeToEvaluate(Path path)
 {
   auto graph = *mGraph;
+  Edge edgeToEvaluate;
 
-  // Priority Function: g-value
-  auto cmp = [&](const Edge& left, const Edge& right)
-  {
-    double estimateLeft = getPrior(left);
-    double estimateRight = getPrior(right);
-
-    if (estimateRight > estimateLeft)
-      return true;
-    if (estimateLeft > estimateRight)
-      return false;
-    if (left < right)
-      return true;
-    else
-      return false;
-  };
-
-  std::set<Edge, decltype(cmp)> qEdges(cmp);
+  double minPrior = 1.0;
 
   // Return the first unevaluated edge closest to source.
   for (std::size_t i = path.size() - 1; i > 0; --i)
@@ -47,19 +32,13 @@ Path FailFastSelector::selectEdgeToEvaluate(Path path)
 
     if (graph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
     {
-      qEdges.insert(uv);
+      if (getPrior(uv) <= minPrior)
+      {
+        minPrior = getPrior(uv);
+        edgeToEvaluate = uv;
+      }
     }
   }
-
-  // There should always exist at least one unevaluated edge
-  // when the selector is called.
-  assert(qEdges.size() == 2);
-  Edge eTop = *qEdges.begin();
-  graph[eTop].setEvaluationStatus(EvaluationStatus::Evaluated);
-
-  Path edgeToEvaluate;
-  edgeToEvaluate.emplace_back(source(eTop, graph));
-  edgeToEvaluate.emplace_back(target(eTop, graph));
 
   return edgeToEvaluate;
 }
