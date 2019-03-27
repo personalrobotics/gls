@@ -6,7 +6,6 @@ namespace gls {
 namespace selector {
 
 using gls::datastructures::Graph;
-using gls::datastructures::Vertex;
 
 //==============================================================================
 Selector::Selector()
@@ -15,11 +14,9 @@ Selector::Selector()
 }
 
 //==============================================================================
-void Selector::setup(Graph& graph, Vertex source, Vertex target)
+void Selector::setup(Graph* graph)
 {
   mGraph = graph;
-  mSourceVertex = source;
-  mTargetVertex = target;
 }
 
 } // selector

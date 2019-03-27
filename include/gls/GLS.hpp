@@ -126,6 +126,9 @@ private:
   /// Returns the path from vertex to source.
   gls::datastructures::Path getPathToSource(gls::datastructures::Vertex);
 
+  /// Returns true if the path to goal is collision-free.
+  bool foundPathToGoal();
+
   /// Heuristic function.
   double getGraphHeuristic(gls::datastructures::Vertex v);
 

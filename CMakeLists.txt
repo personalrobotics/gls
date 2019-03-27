@@ -20,7 +20,6 @@ endif()
 find_package(catkin REQUIRED COMPONENTS roscpp)
 find_package(ompl REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options system)
-find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 catkin_package(
@@ -54,6 +53,7 @@ add_library(${PROJECT_NAME}
   src/GLS.cpp
   src/event/Event.cpp
   src/event/ShortestPathEvent.cpp
+  src/event/ConstantDepthEvent.cpp
   src/selector/Selector.cpp
   src/selector/AlternateSelector.cpp
   src/selector/BackwardSelector.cpp
@@ -66,9 +66,13 @@ add_library(${PROJECT_NAME}
 #================================================================================
 
 # Correctness Test Script
-add_executable(test2d_image examples/test2d_image.cpp)
-target_link_libraries(test2d_image ${PROJECT_NAME} ${OpenCV_LIBS})
-install(TARGETS test2d_image RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+add_executable(test_ShortestPath_Forward examples/test_ShortestPath_Forward.cpp)
+target_link_libraries(test_ShortestPath_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
+install(TARGETS test_ShortestPath_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+add_executable(test_ConstantDepth_Forward examples/test_ConstantDepth_Forward.cpp)
+target_link_libraries(test_ConstantDepth_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
+install(TARGETS test_ConstantDepth_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 add_executable(test_cycle examples/test_cycle.cpp)
 target_link_libraries(test_cycle ${PROJECT_NAME} ${OpenCV_LIBS})

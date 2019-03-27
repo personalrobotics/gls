@@ -1,15 +1,11 @@
 #include "gls/selector/ForwardSelector.hpp"
 
-#include <algorithm> // std::reverse
-
 namespace gls {
 namespace selector {
 
 using gls::datastructures::Edge;
 using gls::datastructures::EvaluationStatus;
-using gls::datastructures::Graph;
 using gls::datastructures::Path;
-using gls::datastructures::Vertex;
 
 //==============================================================================
 ForwardSelector::ForwardSelector()
@@ -18,39 +14,23 @@ ForwardSelector::ForwardSelector()
 }
 
 //==============================================================================
-Path ForwardSelector::selectEdgesToEvaluate(gls::datastructures::Path path)
+Edge ForwardSelector::selectEdgeToEvaluate(Path path)
 {
-  // If the path is to the target, evaluate the entire path.
-  if (path[0] == mTargetVertex)
-  {
-    std::reverse(path.begin(), path.end());
-    return path;
-  }
+  // Access the graph.
+  auto graph = *mGraph;
+  Edge edgeToEvaluate;
 
-  // Else return the first unevaluated edge closest to source.
-  Path edgesToEvaluate;
+  // Return the first unevaluated edge closest to source.
   for (std::size_t i = path.size() - 1; i > 0; --i)
   {
-    Edge uv;
     bool edgeExists;
-    boost::tie(uv, edgeExists) = edge(path[i], path[i - 1], mGraph);
+    boost::tie(edgeToEvaluate, edgeExists) = edge(path[i], path[i - 1], graph);
 
-    if (mGraph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
-    {
-      edgesToEvaluate.emplace_back(path[i]);
-      edgesToEvaluate.emplace_back(path[i - 1]);
+    if (graph[edgeToEvaluate].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
       break;
-    }
   }
-  return edgesToEvaluate;
-}
-
-//==============================================================================
-Path ForwardSelector::rankEdgesByUtilityInEvaluation(
-    gls::datastructures::Path& path)
-{
-  // Do nothing.
-  return path;
+  
+  return edgeToEvaluate;
 }
 
 } // namespace selector

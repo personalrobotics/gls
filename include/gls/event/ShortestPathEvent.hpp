@@ -14,16 +14,10 @@ public:
   ShortestPathEvent();
 
   /// Documentation inherited.
-  bool isTriggered(const gls::datastructures::Vertex vertex) const override;
+  bool isTriggered(const gls::datastructures::Vertex vertex) override;
 
   /// Documentation inherited.
-  void updateVertexProperties(
-      gls::datastructures::Vertex vertex,
-      vertexUpdateOption cascade = vertexUpdateOption::SingleUpdate) override;
-
-  /// Documentation inherited.
-  void updateVertexProperties(
-      gls::datastructures::SearchQueue vertexQueue) override;
+  void updateVertexProperties(gls::datastructures::Vertex vertex) override;
 };
 
 } // namespace event
