@@ -226,10 +226,16 @@ ompl::base::PlannerStatus GLS::solve(
 
   // Return if source or target are in collision.
   if (evaluateVertex(mSourceVertex) == CollisionStatus::Collision)
+  {
+    OMPL_INFORM("Start State is invalid.");
     return ompl::base::PlannerStatus::INVALID_START;
+  }
 
   if (evaluateVertex(mTargetVertex) == CollisionStatus::Collision)
+  {
+    OMPL_INFORM("Goal State is invalid.");
     return ompl::base::PlannerStatus::INVALID_GOAL;
+  }
 
   // Add the source vertex to the search tree with zero cost-to-come.
   mGraph[mSourceVertex].setVisitStatus(VisitStatus::Visited);
