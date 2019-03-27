@@ -15,7 +15,6 @@
 #include <ompl/base/ScopedState.h>
 #include <ompl/base/StateSpace.h>
 #include <ompl/base/goals/GoalState.h>
-#include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/datastructures/NearestNeighborsGNAT.h>
 #include <ompl/geometric/PathGeometric.h>
