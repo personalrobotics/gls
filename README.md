@@ -1,5 +1,7 @@
 # generalized_lazy_search
 
+##### Under development for improvements.
+
 Framework implements various lazy search algorithms. The planners have been implemented in OMPL.
 
 Dependencies:
