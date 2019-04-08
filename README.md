@@ -20,7 +20,7 @@ Example:
 An example graph and an environment have been provided to run with `examples/test2d_image.cpp`.
 
 ```
-rosrun  -s <source_x> <source_y> -t <target_x> <target_y> -o <obstacle_file.png> -g <graph.graphml>
+rosrun gls test2d_image -s <source_x> <source_y> -t <target_x> <target_y> -o <obstacle_file.png> -g <graph.graphml>
 ```
 
 * The source and target locations are assumed to be in [0, 1]
