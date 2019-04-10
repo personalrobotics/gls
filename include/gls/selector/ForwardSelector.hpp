@@ -14,12 +14,8 @@ public:
   ForwardSelector();
 
   /// Documentation inherited.
-  gls::datastructures::Path selectEdgesToEvaluate(
+  gls::datastructures::Edge selectEdgeToEvaluate(
       gls::datastructures::Path path) override;
-
-  /// Documentation inherited.
-  gls::datastructures::Path rankEdgesByUtilityInEvaluation(
-      gls::datastructures::Path& path) override;
 };
 
 } // namespace selector

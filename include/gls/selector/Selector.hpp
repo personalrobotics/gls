@@ -27,32 +27,18 @@ public:
 
   /// Setup the selector with required internal data members.
   /// \param[in] graph Graph the selector is operating with.
-  /// \param[in] source Source vertex in the graph the selector is attached to.
-  /// \param[in] target Target vertex in the graph the selector is attached to.
-  void setup(
-      gls::datastructures::Graph& graph,
-      gls::datastructures::Vertex source,
-      gls::datastructures::Vertex target);
+  void setup(gls::datastructures::Graph* graph);
 
   /// Selects edges to evaluate from given path.
-  virtual gls::datastructures::Path selectEdgesToEvaluate(
+  /// \param[in] path The list of vertices along the path.
+  /// The vertices are from leaf to source.
+  virtual gls::datastructures::Edge selectEdgeToEvaluate(
       gls::datastructures::Path path)
       = 0;
 
 protected:
-  /// Ranks the edges.
-  virtual gls::datastructures::Path rankEdgesByUtilityInEvaluation(
-      gls::datastructures::Path& path)
-      = 0;
-
-  /// Reference to the graph.
-  gls::datastructures::Graph mGraph;
-
-  /// Source vertex of the graph.
-  gls::datastructures::Vertex mSourceVertex;
-
-  /// Target vertex of the graph.
-  gls::datastructures::Vertex mTargetVertex;
+  /// Pointer to the graph.
+  gls::datastructures::Graph* mGraph;
 
 }; // Selector
 

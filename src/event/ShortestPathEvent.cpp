@@ -14,7 +14,7 @@ ShortestPathEvent::ShortestPathEvent()
 }
 
 //==============================================================================
-bool ShortestPathEvent::isTriggered(const Vertex vertex) const
+bool ShortestPathEvent::isTriggered(const Vertex vertex)
 {
   if (vertex == mTargetVertex)
     return true;
@@ -23,14 +23,7 @@ bool ShortestPathEvent::isTriggered(const Vertex vertex) const
 }
 
 //==============================================================================
-void ShortestPathEvent::updateVertexProperties(
-    Vertex /*vertex*/, vertexUpdateOption /*cascade*/)
-{
-  // Do nothing.
-}
-
-//==============================================================================
-void ShortestPathEvent::updateVertexProperties(SearchQueue /*queue*/)
+void ShortestPathEvent::updateVertexProperties(Vertex /*vertex*/)
 {
   // Do nothing.
 }

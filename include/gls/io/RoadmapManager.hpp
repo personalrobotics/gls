@@ -19,7 +19,6 @@
 #include <ompl/base/ScopedState.h>
 #include <ompl/base/State.h>
 #include <ompl/base/StateSpace.h>
-#include <ompl/base/spaces/RealVectorStateSpace.h>
 
 namespace gls {
 namespace io {
@@ -68,13 +67,16 @@ inline void put(
 {
   get(map.mPropMap, k).reset(new StateWrapper(map.mSpace));
   ompl::base::State* ver_state{get(map.mPropMap, k)->getOMPLState()};
-  double* values{
-      ver_state->as<ompl::base::RealVectorStateSpace::StateType>()->values};
+
+  std::vector<double> values;
+  values.resize(map.mDim);
+
   std::stringstream ss(representation);
   for (size_t ui = 0; ui < map.mDim; ui++)
   {
     ss >> values[ui];
   }
+  map.mSpace->copyFromReals(ver_state, values);
 }
 
 /* RoadmapFromFilePutEdgeLengthMap */
@@ -127,7 +129,7 @@ public:
   const std::string mFilename;
 
   RoadmapFromFile(const ompl::base::StateSpacePtr space, std::string filename)
-    : mSpace(space), mFilename(filename)
+    : mFilename(filename), mSpace(space)
   {
     mDim = mSpace->getDimension();
   }

@@ -15,7 +15,6 @@
 #include <ompl/base/ScopedState.h>
 #include <ompl/base/StateSpace.h>
 #include <ompl/base/goals/GoalState.h>
-#include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/datastructures/NearestNeighborsGNAT.h>
 #include <ompl/geometric/PathGeometric.h>
@@ -102,6 +101,12 @@ public:
   /// Get the best path cost.
   double getBestPathCost();
 
+  /// Set status of the planner.
+  void setPlannerStatus(PlannerStatus);
+
+  /// Get status of the planner.
+  PlannerStatus getPlannerStatus();
+
   /// Get the number of edges evaluated.
   double getNumberOfEdgeEvaluations();
 
@@ -120,8 +125,15 @@ private:
   /// Returns the path from vertex to source.
   gls::datastructures::Path getPathToSource(gls::datastructures::Vertex);
 
+  /// Returns true if the path to goal is collision-free.
+  bool foundPathToGoal();
+
   /// Heuristic function.
   double getGraphHeuristic(gls::datastructures::Vertex v);
+
+  /// Evaluates an edge for collision.
+  gls::datastructures::CollisionStatus evaluateVertex(
+      gls::datastructures::Vertex v);
 
   /// Evaluates an edge for collision.
   gls::datastructures::CollisionStatus evaluateEdge(
@@ -169,7 +181,7 @@ private:
   PlannerStatus mPlannerStatus{PlannerStatus::NotSolved};
 
   /// Flag to check the validity of the search tree.
-  TreeValidityStatus mTreeValidityStatus;
+  TreeValidityStatus mTreeValidityStatus{TreeValidityStatus::Valid};
 
   /// SearchQueue representing the open list to extend.
   gls::datastructures::SearchQueue mExtendQueue;
