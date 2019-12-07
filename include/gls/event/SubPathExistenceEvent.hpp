@@ -9,16 +9,16 @@ namespace gls {
 namespace event {
 
 /// Unordered map defined as: <source name> <target name> <prior>
-typedef std::unordered_map<std::pair<std::size_t, std::size_t>,
-                           double,
-                           boost::hash<std::pair<std::size_t, std::size_t>>>
+typedef std::unordered_map<
+    std::pair<std::size_t, std::size_t>,
+    double,
+    boost::hash<std::pair<std::size_t, std::size_t>>>
     edgeToPriorMap;
 
 /// Event that triggers when the search tree reaches below given
 /// a threshold in probability of existence.
 /// Additionally, the event also triggers when the vertex is the target.
-class SubPathExistenceEvent : public Event
-{
+class SubPathExistenceEvent : public Event {
 public:
   /// Constructor.
   SubPathExistenceEvent(edgeToPriorMap& priorMap, double existenceThreshold);

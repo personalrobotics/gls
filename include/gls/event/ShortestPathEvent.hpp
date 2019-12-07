@@ -7,8 +7,7 @@ namespace gls {
 namespace event {
 
 /// Event that triggers when a shortest path to goal is found.
-class ShortestPathEvent : public Event
-{
+class ShortestPathEvent : public Event {
 public:
   /// Constructor.
   ShortestPathEvent();

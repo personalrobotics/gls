@@ -1,17 +1,17 @@
 // Standard C++ libraries
-#include <iostream>
-#include <string>
 #include <fstream>
-#include <sstream>
+#include <iostream>
 #include <queue>
+#include <sstream>
+#include <string>
 
 // Boost libraries
-#include <boost/shared_ptr.hpp>
-#include <boost/property_map/dynamic_property_map.hpp>
+#include <boost/function.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
-#include <boost/function.hpp>
 #include <boost/program_options.hpp>
+#include <boost/property_map/dynamic_property_map.hpp>
+#include <boost/shared_ptr.hpp>
 
 // OMPL base libraries
 #include <ompl/base/Planner.h>
@@ -23,8 +23,8 @@
 
 // OpenCV libraries
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 // roscpp
 #include "ros/ros.h"
@@ -39,16 +39,16 @@ namespace po = boost::program_options;
 /// \param[in] image Obstacle image (grayscale)
 /// \param[in] state The ompl state to check for validity
 /// \return True if the state is collision-free
-bool isPointValid(cv::Mat image, const ompl::base::State *state)
-{
+bool isPointValid(cv::Mat image, const ompl::base::State* state) {
   // Obtain the state values
-  double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+  double* values
+      = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
 
   // Get the required point on the map
   int numberOfRows = image.rows;
   int numberOfColumns = image.cols;
-  double x_point = values[0]*numberOfColumns;
-  double y_point = (1 - values[1])*numberOfRows;
+  double x_point = values[0] * numberOfColumns;
+  double y_point = (1 - values[1]) * numberOfRows;
   cv::Point point((int)x_point, (int)y_point);
 
   // Collision Check
@@ -62,9 +62,9 @@ bool isPointValid(cv::Mat image, const ompl::base::State *state)
 /// Displays path
 /// \param[in] obstacleFile The file with obstacles stored
 /// \param[in] path OMPL path
-void displayPath(std::string obstacleFile,
-                 std::shared_ptr<ompl::geometric::PathGeometric> path)
-{
+void displayPath(
+    std::string obstacleFile,
+    std::shared_ptr<ompl::geometric::PathGeometric> path) {
   // Get state count
   int pathSize = path->getStateCount();
 
@@ -73,15 +73,18 @@ void displayPath(std::string obstacleFile,
   int numberOfRows = image.rows;
   int numberOfColumns = image.cols;
 
-  for (int i = 0; i < pathSize - 1; ++i)
-  {
+  for (int i = 0; i < pathSize - 1; ++i) {
     auto uState = path->getState(i);
-    auto vState = path->getState(i+1);
-    double* u = uState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-    double* v = vState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    auto vState = path->getState(i + 1);
+    double* u
+        = uState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    double* v
+        = vState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
 
-    cv::Point uPoint((int)(u[0]*numberOfColumns), (int)((1 - u[1])*numberOfRows));
-    cv::Point vPoint((int)(v[0]*numberOfColumns), (int)((1 - v[1])*numberOfRows));
+    cv::Point uPoint(
+        (int)(u[0] * numberOfColumns), (int)((1 - u[1]) * numberOfRows));
+    cv::Point vPoint(
+        (int)(v[0] * numberOfColumns), (int)((1 - v[1]) * numberOfRows));
 
     cv::line(image, uPoint, vPoint, cv::Scalar(255, 0, 0), 3);
   }
@@ -94,43 +97,47 @@ void displayPath(std::string obstacleFile,
 /// \param[in] space The ompl space the robot is operating in.
 /// \param[in] x The x-coordinate.
 /// \param[in] y The y-coorindate.
-ompl::base::ScopedState<ompl::base::RealVectorStateSpace>
-make_state(const ompl::base::StateSpacePtr space, double x, double y)
-{
-  ompl::base::ScopedState<ompl::base::RealVectorStateSpace>state(space);
-  double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+ompl::base::ScopedState<ompl::base::RealVectorStateSpace> make_state(
+    const ompl::base::StateSpacePtr space, double x, double y) {
+  ompl::base::ScopedState<ompl::base::RealVectorStateSpace> state(space);
+  double* values
+      = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
   values[0] = x;
   values[1] = y;
   return state;
 }
 
 /// The main function.
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
   ros::init(argc, argv, "test2d_image");
   po::options_description desc("2D Map Planner Options");
-  desc.add_options()
-      ("help,h", "produce help message")
-      ("source,s", po::value<std::vector<float> >()->multitoken(), "source configuration")
-      ("target,t", po::value<std::vector<float> >()->multitoken(), "target configuration")
-      ("graph,g", po::value<std::string>()->required(), "graph specification")
-      ("obstacle,o", po::value<std::string>()->required(), "obstacle image (for visualization)")
-      ("depth,d", po::value<std::size_t>()->required(), "depth threshold for search)")
-  ;
+  desc.add_options()("help,h", "produce help message")(
+      "source,s",
+      po::value<std::vector<float> >()->multitoken(),
+      "source configuration")(
+      "target,t",
+      po::value<std::vector<float> >()->multitoken(),
+      "target configuration")(
+      "graph,g", po::value<std::string>()->required(), "graph specification")(
+      "obstacle,o",
+      po::value<std::string>()->required(),
+      "obstacle image (for visualization)")(
+      "depth,d",
+      po::value<std::size_t>()->required(),
+      "depth threshold for search)");
 
   // Read arguments
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
 
-  if (vm.count("help"))
-  {
+  if (vm.count("help")) {
     std::cout << desc << std::endl;
     return 1;
   }
 
-  std::vector<float> source(vm["source"].as<std::vector< float> >());
-  std::vector<float> target(vm["target"].as<std::vector< float> >());
+  std::vector<float> source(vm["source"].as<std::vector<float> >());
+  std::vector<float> target(vm["target"].as<std::vector<float> >());
   std::string graphLocation(vm["graph"].as<std::string>());
   std::string obstacleLocation(vm["obstacle"].as<std::string>());
   std::size_t constantDepth(vm["depth"].as<std::size_t>());
@@ -143,7 +150,8 @@ int main(int argc, char *argv[])
 
   // Space Information
   cv::Mat image = cv::imread(obstacleLocation, 0);
-  std::function<bool(const ompl::base::State*)> isStateValid = std::bind(isPointValid, image, std::placeholders::_1);
+  std::function<bool(const ompl::base::State*)> isStateValid
+      = std::bind(isPointValid, image, std::placeholders::_1);
   ompl::base::SpaceInformationPtr si(new ompl::base::SpaceInformation(space));
   si->setStateValidityChecker(isStateValid);
   si->setup();
@@ -172,12 +180,14 @@ int main(int argc, char *argv[])
   status = planner.solve(ompl::base::plannerNonTerminatingCondition());
 
   // Obtain required data if plan was successful
-  if (status == ompl::base::PlannerStatus::EXACT_SOLUTION)
-  {
+  if (status == ompl::base::PlannerStatus::EXACT_SOLUTION) {
     // Display path and specify path size
-    auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(pdef->getSolutionPath());
-    std::cout << "Solution Path Cost: " << planner.getBestPathCost() << std::endl;
-    std::cout << "Number of Edge Evaluations: " << planner.getNumberOfEdgeEvaluations() << std::endl;
+    auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(
+        pdef->getSolutionPath());
+    std::cout << "Solution Path Cost: " << planner.getBestPathCost()
+              << std::endl;
+    std::cout << "Number of Edge Evaluations: "
+              << planner.getNumberOfEdgeEvaluations() << std::endl;
     displayPath(obstacleLocation, path);
     return 0;
   }

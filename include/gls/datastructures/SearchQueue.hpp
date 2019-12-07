@@ -17,8 +17,7 @@
 namespace gls {
 namespace datastructures {
 
-class SearchQueue
-{
+class SearchQueue {
 public:
   /// The function signature of the sorting function for the vertex queue.
   typedef std::function<bool(
@@ -27,9 +26,9 @@ public:
       VertexSortingFunction;
 
   /// The underlying vertex queue.
-  typedef std::set<std::pair<gls::datastructures::Vertex, double>,
-                   VertexSortingFunction>
-      VertexQueue;
+  typedef std::
+      set<std::pair<gls::datastructures::Vertex, double>, VertexSortingFunction>
+          VertexQueue;
 
   /// Constructor.
   SearchQueue();
@@ -84,7 +83,7 @@ private:
 
 }; // SearchQueue
 
-} // datastructures
-} // gls
+} // namespace datastructures
+} // namespace gls
 
 #endif // GLS_DATASTRUCTURES_SEARCHQUEUE_HPP_

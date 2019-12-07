@@ -8,16 +8,14 @@ namespace selector {
 using gls::datastructures::Graph;
 
 //==============================================================================
-Selector::Selector()
-{
+Selector::Selector() {
   // Do nothing.
 }
 
 //==============================================================================
-void Selector::setup(Graph* graph)
-{
+void Selector::setup(Graph* graph) {
   mGraph = graph;
 }
 
-} // selector
-} // gls
+} // namespace selector
+} // namespace gls

@@ -7,8 +7,7 @@ namespace gls {
 namespace selector {
 
 /// Selector that evaluates the edge on the path closest to the target.
-class BackwardSelector : public Selector
-{
+class BackwardSelector : public Selector {
 public:
   /// Constructor.
   BackwardSelector();

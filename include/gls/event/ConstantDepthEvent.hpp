@@ -10,8 +10,7 @@ namespace event {
 
 /// Event that triggers when the search tree reaches a particular depth.
 /// Additionally, the event also triggers when the vertex is the target.
-class ConstantDepthEvent : public Event
-{
+class ConstantDepthEvent : public Event {
 public:
   /// Constructor.
   explicit ConstantDepthEvent(std::size_t depth);

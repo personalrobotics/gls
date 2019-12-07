@@ -14,17 +14,12 @@
 namespace gls {
 namespace event {
 
-enum vertexUpdateOption
-{
-  SingleUpdate,
-  CascadeUpdate
-};
+enum vertexUpdateOption { SingleUpdate, CascadeUpdate };
 
 /// Event is a base class to define the trigger to pause search.
 /// The rule for switching between serach and edge evaluation is
 /// specified by the concrete classes.
-class Event
-{
+class Event {
 public:
   /// Constructor.
   Event();
@@ -71,7 +66,7 @@ protected:
 typedef std::shared_ptr<Event> EventPtr;
 typedef std::shared_ptr<const Event> ConstEventPtr;
 
-} // event
-} // gls
+} // namespace event
+} // namespace gls
 
 #endif // GLS_EVENT_EVENT_HPP_

@@ -7,20 +7,18 @@ using gls::datastructures::CollisionStatus;
 using gls::datastructures::Edge;
 using gls::datastructures::EvaluationStatus;
 using gls::datastructures::Graph;
-using gls::datastructures::Vertex;
 using gls::datastructures::SearchQueue;
+using gls::datastructures::Vertex;
 
 //==============================================================================
-SubPathExistenceEvent::SubPathExistenceEvent(edgeToPriorMap& priorMap, double existenceThreshold)
-: mPriorMap(priorMap)
-, mExistenceThreshold(existenceThreshold)
-{
+SubPathExistenceEvent::SubPathExistenceEvent(
+    edgeToPriorMap& priorMap, double existenceThreshold)
+  : mPriorMap(priorMap), mExistenceThreshold(existenceThreshold) {
   // Do nothing.
 }
 
 //==============================================================================
-bool SubPathExistenceEvent::isTriggered(const Vertex vertex)
-{
+bool SubPathExistenceEvent::isTriggered(const Vertex vertex) {
   if (vertex == mTargetVertex)
     return true;
 
@@ -31,8 +29,7 @@ bool SubPathExistenceEvent::isTriggered(const Vertex vertex)
 }
 
 //==============================================================================
-void SubPathExistenceEvent::updateVertexProperties(Vertex vertex)
-{
+void SubPathExistenceEvent::updateVertexProperties(Vertex vertex) {
   // Remove vertex if it already exists in the map.
   auto iterM = mSubPathExistenceMap.find(vertex);
   if (iterM != mSubPathExistenceMap.end())
@@ -43,8 +40,7 @@ void SubPathExistenceEvent::updateVertexProperties(Vertex vertex)
 }
 
 //==============================================================================
-double SubPathExistenceEvent::getExistenceProbability(Vertex vertex)
-{
+double SubPathExistenceEvent::getExistenceProbability(Vertex vertex) {
   auto iterM = mSubPathExistenceMap.find(vertex);
   assert(iterM == mSubPathExistenceMap.end());
 
@@ -52,8 +48,7 @@ double SubPathExistenceEvent::getExistenceProbability(Vertex vertex)
 }
 
 //==============================================================================
-void SubPathExistenceEvent::updateVertexInMap(Vertex vertex)
-{
+void SubPathExistenceEvent::updateVertexInMap(Vertex vertex) {
   // Access the graph.
   auto graph = *mGraph;
 
@@ -61,8 +56,7 @@ void SubPathExistenceEvent::updateVertexInMap(Vertex vertex)
   assert(mSubPathExistenceMap.find(vertex) == mSubPathExistenceMap.end());
 
   // Add the vertex it is is source vertex.
-  if (vertex == mSourceVertex)
-  {
+  if (vertex == mSourceVertex) {
     // Assign a prior of 1 by default.
     mSubPathExistenceMap.emplace(vertex, 1.0);
     return;
@@ -73,8 +67,7 @@ void SubPathExistenceEvent::updateVertexInMap(Vertex vertex)
 
   // If the parent is same as vertex, remove the vertex from the map.
   // This is not really required but we do it to decrease the map size.
-  if (parent == vertex)
-  {
+  if (parent == vertex) {
     auto iterM = mSubPathExistenceMap.find(vertex);
     if (iterM != mSubPathExistenceMap.end())
       mSubPathExistenceMap.erase(iterM);
@@ -91,21 +84,18 @@ void SubPathExistenceEvent::updateVertexInMap(Vertex vertex)
 
   // Edge should not have been considered if it was evaluated in collision.
   assert(graph[uv].getCollisionStatus() == CollisionStatus::Free);
-  if (graph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
-  {
+  if (graph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated) {
     // Update the prior if the edge from parent has not been evaluated yet.
-    mSubPathExistenceMap.emplace(vertex, mSubPathExistenceMap[parent]*getPrior(uv));
-  }
-  else
-  {
+    mSubPathExistenceMap.emplace(
+        vertex, mSubPathExistenceMap[parent] * getPrior(uv));
+  } else {
     // Same probability of existence if edge from parent has been evaluated.
     mSubPathExistenceMap.emplace(vertex, mSubPathExistenceMap[parent]);
   }
 }
 
 //==============================================================================
-double SubPathExistenceEvent::getPrior(Edge edge)
-{
+double SubPathExistenceEvent::getPrior(Edge edge) {
   Vertex u = source(edge, graph);
   Vertex v = target(edge, graph);
 

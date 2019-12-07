@@ -4,18 +4,16 @@ namespace gls {
 namespace event {
 
 using gls::datastructures::Graph;
-using gls::datastructures::Vertex;
 using gls::datastructures::SearchQueue;
+using gls::datastructures::Vertex;
 
 //==============================================================================
-ShortestPathEvent::ShortestPathEvent()
-{
+ShortestPathEvent::ShortestPathEvent() {
   // Do nothing.
 }
 
 //==============================================================================
-bool ShortestPathEvent::isTriggered(const Vertex vertex)
-{
+bool ShortestPathEvent::isTriggered(const Vertex vertex) {
   if (vertex == mTargetVertex)
     return true;
 
@@ -23,8 +21,7 @@ bool ShortestPathEvent::isTriggered(const Vertex vertex)
 }
 
 //==============================================================================
-void ShortestPathEvent::updateVertexProperties(Vertex /*vertex*/)
-{
+void ShortestPathEvent::updateVertexProperties(Vertex /*vertex*/) {
   // Do nothing.
 }
 

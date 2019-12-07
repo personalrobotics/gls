@@ -8,8 +8,7 @@
 namespace gls {
 namespace datastructures {
 
-class State
-{
+class State {
 public:
   /// Constructor.
   State();

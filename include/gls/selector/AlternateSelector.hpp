@@ -8,8 +8,7 @@ namespace selector {
 
 /// Selector alternates between forward and backward selector.
 /// By default the selector begins with forward and then flips.
-class AlternateSelector : public Selector
-{
+class AlternateSelector : public Selector {
 public:
   /// Constructor.
   AlternateSelector();

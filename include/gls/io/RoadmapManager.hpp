@@ -28,8 +28,7 @@ namespace io {
 /// \tparam PropMap The type of property map for vertex states.
 /// \tparam StateWrapper The wrapper for the ompl state.
 template <class PropMap, class StateWrapper>
-class RoadmapFromFilePutStateMap
-{
+class RoadmapFromFilePutStateMap {
 public:
   typedef boost::writable_property_map_tag category;
   typedef typename boost::property_traits<PropMap>::key_type key_type;
@@ -38,8 +37,7 @@ public:
 
   RoadmapFromFilePutStateMap(
       PropMap propMap, ompl::base::StateSpacePtr space, size_t dim)
-    : mPropMap{propMap}, mSpace{space}, mDim{dim}
-  {
+    : mPropMap{propMap}, mSpace{space}, mDim{dim} {
     // Do nothing.
   }
 
@@ -52,8 +50,8 @@ public:
 template <class PropMap, class StateWrapper>
 inline std::string get(
     const RoadmapFromFilePutStateMap<PropMap, StateWrapper>&,
-    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type&)
-{
+    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::
+        key_type&) {
   abort();
 }
 
@@ -63,8 +61,7 @@ inline void put(
     const RoadmapFromFilePutStateMap<PropMap, StateWrapper>& map,
     const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type&
         k,
-    const std::string representation)
-{
+    const std::string representation) {
   get(map.mPropMap, k).reset(new StateWrapper(map.mSpace));
   ompl::base::State* ver_state{get(map.mPropMap, k)->getOMPLState()};
 
@@ -72,8 +69,7 @@ inline void put(
   values.resize(map.mDim);
 
   std::stringstream ss(representation);
-  for (size_t ui = 0; ui < map.mDim; ui++)
-  {
+  for (size_t ui = 0; ui < map.mDim; ui++) {
     ss >> values[ui];
   }
   map.mSpace->copyFromReals(ver_state, values);
@@ -83,8 +79,7 @@ inline void put(
 /// The map used to decode the .graphml file and populate the edge length
 /// \tparam PropMap The type of property map for vertex states
 template <class PropMap>
-class RoadmapFromFilePutEdgeLengthMap
-{
+class RoadmapFromFilePutEdgeLengthMap {
 public:
   typedef boost::writable_property_map_tag category;
   typedef typename boost::property_traits<PropMap>::key_type key_type;
@@ -92,8 +87,7 @@ public:
   typedef std::string reference;
   const PropMap mPropMap;
 
-  RoadmapFromFilePutEdgeLengthMap(PropMap propMap) : mPropMap(propMap)
-  {
+  RoadmapFromFilePutEdgeLengthMap(PropMap propMap) : mPropMap(propMap) {
   }
 };
 
@@ -101,8 +95,7 @@ public:
 template <class PropMap>
 inline std::string get(
     const RoadmapFromFilePutEdgeLengthMap<PropMap>&,
-    const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type&)
-{
+    const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type&) {
   abort();
 }
 
@@ -110,15 +103,13 @@ template <class PropMap>
 inline void put(
     const RoadmapFromFilePutEdgeLengthMap<PropMap>& map,
     const typename RoadmapFromFilePutEdgeLengthMap<PropMap>::key_type& k,
-    const std::string representation)
-{
+    const std::string representation) {
   put(map.mPropMap, k, stod(representation));
 }
 
 /* RoadmapFromFile */
 template <class Graph, class VStateMap, class StateWrapper, class ELength>
-class RoadmapFromFile
-{
+class RoadmapFromFile {
   typedef boost::graph_traits<Graph> GraphTypes;
   typedef typename GraphTypes::vertex_descriptor Vertex;
   typedef typename GraphTypes::vertex_iterator VertexIter;
@@ -129,17 +120,14 @@ public:
   const std::string mFilename;
 
   RoadmapFromFile(const ompl::base::StateSpacePtr space, std::string filename)
-    : mFilename(filename), mSpace(space)
-  {
+    : mFilename(filename), mSpace(space) {
     mDim = mSpace->getDimension();
   }
 
-  ~RoadmapFromFile()
-  {
+  ~RoadmapFromFile() {
   }
 
-  void generate(Graph& g, VStateMap stateMap, ELength lengthMap)
-  {
+  void generate(Graph& g, VStateMap stateMap, ELength lengthMap) {
     boost::dynamic_properties props;
     props.property(
         "state",

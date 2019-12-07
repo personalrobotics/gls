@@ -48,7 +48,7 @@ typedef std::shared_ptr<Edge> EdgePtr;
 /// Shared pointer to a const Edge.
 typedef std::shared_ptr<const Edge> ConstEdgePtr;
 
-} // datastructures
-} // gls
+} // namespace datastructures
+} // namespace gls
 
 #endif // GLS_DATASTRUCTURES_TYPES_HPP_

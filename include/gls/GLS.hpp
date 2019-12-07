@@ -27,21 +27,12 @@
 
 namespace gls {
 
-enum TreeValidityStatus
-{
-  Valid,
-  NotValid
-};
+enum TreeValidityStatus { Valid, NotValid };
 
-enum PlannerStatus
-{
-  Solved,
-  NotSolved
-};
+enum PlannerStatus { Solved, NotSolved };
 
 /// The OMPL Planner class that implements the algorithm.
-class GLS : public ompl::base::Planner
-{
+class GLS : public ompl::base::Planner {
 public:
   /// Constructor.
   /// \param[in] si The OMPL space information manager.
@@ -159,10 +150,11 @@ private:
   const ompl::base::StateSpacePtr mSpace;
 
   /// Boost roadmap representation.
-  boost::shared_ptr<io::RoadmapFromFile<gls::datastructures::Graph,
-                                        gls::datastructures::VPStateMap,
-                                        gls::datastructures::State,
-                                        gls::datastructures::EPLengthMap>>
+  boost::shared_ptr<io::RoadmapFromFile<
+      gls::datastructures::Graph,
+      gls::datastructures::VPStateMap,
+      gls::datastructures::State,
+      gls::datastructures::EPLengthMap>>
       mRoadmap;
 
   /// Connection radius in the graph.

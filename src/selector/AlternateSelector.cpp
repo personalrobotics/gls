@@ -5,12 +5,11 @@
 namespace gls {
 namespace selector {
 
-using gls::datastructures::Path;
 using gls::datastructures::Edge;
+using gls::datastructures::Path;
 
 //==============================================================================
-AlternateSelector::AlternateSelector()
-{
+AlternateSelector::AlternateSelector() {
   // Setup forward selector.
   mForwardSelector = std::make_shared<gls::selector::ForwardSelector>();
   mForwardSelector->setup(mGraph);
@@ -21,8 +20,7 @@ AlternateSelector::AlternateSelector()
 }
 
 //==============================================================================
-Edge AlternateSelector::selectEdgeToEvaluate(Path path)
-{
+Edge AlternateSelector::selectEdgeToEvaluate(Path path) {
   // Flip the boolean.
   mUseForwardSelector = !mUseForwardSelector;
 

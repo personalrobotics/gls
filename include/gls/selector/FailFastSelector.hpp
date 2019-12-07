@@ -11,14 +11,14 @@ namespace gls {
 namespace selector {
 
 /// Unordered map defined as: <source name> <target name> <prior>
-typedef std::unordered_map<std::pair<std::size_t, std::size_t>,
-                           double,
-                           boost::hash<std::pair<std::size_t, std::size_t>>>
+typedef std::unordered_map<
+    std::pair<std::size_t, std::size_t>,
+    double,
+    boost::hash<std::pair<std::size_t, std::size_t>>>
     edgeToPriorMap;
 
 /// Selector that evaluates the edge most likely to be in collision.
-class FailFastSelector : public Selector
-{
+class FailFastSelector : public Selector {
 public:
   /// Constructor.
   FailFastSelector(edgeToPriorMap& priorMap);

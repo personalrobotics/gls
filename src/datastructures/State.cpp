@@ -6,33 +6,28 @@ namespace gls {
 namespace datastructures {
 
 // ================================================================================================
-State::State()
-{
+State::State() {
   // Do nothing.
 }
 
 // ================================================================================================
 State::State(ompl::base::StateSpacePtr space)
-  : mSpace(space), mState(space->allocState())
-{
+  : mSpace(space), mState(space->allocState()) {
   // Do nothing.
 }
 
 // ================================================================================================
-State::~State()
-{
+State::~State() {
   mSpace->freeState(this->mState);
 }
 
 // ================================================================================================
-ompl::base::State* State::getOMPLState()
-{
+ompl::base::State* State::getOMPLState() {
   return mState;
 }
 
 // ================================================================================================
-ompl::base::StateSpacePtr State::getStateSpace()
-{
+ompl::base::StateSpacePtr State::getStateSpace() {
   return mSpace;
 }
 

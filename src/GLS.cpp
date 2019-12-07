@@ -33,19 +33,16 @@ using gls::selector::SelectorPtr;
 namespace gls {
 
 GLS::GLS(const ompl::base::SpaceInformationPtr& si)
-  : ompl::base::Planner(si, "GLS"), mSpace(si->getStateSpace())
-{
+  : ompl::base::Planner(si, "GLS"), mSpace(si->getStateSpace()) {
   // Set default values for data members.
 }
 
-GLS::~GLS()
-{
+GLS::~GLS() {
   // Do nothing.
 }
 
 // ============================================================================
-void GLS::setup()
-{
+void GLS::setup() {
   // Check if already setup.
   if (static_cast<bool>(ompl::base::Planner::setup_))
     return;
@@ -65,11 +62,9 @@ void GLS::setup()
 }
 
 // ============================================================================
-void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
-{
+void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef) {
   // Make sure we setup the planner first.
-  if (!static_cast<bool>(ompl::base::Planner::setup_))
-  {
+  if (!static_cast<bool>(ompl::base::Planner::setup_)) {
     setup();
   }
 
@@ -81,8 +76,7 @@ void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef)
 }
 
 // ============================================================================
-void GLS::setupPreliminaries()
-{
+void GLS::setupPreliminaries() {
   // Issue a warning if mConnectionRadius = 0.
 
   // TODO (avk): Should I kill these pointers manually?
@@ -115,15 +109,13 @@ void GLS::setupPreliminaries()
 
   // TODO (AVK): Make this kNN + R-disc. Additionally join the start and goal.
   VertexIter vi, vi_end;
-  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
-  {
+  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi) {
     double sourceDistance = mSpace->distance(
         mGraph[*vi].getState()->getOMPLState(), sourceState->getOMPLState());
     double targetDistance = mSpace->distance(
         mGraph[*vi].getState()->getOMPLState(), targetState->getOMPLState());
 
-    if (sourceDistance < mConnectionRadius)
-    {
+    if (sourceDistance < mConnectionRadius) {
       if (mSourceVertex == *vi)
         continue;
 
@@ -136,8 +128,7 @@ void GLS::setupPreliminaries()
       assert(newEdge.second);
     }
 
-    if (targetDistance < mConnectionRadius)
-    {
+    if (targetDistance < mConnectionRadius) {
       if (mTargetVertex == *vi)
         continue;
 
@@ -166,8 +157,7 @@ void GLS::setupPreliminaries()
 }
 
 // ============================================================================
-void GLS::clear()
-{
+void GLS::clear() {
   // Call the base clear
   ompl::base::Planner::clear();
 
@@ -182,8 +172,7 @@ void GLS::clear()
 
   // Reset the vertices and edges.
   VertexIter vi, vi_end;
-  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi)
-  {
+  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi) {
     mGraph[*vi].setCostToCome(std::numeric_limits<double>::max());
     mGraph[*vi].setHeuristic(std::numeric_limits<double>::max());
     mGraph[*vi].removeAllChildren();
@@ -192,8 +181,7 @@ void GLS::clear()
   }
 
   EdgeIter ei, ei_end;
-  for (boost::tie(ei, ei_end) = edges(mGraph); ei != ei_end; ++ei)
-  {
+  for (boost::tie(ei, ei_end) = edges(mGraph); ei != ei_end; ++ei) {
     mGraph[*ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
     mGraph[*ei].setCollisionStatus(CollisionStatus::Free);
   }
@@ -219,19 +207,16 @@ void GLS::clear()
 
 // ============================================================================
 ompl::base::PlannerStatus GLS::solve(
-    const ompl::base::PlannerTerminationCondition& /*ptc*/)
-{
+    const ompl::base::PlannerTerminationCondition& /*ptc*/) {
   // TODO (avk): Use ptc to terminate the search.
 
   // Return if source or target are in collision.
-  if (evaluateVertex(mSourceVertex) == CollisionStatus::Collision)
-  {
+  if (evaluateVertex(mSourceVertex) == CollisionStatus::Collision) {
     OMPL_INFORM("Start State is invalid.");
     return ompl::base::PlannerStatus::INVALID_START;
   }
 
-  if (evaluateVertex(mTargetVertex) == CollisionStatus::Collision)
-  {
+  if (evaluateVertex(mTargetVertex) == CollisionStatus::Collision) {
     OMPL_INFORM("Goal State is invalid.");
     return ompl::base::PlannerStatus::INVALID_GOAL;
   }
@@ -245,8 +230,7 @@ ompl::base::PlannerStatus GLS::solve(
       mSourceVertex, mGraph[mSourceVertex].getEstimatedTotalCost());
 
   // Run in loop.
-  while (!mExtendQueue.isEmpty())
-  {
+  while (!mExtendQueue.isEmpty()) {
     // Extend the tree till the event is triggered.
     extendSearchTree();
 
@@ -258,46 +242,38 @@ ompl::base::PlannerStatus GLS::solve(
       break;
   }
 
-  if (mPlannerStatus == PlannerStatus::Solved)
-  {
+  if (mPlannerStatus == PlannerStatus::Solved) {
     setBestPathCost(mGraph[mTargetVertex].getCostToCome());
     pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
     return ompl::base::PlannerStatus::EXACT_SOLUTION;
-  }
-  else
-  {
+  } else {
     OMPL_INFORM("No Solution Found.");
     return ompl::base::PlannerStatus::TIMEOUT;
   }
 }
 
 // ============================================================================
-void GLS::setEvent(EventPtr event)
-{
+void GLS::setEvent(EventPtr event) {
   mEvent = event;
 }
 
 // ============================================================================
-ConstEventPtr GLS::getEvent() const
-{
+ConstEventPtr GLS::getEvent() const {
   return mEvent;
 }
 
 // ============================================================================
-void GLS::setSelector(SelectorPtr selector)
-{
+void GLS::setSelector(SelectorPtr selector) {
   mSelector = selector;
 }
 
 // ============================================================================
-ConstSelectorPtr GLS::getSelector() const
-{
+ConstSelectorPtr GLS::getSelector() const {
   return mSelector;
 }
 
 // ============================================================================
-Edge GLS::getEdge(Vertex u, Vertex v)
-{
+Edge GLS::getEdge(Vertex u, Vertex v) {
   Edge uv;
   bool edgeExists;
   boost::tie(uv, edgeExists) = edge(u, v, mGraph);
@@ -307,11 +283,9 @@ Edge GLS::getEdge(Vertex u, Vertex v)
 }
 
 // ============================================================================
-Path GLS::getPathToSource(Vertex u)
-{
+Path GLS::getPathToSource(Vertex u) {
   Path pathToSource;
-  while (u != mSourceVertex)
-  {
+  while (u != mSourceVertex) {
     pathToSource.emplace_back(u);
     u = mGraph[u].getParent();
   }
@@ -320,14 +294,12 @@ Path GLS::getPathToSource(Vertex u)
 }
 
 // ============================================================================
-bool GLS::foundPathToGoal()
-{
+bool GLS::foundPathToGoal() {
   if (mGraph[mTargetVertex].getVisitStatus() == VisitStatus::NotVisited)
     return false;
 
   Path pathToGoal = getPathToSource(mTargetVertex);
-  for (std::size_t i = 0; i < pathToGoal.size() - 1; ++i)
-  {
+  for (std::size_t i = 0; i < pathToGoal.size() - 1; ++i) {
     Edge e = getEdge(pathToGoal[i + 1], pathToGoal[i]);
     if (mGraph[e].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
       return false;
@@ -340,8 +312,7 @@ bool GLS::foundPathToGoal()
 // TODO (avk): I should be able to set the heuristic function from the demo
 // script. Create a Heuristic Class and send it in. Have a default heuristic
 // if nothing has been set.
-double GLS::getGraphHeuristic(Vertex v)
-{
+double GLS::getGraphHeuristic(Vertex v) {
   double heuristic = mSpace->distance(
       mGraph[mTargetVertex].getState()->getOMPLState(),
       mGraph[v].getState()->getOMPLState());
@@ -349,32 +320,27 @@ double GLS::getGraphHeuristic(Vertex v)
 }
 
 // ============================================================================
-void GLS::setConnectionRadius(double radius)
-{
+void GLS::setConnectionRadius(double radius) {
   mConnectionRadius = radius;
 }
 
 // ============================================================================
-double GLS::getConnectionRadius()
-{
+double GLS::getConnectionRadius() {
   return mConnectionRadius;
 }
 
 // ============================================================================
-void GLS::setCollisionCheckResolution(double resolution)
-{
+void GLS::setCollisionCheckResolution(double resolution) {
   mCollisionCheckResolution = resolution;
 }
 
 // ============================================================================
-double GLS::getCollisionCheckResolution()
-{
+double GLS::getCollisionCheckResolution() {
   return mCollisionCheckResolution;
 }
 
 // ============================================================================
-void GLS::setRoadmap(std::string filename)
-{
+void GLS::setRoadmap(std::string filename) {
   if (filename == "")
     std::invalid_argument("Roadmap Filename cannot be empty!");
 
@@ -394,44 +360,37 @@ void GLS::setRoadmap(std::string filename)
 }
 
 // ============================================================================
-void GLS::setBestPathCost(double cost)
-{
+void GLS::setBestPathCost(double cost) {
   mBestPathCost = cost;
 }
 
 // ============================================================================
-double GLS::getBestPathCost()
-{
+double GLS::getBestPathCost() {
   return mBestPathCost;
 }
 
 // ============================================================================
-void GLS::setPlannerStatus(PlannerStatus status)
-{
+void GLS::setPlannerStatus(PlannerStatus status) {
   mPlannerStatus = status;
 }
 
 // ============================================================================
-PlannerStatus GLS::getPlannerStatus()
-{
+PlannerStatus GLS::getPlannerStatus() {
   return mPlannerStatus;
 }
 
 // ============================================================================
-double GLS::getNumberOfEdgeEvaluations()
-{
+double GLS::getNumberOfEdgeEvaluations() {
   return mNumberOfEdgeEvaluations;
 }
 
 // ============================================================================
-double GLS::getNumberOfEdgeRewires()
-{
+double GLS::getNumberOfEdgeRewires() {
   return mNumberOfEdgeRewires;
 }
 
 // ============================================================================
-CollisionStatus GLS::evaluateVertex(Vertex v)
-{
+CollisionStatus GLS::evaluateVertex(Vertex v) {
   // Access the validity checker.
   auto validityChecker = si_->getStateValidityChecker();
 
@@ -445,8 +404,7 @@ CollisionStatus GLS::evaluateVertex(Vertex v)
 }
 
 // ============================================================================
-CollisionStatus GLS::evaluateEdge(const Edge& e)
-{
+CollisionStatus GLS::evaluateEdge(const Edge& e) {
   mNumberOfEdgeEvaluations++;
 
   // Access the validity checker.
@@ -460,22 +418,19 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
   auto endState = mGraph[endVertex].getState()->getOMPLState();
 
   // Evaluate Start and End States.
-  if (!validityChecker->isValid(startState))
-  {
+  if (!validityChecker->isValid(startState)) {
     mGraph[startVertex].setCollisionStatus(CollisionStatus::Collision);
     return CollisionStatus::Collision;
   }
 
-  if (!validityChecker->isValid(endState))
-  {
+  if (!validityChecker->isValid(endState)) {
     mGraph[endVertex].setCollisionStatus(CollisionStatus::Collision);
     return CollisionStatus::Collision;
   }
 
   // Evaluate the state in between.
   int maxSteps = 1.0 / mCollisionCheckResolution;
-  for (int multiplier = 1; multiplier < maxSteps + 1; ++multiplier)
-  {
+  for (int multiplier = 1; multiplier < maxSteps + 1; ++multiplier) {
     double interpolationStep = mCollisionCheckResolution * multiplier;
     assert(interpolationStep <= 1);
     StatePtr midVertex(new gls::datastructures::State(mSpace));
@@ -491,13 +446,11 @@ CollisionStatus GLS::evaluateEdge(const Edge& e)
 }
 
 // ============================================================================
-void GLS::extendSearchTree()
-{
+void GLS::extendSearchTree() {
   // Ideally extend search tree should not be called when the queue is empty.
   assert(!mExtendQueue.isEmpty());
 
-  while (!mExtendQueue.isEmpty())
-  {
+  while (!mExtendQueue.isEmpty()) {
     // Check if the popping the top vertex triggers the event.
     Vertex u = mExtendQueue.getTopVertex();
     if (mEvent->isTriggered(u))
@@ -517,8 +470,7 @@ void GLS::extendSearchTree()
     // TODO (avk): Have a wrapper in case the implicit vs explicit.
     NeighborIter ni, ni_end;
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
-         ++ni)
-    {
+         ++ni) {
       Vertex v = *ni;
 
       // If the successor has been previously marked to be in collision,
@@ -543,17 +495,14 @@ void GLS::extendSearchTree()
         continue;
 
       double edgeLength = mGraph[uv].getLength();
-      if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited)
-      {
+      if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited) {
         assert(v != mSourceVertex);
         mGraph[v].setVisitStatus(VisitStatus::Visited);
         assert(
             mExtendQueue.hasVertexWithValue(
                 v, mGraph[v].getEstimatedTotalCost())
             == false);
-      }
-      else
-      {
+      } else {
         double oldCostToCome = mGraph[v].getCostToCome();
         double newCostToCome = mGraph[u].getCostToCome() + edgeLength;
 
@@ -565,8 +514,7 @@ void GLS::extendSearchTree()
           continue;
 
         // Tie-Breaking Rule
-        if (oldCostToCome == newCostToCome)
-        {
+        if (oldCostToCome == newCostToCome) {
           if (previousParent < u)
             continue;
         }
@@ -577,8 +525,7 @@ void GLS::extendSearchTree()
 
         // Remove the previous version of the vertex from possible queues.
         if (mExtendQueue.hasVertexWithValue(
-                v, mGraph[v].getEstimatedTotalCost()))
-        {
+                v, mGraph[v].getEstimatedTotalCost())) {
           mExtendQueue.removeVertexWithValue(
               v, mGraph[v].getEstimatedTotalCost());
         }
@@ -586,19 +533,17 @@ void GLS::extendSearchTree()
         // Cascade the updates to all the descendents.
         // Replace this with getDescendents() function.
         std::vector<Vertex> subtree = {v};
-        while (!subtree.empty())
-        {
+        while (!subtree.empty()) {
           auto iterT = subtree.rbegin();
           std::set<Vertex>& children = mGraph[*iterT].getChildren();
           subtree.pop_back();
 
-          for (auto iterS = children.begin(); iterS != children.end(); ++iterS)
-          {
+          for (auto iterS = children.begin(); iterS != children.end();
+               ++iterS) {
             mGraph[*iterS].setVisitStatus(VisitStatus::NotVisited);
             subtree.emplace_back(*iterS);
             if (mExtendQueue.hasVertexWithValue(
-                    *iterS, mGraph[*iterS].getEstimatedTotalCost()))
-            {
+                    *iterS, mGraph[*iterS].getEstimatedTotalCost())) {
               mExtendQueue.removeVertexWithValue(
                   *iterS, mGraph[*iterS].getEstimatedTotalCost());
             }
@@ -624,16 +569,12 @@ void GLS::extendSearchTree()
 }
 
 // ============================================================================
-void GLS::updateSearchTree()
-{
-  if (mTreeValidityStatus == TreeValidityStatus::Valid)
-  {
+void GLS::updateSearchTree() {
+  if (mTreeValidityStatus == TreeValidityStatus::Valid) {
     // Update the vertex properties of the entire search tree.
     mEvent->updateVertexProperties(mUpdateQueue);
     assert(mUpdateQueue.isEmpty());
-  }
-  else
-  {
+  } else {
     // Rewire the search tree.
     rewireSearchTree();
 
@@ -643,17 +584,14 @@ void GLS::updateSearchTree()
 }
 
 // ============================================================================
-void GLS::rewireSearchTree()
-{
+void GLS::rewireSearchTree() {
   // 1. Collect all the vertices that need to be rewired.
-  while (!mRewireQueue.isEmpty())
-  {
+  while (!mRewireQueue.isEmpty()) {
     Vertex v = mRewireQueue.popTopVertex();
 
     // Add all the children of the current node to mRewireQueue.
     auto children = mGraph[v].getChildren();
-    for (auto iterS = children.begin(); iterS != children.end(); ++iterS)
-    {
+    for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
       mRewireQueue.addVertexWithValue(*iterS, mGraph[*iterS].getCostToCome());
     }
     mGraph[v].removeAllChildren();
@@ -663,8 +601,7 @@ void GLS::rewireSearchTree()
 
     // Remove from mExtendQueue.
     // TODO (avk): Can this happen?
-    if (mExtendQueue.hasVertexWithValue(v, mGraph[v].getEstimatedTotalCost()))
-    {
+    if (mExtendQueue.hasVertexWithValue(v, mGraph[v].getEstimatedTotalCost())) {
       mExtendQueue.removeVertexWithValue(v, mGraph[v].getEstimatedTotalCost());
     }
 
@@ -679,8 +616,7 @@ void GLS::rewireSearchTree()
 
   // 2. Assign the nodes keys
   assert(mRewireQueue.isEmpty());
-  for (auto iterS = mRewireSet.begin(); iterS != mRewireSet.end(); ++iterS)
-  {
+  for (auto iterS = mRewireSet.begin(); iterS != mRewireSet.end(); ++iterS) {
     Vertex v = *iterS;
 
     // If the vertex has been marked to be in collision, ignore.
@@ -690,8 +626,7 @@ void GLS::rewireSearchTree()
     // Look for possible parents in the rest of the graph.
     NeighborIter ni, ni_end;
     for (boost::tie(ni, ni_end) = adjacent_vertices(v, mGraph); ni != ni_end;
-         ++ni)
-    {
+         ++ni) {
       // Get the possible parent.
       Vertex u = *ni;
 
@@ -712,8 +647,7 @@ void GLS::rewireSearchTree()
         continue;
 
       // If the parent is gonna trigger the event, ignore.
-      if (mEvent->isTriggered(u))
-      {
+      if (mEvent->isTriggered(u)) {
         assert(mExtendQueue.hasVertexWithValue(
             u, mGraph[u].getEstimatedTotalCost()));
         continue;
@@ -728,13 +662,11 @@ void GLS::rewireSearchTree()
       Edge uv = getEdge(u, v);
       double edgeLength = mGraph[uv].getLength();
 
-      if (mGraph[uv].getCollisionStatus() == CollisionStatus::Free)
-      {
+      if (mGraph[uv].getCollisionStatus() == CollisionStatus::Free) {
         if (mGraph[v].getCostToCome() > mGraph[u].getCostToCome() + edgeLength
             || (mGraph[v].getCostToCome()
                     == mGraph[u].getCostToCome() + edgeLength
-                && u < mGraph[v].getParent()))
-        {
+                && u < mGraph[v].getParent())) {
           // Update the vertex.
           mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
           mGraph[v].setParent(u);
@@ -748,8 +680,7 @@ void GLS::rewireSearchTree()
   }
 
   // 3. Start Rewiring in the cost space
-  while (!mRewireQueue.isEmpty())
-  {
+  while (!mRewireQueue.isEmpty()) {
     Vertex u = mRewireQueue.popTopVertex();
 
     // Ignore loops.
@@ -769,8 +700,7 @@ void GLS::rewireSearchTree()
     // Check if u can be a better parent to the vertices being rewired.
     NeighborIter ni, ni_end;
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
-         ++ni)
-    {
+         ++ni) {
       Vertex v = *ni;
 
       // TODO (avk): Is this necessary?
@@ -784,15 +714,12 @@ void GLS::rewireSearchTree()
       Edge uv = getEdge(u, v);
       double edgeLength = mGraph[uv].getLength();
 
-      if (mGraph[uv].getCollisionStatus() == CollisionStatus::Free)
-      {
+      if (mGraph[uv].getCollisionStatus() == CollisionStatus::Free) {
         if (mGraph[v].getCostToCome() > mGraph[u].getCostToCome() + edgeLength
             || (mGraph[v].getCostToCome()
                     == mGraph[u].getCostToCome() + edgeLength
-                && u < mGraph[v].getParent()))
-        {
-          if (mRewireQueue.hasVertexWithValue(v, mGraph[v].getCostToCome()))
-          {
+                && u < mGraph[v].getParent())) {
+          if (mRewireQueue.hasVertexWithValue(v, mGraph[v].getCostToCome())) {
             mRewireQueue.removeVertexWithValue(v, mGraph[v].getCostToCome());
           }
 
@@ -813,8 +740,7 @@ void GLS::rewireSearchTree()
 }
 
 // ============================================================================
-void GLS::evaluateSearchTree()
-{
+void GLS::evaluateSearchTree() {
   if (mExtendQueue.isEmpty())
     return;
 
@@ -831,16 +757,13 @@ void GLS::evaluateSearchTree()
 
   // Evaluate the edge.
   mGraph[uv].setEvaluationStatus(EvaluationStatus::Evaluated);
-  if (evaluateEdge(uv) == CollisionStatus::Free)
-  {
+  if (evaluateEdge(uv) == CollisionStatus::Free) {
     // Set the edge collision status.
     mGraph[uv].setCollisionStatus(CollisionStatus::Free);
 
     // Populate the queue to update the search tree.
     mUpdateQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
-  }
-  else
-  {
+  } else {
     mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
     mTreeValidityStatus = TreeValidityStatus::NotValid;
 
@@ -853,10 +776,8 @@ void GLS::evaluateSearchTree()
   }
 
   if (bestVertex == mTargetVertex
-      && mTreeValidityStatus == TreeValidityStatus::Valid)
-  {
-    if (foundPathToGoal())
-    {
+      && mTreeValidityStatus == TreeValidityStatus::Valid) {
+    if (foundPathToGoal()) {
       // Planning problem has been solved!
       mPlannerStatus = PlannerStatus::Solved;
     }
@@ -868,20 +789,17 @@ void GLS::evaluateSearchTree()
 
 // ============================================================================
 ompl::base::PathPtr GLS::constructSolution(
-    const Vertex& source, const Vertex& target)
-{
+    const Vertex& source, const Vertex& target) {
   ompl::geometric::PathGeometric* path
       = new ompl::geometric::PathGeometric(si_);
   Vertex v = target;
 
-  while (v != source)
-  {
+  while (v != source) {
     path->append(mGraph[v].getState()->getOMPLState());
     v = mGraph[v].getParent();
   }
 
-  if (v == source)
-  {
+  if (v == source) {
     path->append(mGraph[source].getState()->getOMPLState());
   }
   path->reverse();

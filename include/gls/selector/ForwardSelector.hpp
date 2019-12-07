@@ -7,8 +7,7 @@ namespace gls {
 namespace selector {
 
 /// Selector that evaluates the edge on the path closest to the source.
-class ForwardSelector : public Selector
-{
+class ForwardSelector : public Selector {
 public:
   /// Constructor.
   ForwardSelector();

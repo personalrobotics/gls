@@ -6,99 +6,82 @@ namespace gls {
 namespace datastructures {
 
 // ============================================================================
-void VertexProperties::setState(StatePtr state)
-{
+void VertexProperties::setState(StatePtr state) {
   mState = state;
 }
 
 // ============================================================================
-StatePtr VertexProperties::getState()
-{
+StatePtr VertexProperties::getState() {
   return mState;
 }
 
 // ============================================================================
-void VertexProperties::setCostToCome(double cost)
-{
+void VertexProperties::setCostToCome(double cost) {
   mCostToCome = cost;
 }
 
 // ============================================================================
-double VertexProperties::getCostToCome()
-{
+double VertexProperties::getCostToCome() {
   return mCostToCome;
 }
 
 // ============================================================================
-void VertexProperties::setHeuristic(double heuristic)
-{
+void VertexProperties::setHeuristic(double heuristic) {
   mHeuristic = heuristic;
 }
 
 // ============================================================================
-double VertexProperties::getHeuristic()
-{
+double VertexProperties::getHeuristic() {
   return mHeuristic;
 }
 
 // ============================================================================
-double VertexProperties::getEstimatedTotalCost()
-{
+double VertexProperties::getEstimatedTotalCost() {
   return mCostToCome + mHeuristic;
 }
 
 // ============================================================================
-void VertexProperties::setParent(Vertex parent)
-{
+void VertexProperties::setParent(Vertex parent) {
   mParent = parent;
 }
 
 // ============================================================================
-Vertex VertexProperties::getParent()
-{
+Vertex VertexProperties::getParent() {
   return mParent;
 }
 
 // ============================================================================
-std::set<Vertex>& VertexProperties::getChildren()
-{
+std::set<Vertex>& VertexProperties::getChildren() {
   return mChildren;
 }
 
 // ============================================================================
-void VertexProperties::setChildren(std::set<Vertex> children)
-{
+void VertexProperties::setChildren(std::set<Vertex> children) {
   mChildren = children;
 }
 
 // ============================================================================
-void VertexProperties::addChild(Vertex child)
-{
+void VertexProperties::addChild(Vertex child) {
   mChildren.emplace(child);
 }
 
 // ============================================================================
-void VertexProperties::addChildren(std::set<Vertex> children)
-{
-  for (auto iterS = children.begin(); iterS != children.end(); ++iterS)
-  {
+void VertexProperties::addChildren(std::set<Vertex> children) {
+  for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
     mChildren.emplace(*iterS);
   }
 }
 
 // ============================================================================
-void VertexProperties::removeChild(Vertex child)
-{
+void VertexProperties::removeChild(Vertex child) {
   auto iterS = mChildren.find(child);
   if (iterS != mChildren.end())
     mChildren.erase(iterS);
 }
 
 // ============================================================================
-void VertexProperties::removeChildren(std::set<Vertex> children)
-{
-  for (auto iterS = children.begin(); iterS != children.end(); ++iterS)
-  {
+void VertexProperties::removeChildren(std::set<Vertex> children) {
+  for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
     auto iterRemove = mChildren.find(*iterS);
     if (iterRemove != mChildren.end())
       mChildren.erase(iterRemove);
@@ -106,14 +89,12 @@ void VertexProperties::removeChildren(std::set<Vertex> children)
 }
 
 // ============================================================================
-void VertexProperties::removeAllChildren()
-{
+void VertexProperties::removeAllChildren() {
   mChildren.clear();
 }
 
 // ============================================================================
-bool VertexProperties::hasChild(Vertex child)
-{
+bool VertexProperties::hasChild(Vertex child) {
   auto iterS = mChildren.find(child);
   if (iterS != mChildren.end())
     return true;
@@ -121,64 +102,54 @@ bool VertexProperties::hasChild(Vertex child)
 }
 
 // ============================================================================
-void VertexProperties::setVisitStatus(VisitStatus status)
-{
+void VertexProperties::setVisitStatus(VisitStatus status) {
   mVisitStatus = status;
 }
 
 // ============================================================================
-VisitStatus VertexProperties::getVisitStatus()
-{
+VisitStatus VertexProperties::getVisitStatus() {
   return mVisitStatus;
 }
 
 // ============================================================================
-void VertexProperties::setCollisionStatus(CollisionStatus status)
-{
+void VertexProperties::setCollisionStatus(CollisionStatus status) {
   mCollisionStatus = status;
 }
 
 // ============================================================================
-CollisionStatus VertexProperties::getCollisionStatus()
-{
+CollisionStatus VertexProperties::getCollisionStatus() {
   return mCollisionStatus;
 }
 
 // ============================================================================
-void EdgeProperties::setLength(double length)
-{
+void EdgeProperties::setLength(double length) {
   mLength = length;
 }
 
 // ============================================================================
-double EdgeProperties::getLength()
-{
+double EdgeProperties::getLength() {
   return mLength;
 }
 
 // ============================================================================
-void EdgeProperties::setEvaluationStatus(EvaluationStatus evaluationStatus)
-{
+void EdgeProperties::setEvaluationStatus(EvaluationStatus evaluationStatus) {
   mEvaluationStatus = evaluationStatus;
 }
 
 // ============================================================================
-EvaluationStatus EdgeProperties::getEvaluationStatus()
-{
+EvaluationStatus EdgeProperties::getEvaluationStatus() {
   return mEvaluationStatus;
 }
 
 // ============================================================================
-void EdgeProperties::setCollisionStatus(CollisionStatus status)
-{
+void EdgeProperties::setCollisionStatus(CollisionStatus status) {
   mCollisionStatus = status;
 }
 
 // ============================================================================
-CollisionStatus EdgeProperties::getCollisionStatus()
-{
+CollisionStatus EdgeProperties::getCollisionStatus() {
   return mCollisionStatus;
 }
 
-} // datastructures
-} // gls
+} // namespace datastructures
+} // namespace gls

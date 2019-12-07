@@ -16,8 +16,7 @@ namespace selector {
 /// Selector is a base class for selecting edges to evaluate.
 /// The rule for selecting the edges to evaluate is specified
 /// by the concrete classes.
-class Selector
-{
+class Selector {
 public:
   /// Constructor.
   Selector();
@@ -45,7 +44,7 @@ protected:
 typedef std::shared_ptr<Selector> SelectorPtr;
 typedef std::shared_ptr<const Selector> ConstSelectorPtr;
 
-} // selector
-} // gls
+} // namespace selector
+} // namespace gls
 
 #endif // GLS_SELECTOR_SELECTOR_HPP_
