@@ -23,8 +23,7 @@ Edge ForwardSelector::selectEdgeToEvaluate(Path path) {
     bool edgeExists;
     boost::tie(edgeToEvaluate, edgeExists) = edge(path[i], path[i - 1], graph);
 
-    if (graph[edgeToEvaluate].getEvaluationStatus()
-        == EvaluationStatus::NotEvaluated)
+    if (graph[edgeToEvaluate].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
       break;
   }
 

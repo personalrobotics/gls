@@ -11,8 +11,7 @@ using gls::datastructures::SearchQueue;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-ConstantDepthEvent::ConstantDepthEvent(std::size_t depth)
-  : mDepthThreshold(depth) {
+ConstantDepthEvent::ConstantDepthEvent(std::size_t depth) : mDepthThreshold(depth) {
   // Do nothing.
 }
 

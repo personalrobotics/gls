@@ -34,8 +34,7 @@ void Event::updateVertexProperties(SearchQueue& updateQueue) {
     auto children = graph[vertex].getChildren();
     for (auto iterV = children.begin(); iterV != children.end(); ++iterV) {
       // Add the children into the queue for update.
-      assert(!updateQueue.hasVertexWithValue(
-          *iterV, graph[*iterV].getCostToCome()));
+      assert(!updateQueue.hasVertexWithValue(*iterV, graph[*iterV].getCostToCome()));
       updateQueue.addVertexWithValue(*iterV, graph[*iterV].getCostToCome());
     }
   }

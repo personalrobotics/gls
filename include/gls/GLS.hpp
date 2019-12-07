@@ -46,13 +46,11 @@ public:
 
   /// Set the problem definition and define the start, goal.
   /// \param[in] pdef OMPL Problem Definition.
-  void setProblemDefinition(
-      const ompl::base::ProblemDefinitionPtr& pdef) override;
+  void setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef) override;
 
   /// Solve the planning problem.
   /// \param[in] ptc OMPL Planning Termination Condition.
-  ompl::base::PlannerStatus solve(
-      const ompl::base::PlannerTerminationCondition& ptc);
+  ompl::base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition& ptc);
 
   /// Clear the planner setup.
   void clear() override;
@@ -110,8 +108,7 @@ private:
   void setupPreliminaries();
 
   /// Returns edge between source and target vertices.
-  gls::datastructures::Edge getEdge(
-      gls::datastructures::Vertex, gls::datastructures::Vertex);
+  gls::datastructures::Edge getEdge(gls::datastructures::Vertex, gls::datastructures::Vertex);
 
   /// Returns the path from vertex to source.
   gls::datastructures::Path getPathToSource(gls::datastructures::Vertex);
@@ -123,12 +120,10 @@ private:
   double getGraphHeuristic(gls::datastructures::Vertex v);
 
   /// Evaluates an edge for collision.
-  gls::datastructures::CollisionStatus evaluateVertex(
-      gls::datastructures::Vertex v);
+  gls::datastructures::CollisionStatus evaluateVertex(gls::datastructures::Vertex v);
 
   /// Evaluates an edge for collision.
-  gls::datastructures::CollisionStatus evaluateEdge(
-      const gls::datastructures::Edge& e);
+  gls::datastructures::CollisionStatus evaluateEdge(const gls::datastructures::Edge& e);
 
   /// Extends the search tree forwards.
   void extendSearchTree();

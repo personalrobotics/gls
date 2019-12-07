@@ -12,8 +12,7 @@ namespace gls {
 namespace datastructures {
 
 /// Basic Boost graph.
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS>
-    BasicGraph;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> BasicGraph;
 
 /// Shared pointer to a BasicGraph.
 typedef std::shared_ptr<BasicGraph> BasicGraphPtr;

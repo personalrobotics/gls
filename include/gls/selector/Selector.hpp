@@ -31,9 +31,7 @@ public:
   /// Selects edges to evaluate from given path.
   /// \param[in] path The list of vertices along the path.
   /// The vertices are from leaf to source.
-  virtual gls::datastructures::Edge selectEdgeToEvaluate(
-      gls::datastructures::Path path)
-      = 0;
+  virtual gls::datastructures::Edge selectEdgeToEvaluate(gls::datastructures::Path path) = 0;
 
 protected:
   /// Pointer to the graph.

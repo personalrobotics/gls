@@ -9,8 +9,7 @@ using gls::datastructures::Path;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-FailFastSelector::FailFastSelector(edgeToPriorMap& priorMap)
-  : mPriorMap(priorMap) {
+FailFastSelector::FailFastSelector(edgeToPriorMap& priorMap) : mPriorMap(priorMap) {
   // Do nothing.
 }
 

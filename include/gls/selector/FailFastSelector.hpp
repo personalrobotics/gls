@@ -24,8 +24,7 @@ public:
   FailFastSelector(edgeToPriorMap& priorMap);
 
   /// Documentation inherited.
-  gls::datastructures::Edge selectEdgeToEvaluate(
-      gls::datastructures::Path path) override;
+  gls::datastructures::Edge selectEdgeToEvaluate(gls::datastructures::Path path) override;
 
 protected:
   /// Evaluate the prior of given edge.

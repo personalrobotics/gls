@@ -11,8 +11,7 @@ using gls::datastructures::SearchQueue;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-SubPathExistenceEvent::SubPathExistenceEvent(
-    edgeToPriorMap& priorMap, double existenceThreshold)
+SubPathExistenceEvent::SubPathExistenceEvent(edgeToPriorMap& priorMap, double existenceThreshold)
   : mPriorMap(priorMap), mExistenceThreshold(existenceThreshold) {
   // Do nothing.
 }
@@ -86,8 +85,7 @@ void SubPathExistenceEvent::updateVertexInMap(Vertex vertex) {
   assert(graph[uv].getCollisionStatus() == CollisionStatus::Free);
   if (graph[uv].getEvaluationStatus() == EvaluationStatus::NotEvaluated) {
     // Update the prior if the edge from parent has not been evaluated yet.
-    mSubPathExistenceMap.emplace(
-        vertex, mSubPathExistenceMap[parent] * getPrior(uv));
+    mSubPathExistenceMap.emplace(vertex, mSubPathExistenceMap[parent] * getPrior(uv));
   } else {
     // Same probability of existence if edge from parent has been evaluated.
     mSubPathExistenceMap.emplace(vertex, mSubPathExistenceMap[parent]);

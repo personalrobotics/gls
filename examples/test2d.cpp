@@ -30,8 +30,7 @@ namespace po = boost::program_options;
 /// This is bound to the stateValidityChecker of the ompl StateSpace.
 /// \param[in] state The ompl state to check for validity.
 bool isPointValid(const ompl::base::State* state) {
-  double* values
-      = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+  double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
   if (values[0] >= 0.15 && values[0] <= 0.85)
     if (values[1] <= 0.85)
       return false;
@@ -45,8 +44,7 @@ bool isPointValid(const ompl::base::State* state) {
 ompl::base::ScopedState<ompl::base::RealVectorStateSpace> make_state(
     const ompl::base::StateSpacePtr space, double x, double y) {
   ompl::base::ScopedState<ompl::base::RealVectorStateSpace> state(space);
-  double* values
-      = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+  double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
   values[0] = x;
   values[1] = y;
   return state;
@@ -56,12 +54,8 @@ ompl::base::ScopedState<ompl::base::RealVectorStateSpace> make_state(
 int main(int argc, char* argv[]) {
   po::options_description desc("2D Map Planner Options");
   desc.add_options()("help,h", "produce help message")(
-      "source,s",
-      po::value<std::vector<float> >()->multitoken(),
-      "source configuration")(
-      "target,t",
-      po::value<std::vector<float> >()->multitoken(),
-      "target configuration");
+      "source,s", po::value<std::vector<float> >()->multitoken(), "source configuration")(
+      "target,t", po::value<std::vector<float> >()->multitoken(), "target configuration");
 
   // Read arguments
   po::variables_map vm;

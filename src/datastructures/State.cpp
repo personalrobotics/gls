@@ -11,8 +11,7 @@ State::State() {
 }
 
 // ================================================================================================
-State::State(ompl::base::StateSpacePtr space)
-  : mSpace(space), mState(space->allocState()) {
+State::State(ompl::base::StateSpacePtr space) : mSpace(space), mState(space->allocState()) {
   // Do nothing.
 }
 

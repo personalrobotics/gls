@@ -26,9 +26,8 @@ public:
       VertexSortingFunction;
 
   /// The underlying vertex queue.
-  typedef std::
-      set<std::pair<gls::datastructures::Vertex, double>, VertexSortingFunction>
-          VertexQueue;
+  typedef std::set<std::pair<gls::datastructures::Vertex, double>, VertexSortingFunction>
+      VertexQueue;
 
   /// Constructor.
   SearchQueue();
@@ -56,8 +55,7 @@ public:
   /// Remove vertex from search queue.
   /// \param[in] vertex Vertex to remove from the queue.
   /// \param[in] cost Cost associated with the vertex.
-  void removeVertexWithValue(
-      const gls::datastructures::Vertex vertex, double cost);
+  void removeVertexWithValue(const gls::datastructures::Vertex vertex, double cost);
 
   /// Returns true if queue is empty.
   bool isEmpty();
@@ -67,8 +65,7 @@ public:
 
   /// Returns true if queue has vertex.
   /// \param[in] vertex Vertex to search for in the queue.
-  bool hasVertexWithValue(
-      const gls::datastructures::Vertex vertex, double cost);
+  bool hasVertexWithValue(const gls::datastructures::Vertex vertex, double cost);
 
   void printQueue() const;
 

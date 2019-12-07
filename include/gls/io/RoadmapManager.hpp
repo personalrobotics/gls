@@ -35,8 +35,7 @@ public:
   typedef std::string value_type;
   typedef std::string reference;
 
-  RoadmapFromFilePutStateMap(
-      PropMap propMap, ompl::base::StateSpacePtr space, size_t dim)
+  RoadmapFromFilePutStateMap(PropMap propMap, ompl::base::StateSpacePtr space, size_t dim)
     : mPropMap{propMap}, mSpace{space}, mDim{dim} {
     // Do nothing.
   }
@@ -50,8 +49,7 @@ public:
 template <class PropMap, class StateWrapper>
 inline std::string get(
     const RoadmapFromFilePutStateMap<PropMap, StateWrapper>&,
-    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::
-        key_type&) {
+    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type&) {
   abort();
 }
 
@@ -59,8 +57,7 @@ inline std::string get(
 template <class PropMap, class StateWrapper>
 inline void put(
     const RoadmapFromFilePutStateMap<PropMap, StateWrapper>& map,
-    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type&
-        k,
+    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type& k,
     const std::string representation) {
   get(map.mPropMap, k).reset(new StateWrapper(map.mSpace));
   ompl::base::State* ver_state{get(map.mPropMap, k)->getOMPLState()};
@@ -130,11 +127,8 @@ public:
   void generate(Graph& g, VStateMap stateMap, ELength lengthMap) {
     boost::dynamic_properties props;
     props.property(
-        "state",
-        RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(
-            stateMap, mSpace, mDim));
-    props.property(
-        "length", RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
+        "state", RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(stateMap, mSpace, mDim));
+    props.property("length", RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
 
     std::ifstream fp;
     fp.open(mFilename.c_str());

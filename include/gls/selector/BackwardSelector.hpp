@@ -13,8 +13,7 @@ public:
   BackwardSelector();
 
   /// Documentation inherited.
-  gls::datastructures::Edge selectEdgeToEvaluate(
-      gls::datastructures::Path path) override;
+  gls::datastructures::Edge selectEdgeToEvaluate(gls::datastructures::Path path) override;
 };
 
 } // namespace selector

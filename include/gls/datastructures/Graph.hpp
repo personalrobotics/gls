@@ -152,13 +152,9 @@ private:
 };
 
 /// Undirected Boost graph using the properties just defined.
-typedef boost::adjacency_list<
-    boost::vecS,
-    boost::vecS,
-    boost::undirectedS,
-    VertexProperties,
-    EdgeProperties>
-    Graph;
+typedef boost::
+    adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties>
+        Graph;
 
 /// Shared pointer to Graph.
 typedef std::shared_ptr<Graph> GraphPtr;
@@ -176,9 +172,8 @@ typedef boost::graph_traits<Graph>::edge_iterator EdgeIter;
 typedef boost::graph_traits<Graph>::adjacency_iterator NeighborIter;
 
 /// Map each vertex to the underlying state [read from the graphml file]
-typedef boost::property_map<
-    Graph,
-    gls::datastructures::StatePtr VertexProperties::*>::type VPStateMap;
+typedef boost::property_map<Graph, gls::datastructures::StatePtr VertexProperties::*>::type
+    VPStateMap;
 
 /// Map each edge to its length
 typedef boost::property_map<Graph, double EdgeProperties::*>::type EPLengthMap;
