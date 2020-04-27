@@ -9,7 +9,8 @@ using gls::datastructures::Path;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-FailFastSelector::FailFastSelector(edgeToPriorMap& priorMap) : mPriorMap(priorMap) {
+FailFastSelector::FailFastSelector(edgeToPriorMap& priorMap)
+    : mPriorMap(priorMap) {
   // Do nothing.
 }
 
@@ -47,5 +48,5 @@ double FailFastSelector::getPrior(Edge edge) {
   return mPriorMap[std::make_pair(u, v)];
 }
 
-} // namespace selector
-} // namespace gls
+}  // namespace selector
+}  // namespace gls

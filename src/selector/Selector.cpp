@@ -13,9 +13,7 @@ Selector::Selector() {
 }
 
 //==============================================================================
-void Selector::setup(Graph* graph) {
-  mGraph = graph;
-}
+void Selector::setup(Graph* graph) { mGraph = graph; }
 
-} // namespace selector
-} // namespace gls
+}  // namespace selector
+}  // namespace gls

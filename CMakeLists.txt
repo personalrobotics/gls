@@ -47,6 +47,7 @@ link_libraries(
 )
 
 add_library(${PROJECT_NAME}
+  src/common/ScopedTimer.cpp
   src/datastructures/Graph.cpp
   src/datastructures/SearchQueue.cpp
   src/datastructures/State.cpp

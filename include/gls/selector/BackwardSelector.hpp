@@ -8,15 +8,16 @@ namespace selector {
 
 /// Selector that evaluates the edge on the path closest to the target.
 class BackwardSelector : public Selector {
-public:
+ public:
   /// Constructor.
   BackwardSelector();
 
   /// Documentation inherited.
-  gls::datastructures::Edge selectEdgeToEvaluate(gls::datastructures::Path path) override;
+  gls::datastructures::Edge selectEdgeToEvaluate(
+      gls::datastructures::Path path) override;
 };
 
-} // namespace selector
-} // namespace gls
+}  // namespace selector
+}  // namespace gls
 
-#endif // GLS_SELECTOR_BACKWARDSELECTOR_HPP_
+#endif  // GLS_SELECTOR_BACKWARDSELECTOR_HPP_

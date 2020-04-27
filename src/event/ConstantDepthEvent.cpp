@@ -11,7 +11,8 @@ using gls::datastructures::SearchQueue;
 using gls::datastructures::Vertex;
 
 //==============================================================================
-ConstantDepthEvent::ConstantDepthEvent(std::size_t depth) : mDepthThreshold(depth) {
+ConstantDepthEvent::ConstantDepthEvent(std::size_t depth)
+    : mDepthThreshold(depth) {
   // Do nothing.
 }
 
@@ -31,8 +32,7 @@ bool ConstantDepthEvent::isTriggered(const Vertex& vertex) {
 void ConstantDepthEvent::updateVertexProperties(Vertex& vertex) {
   // Remove vertex if it already exists in the map.
   auto iterM = mVertexDepthMap.find(vertex);
-  if (iterM != mVertexDepthMap.end())
-    mVertexDepthMap.erase(iterM);
+  if (iterM != mVertexDepthMap.end()) mVertexDepthMap.erase(iterM);
 
   // Add updated vertex.
   updateVertexInMap(vertex);
@@ -68,8 +68,7 @@ void ConstantDepthEvent::updateVertexInMap(Vertex& vertex) {
   // This is not really required but we do it to decrease the map size.
   if (parent == vertex) {
     auto iterM = mVertexDepthMap.find(vertex);
-    if (iterM != mVertexDepthMap.end())
-      mVertexDepthMap.erase(iterM);
+    if (iterM != mVertexDepthMap.end()) mVertexDepthMap.erase(iterM);
     return;
   }
 
@@ -92,5 +91,5 @@ void ConstantDepthEvent::updateVertexInMap(Vertex& vertex) {
   }
 }
 
-} // namespace event
-} // namespace gls
+}  // namespace event
+}  // namespace gls

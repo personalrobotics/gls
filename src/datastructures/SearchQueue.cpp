@@ -2,7 +2,7 @@
 
 #include "gls/datastructures/SearchQueue.hpp"
 
-#include <ompl/util/Console.h> // OMPL_INFORM
+#include <ompl/util/Console.h>  // OMPL_INFORM
 
 namespace gls {
 namespace datastructures {
@@ -10,18 +10,16 @@ namespace datastructures {
 using gls::datastructures::Vertex;
 
 SearchQueue::SearchQueue()
-  : mVertexQueue([this](
-                     const std::pair<gls::datastructures::Vertex, double>& lhs,
-                     const std::pair<gls::datastructures::Vertex, double>& rhs) {
-    return queueComparison(lhs, rhs);
-  }) {
+    : mVertexQueue(
+          [this](const std::pair<gls::datastructures::Vertex, double>& lhs,
+                 const std::pair<gls::datastructures::Vertex, double>& rhs) {
+            return queueComparison(lhs, rhs);
+          }) {
   // Do Nothing.
 }
 
 // ============================================================================
-void SearchQueue::clear() {
-  mVertexQueue.clear();
-}
+void SearchQueue::clear() { mVertexQueue.clear(); }
 
 // ============================================================================
 void SearchQueue::addVertexWithValue(Vertex vertex, double cost) {
@@ -38,9 +36,7 @@ Vertex SearchQueue::popTopVertex() {
 }
 
 // ============================================================================
-Vertex SearchQueue::getTopVertex() {
-  return (*mVertexQueue.begin()).first;
-}
+Vertex SearchQueue::getTopVertex() { return (*mVertexQueue.begin()).first; }
 
 // ============================================================================
 double SearchQueue::getTopVertexValue() {
@@ -50,28 +46,23 @@ double SearchQueue::getTopVertexValue() {
 // ============================================================================
 void SearchQueue::removeVertexWithValue(Vertex vertex, double cost) {
   auto iterQ = mVertexQueue.find(std::make_pair(vertex, cost));
-  if (iterQ != mVertexQueue.end())
-    mVertexQueue.erase(iterQ);
+  if (iterQ != mVertexQueue.end()) mVertexQueue.erase(iterQ);
 }
 
 // ============================================================================
 bool SearchQueue::isEmpty() {
-  if (mVertexQueue.empty())
-    return true;
+  if (mVertexQueue.empty()) return true;
 
   return false;
 }
 
 // ============================================================================
-std::size_t SearchQueue::getSize() const {
-  return mVertexQueue.size();
-}
+std::size_t SearchQueue::getSize() const { return mVertexQueue.size(); }
 
 // ============================================================================
 bool SearchQueue::hasVertexWithValue(const Vertex vertex, double cost) {
   auto iterQ = mVertexQueue.find(std::make_pair(vertex, cost));
-  if (iterQ != mVertexQueue.end())
-    return true;
+  if (iterQ != mVertexQueue.end()) return true;
 
   return false;
 }
@@ -94,7 +85,8 @@ void SearchQueue::printQueue() const {
   std::cout << "--------------------" << std::endl;
   std::cout << "Queue Size: " << mVertexQueue.size() << std::endl;
   std::cout << "--------------------" << std::endl;
-  for (auto iterQ = mVertexQueue.begin(); iterQ != mVertexQueue.end(); ++iterQ) {
+  for (auto iterQ = mVertexQueue.begin(); iterQ != mVertexQueue.end();
+       ++iterQ) {
     auto pair = *iterQ;
     std::cout << "Vertex: " << pair.first << " "
               << "Cost: " << pair.second << std::endl;
@@ -102,5 +94,5 @@ void SearchQueue::printQueue() const {
   std::cout << "--------------------" << std::endl;
 }
 
-} // namespace datastructures
-} // namespace gls
+}  // namespace datastructures
+}  // namespace gls

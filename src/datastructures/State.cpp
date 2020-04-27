@@ -11,24 +11,19 @@ State::State() {
 }
 
 // ================================================================================================
-State::State(ompl::base::StateSpacePtr space) : mSpace(space), mState(space->allocState()) {
+State::State(ompl::base::StateSpacePtr space)
+    : mSpace(space), mState(space->allocState()) {
   // Do nothing.
 }
 
 // ================================================================================================
-State::~State() {
-  mSpace->freeState(this->mState);
-}
+State::~State() { mSpace->freeState(this->mState); }
 
 // ================================================================================================
-ompl::base::State* State::getOMPLState() {
-  return mState;
-}
+ompl::base::State* State::getOMPLState() { return mState; }
 
 // ================================================================================================
-ompl::base::StateSpacePtr State::getStateSpace() {
-  return mSpace;
-}
+ompl::base::StateSpacePtr State::getStateSpace() { return mSpace; }
 
-} // namespace datastructures
-} // namespace gls
+}  // namespace datastructures
+}  // namespace gls

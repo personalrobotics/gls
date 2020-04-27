@@ -12,7 +12,8 @@ namespace gls {
 namespace datastructures {
 
 /// Basic Boost graph.
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> BasicGraph;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS>
+    BasicGraph;
 
 /// Shared pointer to a BasicGraph.
 typedef std::shared_ptr<BasicGraph> BasicGraphPtr;
@@ -47,7 +48,7 @@ typedef std::shared_ptr<Edge> EdgePtr;
 /// Shared pointer to a const Edge.
 typedef std::shared_ptr<const Edge> ConstEdgePtr;
 
-} // namespace datastructures
-} // namespace gls
+}  // namespace datastructures
+}  // namespace gls
 
-#endif // GLS_DATASTRUCTURES_TYPES_HPP_
+#endif  // GLS_DATASTRUCTURES_TYPES_HPP_

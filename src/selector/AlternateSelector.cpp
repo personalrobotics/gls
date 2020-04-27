@@ -1,4 +1,5 @@
 #include "gls/selector/AlternateSelector.hpp"
+
 #include "gls/selector/BackwardSelector.hpp"
 #include "gls/selector/ForwardSelector.hpp"
 
@@ -30,5 +31,5 @@ Edge AlternateSelector::selectEdgeToEvaluate(Path path) {
     return mBackwardSelector->selectEdgeToEvaluate(path);
 }
 
-} // namespace selector
-} // namespace gls
+}  // namespace selector
+}  // namespace gls

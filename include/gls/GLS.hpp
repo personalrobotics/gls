@@ -33,7 +33,7 @@ enum PlannerStatus { Solved, NotSolved };
 
 /// The OMPL Planner class that implements the algorithm.
 class GLS : public ompl::base::Planner {
-public:
+ public:
   /// Constructor.
   /// \param[in] si The OMPL space information manager.
   explicit GLS(const ompl::base::SpaceInformationPtr& si);
@@ -46,11 +46,13 @@ public:
 
   /// Set the problem definition and define the start, goal.
   /// \param[in] pdef OMPL Problem Definition.
-  void setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef) override;
+  void setProblemDefinition(
+      const ompl::base::ProblemDefinitionPtr& pdef) override;
 
   /// Solve the planning problem.
   /// \param[in] ptc OMPL Planning Termination Condition.
-  ompl::base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition& ptc);
+  ompl::base::PlannerStatus solve(
+      const ompl::base::PlannerTerminationCondition& ptc);
 
   /// Clear the planner setup.
   void clear() override;
@@ -102,13 +104,14 @@ public:
   /// Get the number of edges rewired.
   double getNumberOfEdgeRewires();
 
-private:
+ private:
   /// Adds source and target vertices, and relevant edges to \c mGraph.
   /// Sets up the event and the selector.
   void setupPreliminaries();
 
   /// Returns edge between source and target vertices.
-  gls::datastructures::Edge getEdge(gls::datastructures::Vertex, gls::datastructures::Vertex);
+  gls::datastructures::Edge getEdge(gls::datastructures::Vertex,
+                                    gls::datastructures::Vertex);
 
   /// Returns the path from vertex to source.
   gls::datastructures::Path getPathToSource(gls::datastructures::Vertex);
@@ -120,10 +123,12 @@ private:
   double getGraphHeuristic(gls::datastructures::Vertex v);
 
   /// Evaluates an edge for collision.
-  gls::datastructures::CollisionStatus evaluateVertex(gls::datastructures::Vertex v);
+  gls::datastructures::CollisionStatus evaluateVertex(
+      gls::datastructures::Vertex v);
 
   /// Evaluates an edge for collision.
-  gls::datastructures::CollisionStatus evaluateEdge(const gls::datastructures::Edge& e);
+  gls::datastructures::CollisionStatus evaluateEdge(
+      const gls::datastructures::Edge& e);
 
   /// Extends the search tree forwards.
   void extendSearchTree();
@@ -138,18 +143,16 @@ private:
   void evaluateSearchTree();
 
   /// Return the path from source to target vertices.
-  ompl::base::PathPtr constructSolution(
-      const gls::datastructures::Vertex&, const gls::datastructures::Vertex&);
+  ompl::base::PathPtr constructSolution(const gls::datastructures::Vertex&,
+                                        const gls::datastructures::Vertex&);
 
   /// The pointer to the OMPL state space.
   const ompl::base::StateSpacePtr mSpace;
 
   /// Boost roadmap representation.
   boost::shared_ptr<io::RoadmapFromFile<
-      gls::datastructures::Graph,
-      gls::datastructures::VPStateMap,
-      gls::datastructures::State,
-      gls::datastructures::EPLengthMap>>
+      gls::datastructures::Graph, gls::datastructures::VPStateMap,
+      gls::datastructures::State, gls::datastructures::EPLengthMap>>
       mRoadmap;
 
   /// Connection radius in the graph.
@@ -205,6 +208,6 @@ private:
   double mNumberOfEdgeRewires{0};
 };
 
-} // namespace gls
+}  // namespace gls
 
-#endif // GLS_GLS_HPP_
+#endif  // GLS_GLS_HPP_

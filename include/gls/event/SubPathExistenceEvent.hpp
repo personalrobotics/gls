@@ -9,17 +9,15 @@ namespace gls {
 namespace event {
 
 /// Unordered map defined as: <source name> <target name> <prior>
-typedef std::unordered_map<
-    std::pair<std::size_t, std::size_t>,
-    double,
-    boost::hash<std::pair<std::size_t, std::size_t>>>
+typedef std::unordered_map<std::pair<std::size_t, std::size_t>, double,
+                           boost::hash<std::pair<std::size_t, std::size_t>>>
     edgeToPriorMap;
 
 /// Event that triggers when the search tree reaches below given
 /// a threshold in probability of existence.
 /// Additionally, the event also triggers when the vertex is the target.
 class SubPathExistenceEvent : public Event {
-public:
+ public:
   /// Constructor.
   SubPathExistenceEvent(edgeToPriorMap& priorMap, double existenceThreshold);
 
@@ -29,7 +27,7 @@ public:
   /// Documentation inherited.
   void updateVertexProperties(gls::datastructures::Vertex& vertex) override;
 
-private:
+ private:
   /// Get the probability of the path to the vertex.
   double getExistenceProbability(const gls::datastructures::Vertex& vertex);
 
@@ -49,7 +47,7 @@ private:
   std::unordered_map<gls::datastructures::Vertex, double> mSubPathExistenceMap;
 };
 
-} // namespace event
-} // namespace gls
+}  // namespace event
+}  // namespace gls
 
-#endif // GLS_EVENT_SUBPATHEXISTENCEEVENT_HPP_
+#endif  // GLS_EVENT_SUBPATHEXISTENCEEVENT_HPP_

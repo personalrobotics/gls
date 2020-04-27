@@ -3,11 +3,9 @@
 #ifndef GLS_INPUT_ROADMAPMANAGER_HPP_
 #define GLS_INPUT_ROADMAPMANAGER_HPP_
 
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <ompl/base/ScopedState.h>
+#include <ompl/base/State.h>
+#include <ompl/base/StateSpace.h>
 #include <stdlib.h>
 
 #include <boost/function.hpp>
@@ -15,10 +13,11 @@
 #include <boost/graph/graphml.hpp>
 #include <boost/property_map/dynamic_property_map.hpp>
 #include <boost/shared_ptr.hpp>
-
-#include <ompl/base/ScopedState.h>
-#include <ompl/base/State.h>
-#include <ompl/base/StateSpace.h>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 namespace gls {
 namespace io {
@@ -29,14 +28,15 @@ namespace io {
 /// \tparam StateWrapper The wrapper for the ompl state.
 template <class PropMap, class StateWrapper>
 class RoadmapFromFilePutStateMap {
-public:
+ public:
   typedef boost::writable_property_map_tag category;
   typedef typename boost::property_traits<PropMap>::key_type key_type;
   typedef std::string value_type;
   typedef std::string reference;
 
-  RoadmapFromFilePutStateMap(PropMap propMap, ompl::base::StateSpacePtr space, size_t dim)
-    : mPropMap{propMap}, mSpace{space}, mDim{dim} {
+  RoadmapFromFilePutStateMap(PropMap propMap, ompl::base::StateSpacePtr space,
+                             size_t dim)
+      : mPropMap{propMap}, mSpace{space}, mDim{dim} {
     // Do nothing.
   }
 
@@ -47,9 +47,9 @@ public:
 
 // Do not allow calling get on this property map
 template <class PropMap, class StateWrapper>
-inline std::string get(
-    const RoadmapFromFilePutStateMap<PropMap, StateWrapper>&,
-    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type&) {
+inline std::string get(const RoadmapFromFilePutStateMap<PropMap, StateWrapper>&,
+                       const typename RoadmapFromFilePutStateMap<
+                           PropMap, StateWrapper>::key_type&) {
   abort();
 }
 
@@ -57,7 +57,8 @@ inline std::string get(
 template <class PropMap, class StateWrapper>
 inline void put(
     const RoadmapFromFilePutStateMap<PropMap, StateWrapper>& map,
-    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type& k,
+    const typename RoadmapFromFilePutStateMap<PropMap, StateWrapper>::key_type&
+        k,
     const std::string representation) {
   get(map.mPropMap, k).reset(new StateWrapper(map.mSpace));
   ompl::base::State* ver_state{get(map.mPropMap, k)->getOMPLState()};
@@ -77,15 +78,14 @@ inline void put(
 /// \tparam PropMap The type of property map for vertex states
 template <class PropMap>
 class RoadmapFromFilePutEdgeLengthMap {
-public:
+ public:
   typedef boost::writable_property_map_tag category;
   typedef typename boost::property_traits<PropMap>::key_type key_type;
   typedef std::string value_type;
   typedef std::string reference;
   const PropMap mPropMap;
 
-  RoadmapFromFilePutEdgeLengthMap(PropMap propMap) : mPropMap(propMap) {
-  }
+  RoadmapFromFilePutEdgeLengthMap(PropMap propMap) : mPropMap(propMap) {}
 };
 
 /// Do not allow calling get on this property map
@@ -113,22 +113,22 @@ class RoadmapFromFile {
   typedef typename GraphTypes::edge_descriptor Edge;
   typedef typename GraphTypes::edge_iterator EdgeIter;
 
-public:
+ public:
   const std::string mFilename;
 
   RoadmapFromFile(const ompl::base::StateSpacePtr space, std::string filename)
-    : mFilename(filename), mSpace(space) {
+      : mFilename(filename), mSpace(space) {
     mDim = mSpace->getDimension();
   }
 
-  ~RoadmapFromFile() {
-  }
+  ~RoadmapFromFile() {}
 
   void generate(Graph& g, VStateMap stateMap, ELength lengthMap) {
     boost::dynamic_properties props;
-    props.property(
-        "state", RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(stateMap, mSpace, mDim));
-    props.property("length", RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
+    props.property("state", RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(
+                                stateMap, mSpace, mDim));
+    props.property("length",
+                   RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
 
     std::ifstream fp;
     fp.open(mFilename.c_str());
@@ -136,12 +136,12 @@ public:
     fp.close();
   }
 
-private:
+ private:
   size_t mDim;
   const ompl::base::StateSpacePtr mSpace;
 };
 
-} // namespace io
-} // namespace gls
+}  // namespace io
+}  // namespace gls
 
-#endif // GLS_INPUT_ROADMAPMANAGER_HPP_
+#endif  // GLS_INPUT_ROADMAPMANAGER_HPP_
