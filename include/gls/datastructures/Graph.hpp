@@ -3,16 +3,13 @@
 #ifndef GLS_DATASTRUCTURES_GRAPH_HPP_
 #define GLS_DATASTRUCTURES_GRAPH_HPP_
 
-// STL headers
-#include <set>
-#include <vector>
-
-// Boost headers
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/properties.hpp>
 #include <boost/property_map/dynamic_property_map.hpp>
+#include <set>
+#include <vector>
 
-// GLS headers
+#include "gls/datastructures/SearchQueue.hpp"
 #include "gls/datastructures/State.hpp"
 #include "gls/datastructures/Types.hpp"
 
@@ -95,8 +92,20 @@ class VertexProperties {
   // Get the collision status of the vertex.
   CollisionStatus getCollisionStatus();
 
+  // Sets the iterator to the vertex in the search queue.
+  void setSearchIterator(const SearchQueue::SearchQueueIterator);
+
+  /// \brief The iterator to the vertex in the queue.
+  SearchQueue::SearchQueueIterator getSearchIterator() const;
+
+  /// \brief Clear the iterator-set flag.
+  void clearSearchIterator();
+
+  /// \brief Indicates if current vertex is in search queue.
+  bool inSearchQueue() const;
+
   /// Underlying state.
-  /// TODO (avk): why is this public?
+  /// TODO (avk): Preferable if this was private.
   StatePtr mState;
 
  private:
@@ -117,6 +126,13 @@ class VertexProperties {
 
   /// Collision status.
   CollisionStatus mCollisionStatus{CollisionStatus::Free};
+
+  /// Iterator in the search queue.
+  SearchQueue::SearchQueueIterator mSearchIterator;
+
+  /// Flag indicating if the vertex is in the search queue.
+  /// This flag is updated whenever \c mSearchIterator is updated.
+  bool mInSearchQueue{false};
 };
 
 class EdgeProperties {

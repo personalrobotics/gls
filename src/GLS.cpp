@@ -50,7 +50,9 @@ void GLS::setup() {
   ompl::base::Planner::setup();
 
   // Check if the graph has been setup.
-  if (!mGraphSetup) std::invalid_argument("Graph has not been provided.");
+  if (!mGraphSetup) {
+    std::invalid_argument("Graph has not been provided.");
+  }
 
   // TODO (avk): If the graph is not provided, use implicit representation
   // for the edges using the NearestNeighbor representation.

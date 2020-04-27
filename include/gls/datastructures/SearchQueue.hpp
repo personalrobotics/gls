@@ -3,84 +3,89 @@
 #ifndef GLS_DATASTRUCTURES_SEARCHQUEUE_HPP_
 #define GLS_DATASTRUCTURES_SEARCHQUEUE_HPP_
 
-// STL headers
-#include <functional> // std::function
-#include <set>        // std::set
-
-// OMPL headers
 #include <ompl/base/Cost.h>
 #include <ompl/datastructures/BinaryHeap.h>
 
-// GLS headers
+#include <functional>
+#include <map>
+
 #include "gls/datastructures/Types.hpp"
 
 namespace gls {
 namespace datastructures {
 
+/// \brief A queue consists of vertices to be expanded during search. The queue
+/// is implemented as a ordered list of vertices prioritized by its total cost,
+/// specifically a multimap.
 class SearchQueue {
-public:
-  /// The function signature of the sorting function for the vertex queue.
-  typedef std::function<bool(
-      const std::pair<gls::datastructures::Vertex, double>&,
-      const std::pair<gls::datastructures::Vertex, double>&)>
-      VertexSortingFunction;
+ public:
+  /// \brief The function signature of the sorting function for the queue.
+  using SearchQueueComparator =
+      std::function<bool(const double&, const double&)>;
 
-  /// The underlying vertex queue.
-  typedef std::set<std::pair<gls::datastructures::Vertex, double>, VertexSortingFunction>
-      VertexQueue;
+  /// \brief The underlying vertex queue implemented as a multimap.
+  using VertexQueueMMap =
+      std::multimap<double, gls::datastructures::Vertex, SearchQueueComparator>;
 
-  /// Constructor.
-  SearchQueue();
+  /// \brief An iterator into the multimap.
+  /// Map has the important property that inserting a new element into a map
+  /// does not invalidate iterators that point to existing elements. Erasing an
+  /// element from a map also does not invalidate any iterators, except, of
+  /// course, iterators that actually point to the element that is being erased.
+  using SearchQueueIterator = VertexQueueMMap::iterator;
 
-  /// Destructor.
+  /// \brief Constructor.
+  explicit SearchQueue(std::string name = "SearchQueue");
+
+  /// \brief Destructor.
   virtual ~SearchQueue() = default;
 
-  /// Clear the search queue.
+  /// \brief Clear the search queue.
   void clear();
 
-  /// Adds vertex and value to search queue.
-  /// \param[in] vertex Vertex to remove from the queue.
-  /// \param[in] cost Cost the vertex is ties to.
-  void addVertexWithValue(gls::datastructures::Vertex vertex, double cost);
+  /// Add vertex to the search queue.
+  /// \param[in] vertex Vertex to add to the search queue.
+  void enqueueVertex(const gls::datastructures::Vertex& vertex,
+                     const double& cost);
 
   /// Pop top vertex.
   gls::datastructures::Vertex popTopVertex();
 
   /// Get top vertex. Does not remove from the queue.
-  gls::datastructures::Vertex getTopVertex();
+  gls::datastructures::Vertex getTopVertex() const;
 
   /// Get top vertex value.
-  double getTopVertexValue();
+  double getTopVertexCost() const;
 
   /// Remove vertex from search queue.
   /// \param[in] vertex Vertex to remove from the queue.
-  /// \param[in] cost Cost associated with the vertex.
-  void removeVertexWithValue(const gls::datastructures::Vertex vertex, double cost);
+  void dequeueVertex(gls::datastructures::Vertex& vertex);
 
   /// Returns true if queue is empty.
-  bool isEmpty();
+  bool isEmpty() const;
+
+  /// Returns the name of the queue.
+  std::string getName() const;
 
   /// Returns the size of the queue.
   std::size_t getSize() const;
 
-  /// Returns true if queue has vertex.
-  /// \param[in] vertex Vertex to search for in the queue.
-  bool hasVertexWithValue(const gls::datastructures::Vertex vertex, double cost);
-
+  /// Prints all the vertices in the queue as list of [ID :: Cost].
   void printQueue() const;
 
-private:
-  /// Custom comparator used to order vertices.
-  bool queueComparison(
-      const std::pair<gls::datastructures::Vertex, double>&,
-      const std::pair<gls::datastructures::Vertex, double>&) const;
+ private:
+  /// \brief A custom comparator function for the vertices in the queue.
+  bool queueComparison(const double&, const double&) const;
 
-  /// The underlying queue of vertices sorted by VertexQueueSortingFunction.
-  VertexQueue mVertexQueue;
+  /// \brief Name of the search queue.
+  std::string mName;
 
-}; // SearchQueue
+  /// \brief THe underlying queue of vertices.
+  VertexQueueMMap mVertexQueue;
 
-} // namespace datastructures
-} // namespace gls
+};  // SearchQueue
 
-#endif // GLS_DATASTRUCTURES_SEARCHQUEUE_HPP_
+}  // namespace datastructures
+}  // namespace gls
+
+#endif  // GLS_DATASTRUCTURES_SEARCHQUEUE_HPP_

@@ -50,16 +50,16 @@ add_library(${PROJECT_NAME}
   src/common/ScopedTimer.cpp
   src/datastructures/Graph.cpp
   src/datastructures/SearchQueue.cpp
-  src/datastructures/State.cpp
-  src/GLS.cpp
-  src/event/Event.cpp
-  src/event/ShortestPathEvent.cpp
-  src/event/ConstantDepthEvent.cpp
-  src/selector/Selector.cpp
-  src/selector/AlternateSelector.cpp
-  src/selector/BackwardSelector.cpp
-  src/selector/FailFastSelector.cpp
-  src/selector/ForwardSelector.cpp
+#   src/datastructures/State.cpp
+#   src/GLS.cpp
+#   src/event/Event.cpp
+#   src/event/ShortestPathEvent.cpp
+#   src/event/ConstantDepthEvent.cpp
+#   src/selector/Selector.cpp
+#   src/selector/AlternateSelector.cpp
+#   src/selector/BackwardSelector.cpp
+#   src/selector/FailFastSelector.cpp
+#   src/selector/ForwardSelector.cpp
 )
 
 #================================================================================
@@ -67,13 +67,13 @@ add_library(${PROJECT_NAME}
 #================================================================================
 
 # Correctness Test Script
-add_executable(test_ShortestPath_Forward examples/test_ShortestPath_Forward.cpp)
-target_link_libraries(test_ShortestPath_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
-install(TARGETS test_ShortestPath_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-add_executable(test_ConstantDepth_Forward examples/test_ConstantDepth_Forward.cpp)
-target_link_libraries(test_ConstantDepth_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
-install(TARGETS test_ConstantDepth_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+# add_executable(test_ShortestPath_Forward examples/test_ShortestPath_Forward.cpp)
+# target_link_libraries(test_ShortestPath_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
+# install(TARGETS test_ShortestPath_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+# 
+# add_executable(test_ConstantDepth_Forward examples/test_ConstantDepth_Forward.cpp)
+# target_link_libraries(test_ConstantDepth_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
+# install(TARGETS test_ConstantDepth_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #================================================================================
 # Installation

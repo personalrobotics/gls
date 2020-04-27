@@ -97,6 +97,26 @@ CollisionStatus VertexProperties::getCollisionStatus() {
 }
 
 // ============================================================================
+void VertexProperties::setSearchIterator(
+    const SearchQueue::SearchQueueIterator iterator) {
+  mSearchIterator = iterator;
+}
+
+// ============================================================================
+SearchQueue::SearchQueueIterator VertexProperties::getSearchIterator() const {
+  return mSearchIterator;
+}
+
+// ============================================================================
+void VertexProperties::clearSearchIterator() {
+  mSearchIterator = SearchQueue::SearchQueueIterator();
+  mInSearchQueue = false;
+}
+
+// ============================================================================
+bool VertexProperties::inSearchQueue() const { return mInSearchQueue; }
+
+// ============================================================================
 void EdgeProperties::setLength(double length) { mLength = length; }
 
 // ============================================================================

@@ -9,75 +9,85 @@ namespace datastructures {
 
 using gls::datastructures::Vertex;
 
-SearchQueue::SearchQueue()
-    : mVertexQueue(
-          [this](const std::pair<gls::datastructures::Vertex, double>& lhs,
-                 const std::pair<gls::datastructures::Vertex, double>& rhs) {
-            return queueComparison(lhs, rhs);
-          }) {
-  // Do Nothing.
+SearchQueue::SearchQueue(std::string name)
+    : mVertexQueue([this](const double& lhs, const double& rhs) {
+        return queueComparison(lhs, rhs);
+      }),
+      mName(name) {
+  // Do nothing.
 }
 
 // ============================================================================
 void SearchQueue::clear() { mVertexQueue.clear(); }
 
 // ============================================================================
-void SearchQueue::addVertexWithValue(Vertex vertex, double cost) {
-  std::pair<Vertex, double> addPair = std::make_pair(vertex, cost);
-  mVertexQueue.insert(addPair);
+void SearchQueue::enqueueVertex(const Vertex& vertex, const double& cost) {
+  SearchQueueIterator iterator =
+      mVertexQueue.insert(std::pair<double, Vertex>(cost, vertex));
+  // TODO(avk): Make the graph available to the search queue.
+  // vertex.setSearchIterator(iterator);
 }
 
 // ============================================================================
 Vertex SearchQueue::popTopVertex() {
-  Vertex topVertex = (*mVertexQueue.begin()).first;
-  mVertexQueue.erase(mVertexQueue.begin());
-
+  if (isEmpty()) {
+    throw std::invalid_argument("Cannot pop from empty queue");
+  }
+  Vertex topVertex = mVertexQueue.begin()->second;
+  dequeueVertex(topVertex);
   return topVertex;
 }
 
 // ============================================================================
-Vertex SearchQueue::getTopVertex() { return (*mVertexQueue.begin()).first; }
-
-// ============================================================================
-double SearchQueue::getTopVertexValue() {
-  return (*mVertexQueue.begin()).second;
+Vertex SearchQueue::getTopVertex() const {
+  if (isEmpty()) {
+    throw std::invalid_argument("No top vertex in an empty queue");
+  }
+  return mVertexQueue.begin()->second;
 }
 
 // ============================================================================
-void SearchQueue::removeVertexWithValue(Vertex vertex, double cost) {
-  auto iterQ = mVertexQueue.find(std::make_pair(vertex, cost));
-  if (iterQ != mVertexQueue.end()) mVertexQueue.erase(iterQ);
+double SearchQueue::getTopVertexCost() const {
+  if (isEmpty()) {
+    throw std::invalid_argument("No top vertex in an empty queue");
+  }
+  return mVertexQueue.begin()->first;
 }
 
 // ============================================================================
-bool SearchQueue::isEmpty() {
-  if (mVertexQueue.empty()) return true;
+void SearchQueue::dequeueVertex(Vertex& vertex) {
+  // If the queue is empty, no work to be done.
+  if (this->isEmpty()) {
+    return;
+  }
 
-  return false;
+  // TODO(avk): Make the graph available to the search queue.
+  // If the vertex to dequeue is not in the queue, no work to be done.
+  // if (!vertex.inSearchQueue()) {
+  // return;
+  // }
+  // mVertexQueue.erase(vertex.getSearchIterator());
+
+  // Clear the iterator and mark the vertex to not be in search queue.
+  // vertex.clearSearchIterator();
 }
+
+// ============================================================================
+bool SearchQueue::isEmpty() const { return mVertexQueue.empty(); }
+
+// ============================================================================
+std::string SearchQueue::getName() const { return mName; }
 
 // ============================================================================
 std::size_t SearchQueue::getSize() const { return mVertexQueue.size(); }
 
 // ============================================================================
-bool SearchQueue::hasVertexWithValue(const Vertex vertex, double cost) {
-  auto iterQ = mVertexQueue.find(std::make_pair(vertex, cost));
-  if (iterQ != mVertexQueue.end()) return true;
-
-  return false;
-}
-
-// ============================================================================
-bool SearchQueue::queueComparison(
-    const std::pair<gls::datastructures::Vertex, double>& left,
-    const std::pair<gls::datastructures::Vertex, double>& right) const {
-  if (left.second < right.second)
+bool SearchQueue::queueComparison(const double& left,
+                                  const double& right) const {
+  if (left <= right) {
     return true;
-  else if (left.second > right.second)
-    return false;
-  else {
-    return left.first < right.first;
   }
+  return false;
 }
 
 // ============================================================================
