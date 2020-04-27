@@ -13,10 +13,10 @@ public:
   ShortestPathEvent();
 
   /// Documentation inherited.
-  bool isTriggered(const gls::datastructures::Vertex vertex) override;
+  bool isTriggered(const gls::datastructures::Vertex& vertex) override;
 
   /// Documentation inherited.
-  void updateVertexProperties(gls::datastructures::Vertex vertex) override;
+  void updateVertexProperties(gls::datastructures::Vertex& vertex) override;
 };
 
 } // namespace event

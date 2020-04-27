@@ -24,20 +24,20 @@ public:
   SubPathExistenceEvent(edgeToPriorMap& priorMap, double existenceThreshold);
 
   /// Documentation inherited.
-  bool isTriggered(const gls::datastructures::Vertex vertex) override;
+  bool isTriggered(const gls::datastructures::Vertex& vertex) override;
 
   /// Documentation inherited.
-  void updateVertexProperties(gls::datastructures::Vertex vertex) override;
+  void updateVertexProperties(gls::datastructures::Vertex& vertex) override;
 
 private:
   /// Get the probability of the path to the vertex.
-  double getExistenceProbability(gls::datastructures::Vertex vertex);
+  double getExistenceProbability(const gls::datastructures::Vertex& vertex);
 
   /// Add vertex to the map.
-  void addVertexToMap(gls::datastructures::Vertex vertex);
+  void addVertexToMap(gls::datastructures::Vertex& vertex);
 
   /// Evaluate the prior of given edge.
-  double getPrior(gls::datastructures::Edge edge);
+  double getPrior(const gls::datastructures::Edge& edge);
 
   /// Map that stores the priors.
   edgeToPriorMap mPriorMap;

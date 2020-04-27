@@ -17,29 +17,32 @@ SubPathExistenceEvent::SubPathExistenceEvent(edgeToPriorMap& priorMap, double ex
 }
 
 //==============================================================================
-bool SubPathExistenceEvent::isTriggered(const Vertex vertex) {
-  if (vertex == mTargetVertex)
+bool SubPathExistenceEvent::isTriggered(const Vertex& vertex) {
+  if (vertex == mTargetVertex) {
     return true;
+  }
 
-  if (getExistenceThreshold(vertex) <= mExistenceThreshold)
+  if (getExistenceThreshold(vertex) <= mExistenceThreshold) {
     return true;
+  }
 
   return false;
 }
 
 //==============================================================================
-void SubPathExistenceEvent::updateVertexProperties(Vertex vertex) {
+void SubPathExistenceEvent::updateVertexProperties(Vertex& vertex) {
   // Remove vertex if it already exists in the map.
   auto iterM = mSubPathExistenceMap.find(vertex);
-  if (iterM != mSubPathExistenceMap.end())
+  if (iterM != mSubPathExistenceMap.end()) {
     mSubPathExistenceMap.erase(iterM);
+  }
 
   // Add updated vertex.
   updateVertexInMap(vertex);
 }
 
 //==============================================================================
-double SubPathExistenceEvent::getExistenceProbability(Vertex vertex) {
+double SubPathExistenceEvent::getExistenceProbability(const Vertex& vertex) {
   auto iterM = mSubPathExistenceMap.find(vertex);
   assert(iterM == mSubPathExistenceMap.end());
 
@@ -47,7 +50,7 @@ double SubPathExistenceEvent::getExistenceProbability(Vertex vertex) {
 }
 
 //==============================================================================
-void SubPathExistenceEvent::updateVertexInMap(Vertex vertex) {
+void SubPathExistenceEvent::updateVertexInMap(Vertex& vertex) {
   // Access the graph.
   auto graph = *mGraph;
 
@@ -93,7 +96,7 @@ void SubPathExistenceEvent::updateVertexInMap(Vertex vertex) {
 }
 
 //==============================================================================
-double SubPathExistenceEvent::getPrior(Edge edge) {
+double SubPathExistenceEvent::getPrior(const Edge& edge) {
   Vertex u = source(edge, graph);
   Vertex v = target(edge, graph);
 

@@ -74,10 +74,6 @@ add_executable(test_ConstantDepth_Forward examples/test_ConstantDepth_Forward.cp
 target_link_libraries(test_ConstantDepth_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
 install(TARGETS test_ConstantDepth_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-add_executable(test_cycle examples/test_cycle.cpp)
-target_link_libraries(test_cycle ${PROJECT_NAME} ${OpenCV_LIBS})
-install(TARGETS test_cycle RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
 #================================================================================
 # Installation
 #================================================================================

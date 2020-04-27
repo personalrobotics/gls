@@ -15,7 +15,7 @@ Event::Event() {
 }
 
 //==============================================================================
-void Event::setup(Graph* graph, Vertex source, Vertex target) {
+void Event::setup(Graph* graph, Vertex& source, Vertex& target) {
   mGraph = graph;
   mSourceVertex = source;
   mTargetVertex = target;

@@ -13,15 +13,15 @@ ShortestPathEvent::ShortestPathEvent() {
 }
 
 //==============================================================================
-bool ShortestPathEvent::isTriggered(const Vertex vertex) {
-  if (vertex == mTargetVertex)
+bool ShortestPathEvent::isTriggered(const Vertex& vertex) {
+  if (vertex == mTargetVertex) {
     return true;
-
+  }
   return false;
 }
 
 //==============================================================================
-void ShortestPathEvent::updateVertexProperties(Vertex /*vertex*/) {
+void ShortestPathEvent::updateVertexProperties(Vertex& /*vertex*/) {
   // Do nothing.
 }
 

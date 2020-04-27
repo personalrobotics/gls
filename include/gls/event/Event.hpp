@@ -33,18 +33,18 @@ public:
   /// \param[in] target Target vertex in the graph the event is attached to.
   void setup(
       gls::datastructures::Graph* graph,
-      gls::datastructures::Vertex source,
-      gls::datastructures::Vertex target);
+      gls::datastructures::Vertex& source,
+      gls::datastructures::Vertex& target);
 
   /// Return true if the event is triggered.
   /// \param[in] vertex Vertex that might cause the trigger.
-  virtual bool isTriggered(const gls::datastructures::Vertex vertex) = 0;
+  virtual bool isTriggered(const gls::datastructures::Vertex& vertex) = 0;
 
   /// Update vertex properties
   /// Concrete classes specify the appropriate update rules.
   /// \param[in] vertex Vertex whose properties need to be updated.
   /// downstream.
-  virtual void updateVertexProperties(gls::datastructures::Vertex vertex) = 0;
+  virtual void updateVertexProperties(gls::datastructures::Vertex& vertex) = 0;
 
   /// Update vertex properties
   /// Updates the tree by recursively calling update on each vertex.

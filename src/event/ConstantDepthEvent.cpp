@@ -16,18 +16,19 @@ ConstantDepthEvent::ConstantDepthEvent(std::size_t depth) : mDepthThreshold(dept
 }
 
 //==============================================================================
-bool ConstantDepthEvent::isTriggered(const Vertex vertex) {
-  if (vertex == mTargetVertex)
+bool ConstantDepthEvent::isTriggered(const Vertex& vertex) {
+  if (vertex == mTargetVertex) {
     return true;
+  }
 
-  if (getDepth(vertex) == mDepthThreshold)
+  if (getDepth(vertex) == mDepthThreshold) {
     return true;
-
+  }
   return false;
 }
 
 //==============================================================================
-void ConstantDepthEvent::updateVertexProperties(Vertex vertex) {
+void ConstantDepthEvent::updateVertexProperties(Vertex& vertex) {
   // Remove vertex if it already exists in the map.
   auto iterM = mVertexDepthMap.find(vertex);
   if (iterM != mVertexDepthMap.end())
@@ -38,7 +39,7 @@ void ConstantDepthEvent::updateVertexProperties(Vertex vertex) {
 }
 
 //==============================================================================
-std::size_t ConstantDepthEvent::getDepth(Vertex vertex) {
+std::size_t ConstantDepthEvent::getDepth(const Vertex& vertex) {
   auto iterM = mVertexDepthMap.find(vertex);
   assert(iterM != mVertexDepthMap.end());
 
@@ -46,7 +47,7 @@ std::size_t ConstantDepthEvent::getDepth(Vertex vertex) {
 }
 
 //==============================================================================
-void ConstantDepthEvent::updateVertexInMap(Vertex vertex) {
+void ConstantDepthEvent::updateVertexInMap(Vertex& vertex) {
   // Access the graph.
   auto graph = *mGraph;
 
