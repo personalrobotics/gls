@@ -9,23 +9,16 @@
 #include <set>
 #include <vector>
 
+#include "gls/GLS.hpp"
 #include "gls/datastructures/SearchQueue.hpp"
-#include "gls/datastructures/State.hpp"
 #include "gls/datastructures/Types.hpp"
 
 // TODO (avk): state and length are made public to accomodate the
 // roadmapmanager which seems stupid. Change it if possible.
 
 namespace gls {
-namespace datastructures {
 
-enum CollisionStatus { Collision, Free };
-
-enum VisitStatus { NotVisited, Visited };
-
-enum EvaluationStatus { NotEvaluated, Evaluated };
-
-class VertexProperties {
+class GLS::VertexProperties {
  public:
   // Set state wrapper around underlying OMPL state.
   void setState(StatePtr state);
@@ -128,14 +121,14 @@ class VertexProperties {
   CollisionStatus mCollisionStatus{CollisionStatus::Free};
 
   /// Iterator in the search queue.
-  SearchQueue::SearchQueueIterator mSearchIterator;
+  GLS::SearchQueue::SearchQueueIterator mSearchIterator;
 
   /// Flag indicating if the vertex is in the search queue.
   /// This flag is updated whenever \c mSearchIterator is updated.
   bool mInSearchQueue{false};
 };
 
-class EdgeProperties {
+class GLS::EdgeProperties {
  public:
   // Sets the length of the edge.
   void setLength(double length);
@@ -167,34 +160,19 @@ class EdgeProperties {
   CollisionStatus mCollisionStatus{CollisionStatus::Free};
 };
 
-/// Undirected Boost graph using the properties just defined.
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
-                              VertexProperties, EdgeProperties>
-    Graph;
-
-/// Shared pointer to Graph.
-typedef std::shared_ptr<Graph> GraphPtr;
-
-/// Shared pointer to const Graph.
-typedef std::shared_ptr<const Graph> ConstGraphPtr;
+using VPStateMap =
+    boost::property_map<GLS::Graph, GLS::StatePtr GLS::VertexProperties::*>::type;
+using EPLengthMap = boost::property_map<GLS::Graph, double GLS::EdgeProperties::*>::type;
 
 /// Boost vertex iterator
-typedef boost::graph_traits<Graph>::vertex_iterator VertexIter;
+typedef boost::graph_traits<GLS::Graph>::vertex_iterator VertexIter;
 
 /// Boost edge iterator
-typedef boost::graph_traits<Graph>::edge_iterator EdgeIter;
+typedef boost::graph_traits<GLS::Graph>::edge_iterator EdgeIter;
 
 /// Boost graph neighbor iterator
-typedef boost::graph_traits<Graph>::adjacency_iterator NeighborIter;
+typedef boost::graph_traits<GLS::Graph>::adjacency_iterator NeighborIter;
 
-/// Map each vertex to the underlying state [read from the graphml file]
-typedef boost::property_map<
-    Graph, gls::datastructures::StatePtr VertexProperties::*>::type VPStateMap;
-
-/// Map each edge to its length
-typedef boost::property_map<Graph, double EdgeProperties::*>::type EPLengthMap;
-
-}  // namespace datastructures
 }  // namespace gls
 
 #endif  // GLS_DATASTRUCTURES_GRAPH_HPP_

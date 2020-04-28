@@ -3,65 +3,64 @@
 #include "gls/datastructures/Graph.hpp"
 
 namespace gls {
-namespace datastructures {
 
 // ============================================================================
-void VertexProperties::setState(StatePtr state) { mState = state; }
+void GLS::VertexProperties::setState(StatePtr state) { mState = state; }
 
 // ============================================================================
-StatePtr VertexProperties::getState() { return mState; }
+GLS::StatePtr GLS::VertexProperties::getState() { return mState; }
 
 // ============================================================================
-void VertexProperties::setCostToCome(double cost) { mCostToCome = cost; }
+void GLS::VertexProperties::setCostToCome(double cost) { mCostToCome = cost; }
 
 // ============================================================================
-double VertexProperties::getCostToCome() { return mCostToCome; }
+double GLS::VertexProperties::getCostToCome() { return mCostToCome; }
 
 // ============================================================================
-void VertexProperties::setHeuristic(double heuristic) {
+void GLS::VertexProperties::setHeuristic(double heuristic) {
   mHeuristic = heuristic;
 }
 
 // ============================================================================
-double VertexProperties::getHeuristic() { return mHeuristic; }
+double GLS::VertexProperties::getHeuristic() { return mHeuristic; }
 
 // ============================================================================
-double VertexProperties::getEstimatedTotalCost() {
+double GLS::VertexProperties::getEstimatedTotalCost() {
   return mCostToCome + mHeuristic;
 }
 
 // ============================================================================
-void VertexProperties::setParent(Vertex parent) { mParent = parent; }
+void GLS::VertexProperties::setParent(Vertex parent) { mParent = parent; }
 
 // ============================================================================
-Vertex VertexProperties::getParent() { return mParent; }
+Vertex GLS::VertexProperties::getParent() { return mParent; }
 
 // ============================================================================
-std::set<Vertex>& VertexProperties::getChildren() { return mChildren; }
+std::set<Vertex>& GLS::VertexProperties::getChildren() { return mChildren; }
 
 // ============================================================================
-void VertexProperties::setChildren(std::set<Vertex> children) {
+void GLS::VertexProperties::setChildren(std::set<Vertex> children) {
   mChildren = children;
 }
 
 // ============================================================================
-void VertexProperties::addChild(Vertex child) { mChildren.emplace(child); }
+void GLS::VertexProperties::addChild(Vertex child) { mChildren.emplace(child); }
 
 // ============================================================================
-void VertexProperties::addChildren(std::set<Vertex> children) {
+void GLS::VertexProperties::addChildren(std::set<Vertex> children) {
   for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
     mChildren.emplace(*iterS);
   }
 }
 
 // ============================================================================
-void VertexProperties::removeChild(Vertex child) {
+void GLS::VertexProperties::removeChild(Vertex child) {
   auto iterS = mChildren.find(child);
   if (iterS != mChildren.end()) mChildren.erase(iterS);
 }
 
 // ============================================================================
-void VertexProperties::removeChildren(std::set<Vertex> children) {
+void GLS::VertexProperties::removeChildren(std::set<Vertex> children) {
   for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
     auto iterRemove = mChildren.find(*iterS);
     if (iterRemove != mChildren.end()) mChildren.erase(iterRemove);
@@ -69,78 +68,79 @@ void VertexProperties::removeChildren(std::set<Vertex> children) {
 }
 
 // ============================================================================
-void VertexProperties::removeAllChildren() { mChildren.clear(); }
+void GLS::VertexProperties::removeAllChildren() { mChildren.clear(); }
 
 // ============================================================================
-bool VertexProperties::hasChild(Vertex child) {
+bool GLS::VertexProperties::hasChild(Vertex child) {
   auto iterS = mChildren.find(child);
   if (iterS != mChildren.end()) return true;
   return false;
 }
 
 // ============================================================================
-void VertexProperties::setVisitStatus(VisitStatus status) {
+void GLS::VertexProperties::setVisitStatus(VisitStatus status) {
   mVisitStatus = status;
 }
 
 // ============================================================================
-VisitStatus VertexProperties::getVisitStatus() { return mVisitStatus; }
+VisitStatus GLS::VertexProperties::getVisitStatus() { return mVisitStatus; }
 
 // ============================================================================
-void VertexProperties::setCollisionStatus(CollisionStatus status) {
+void GLS::VertexProperties::setCollisionStatus(CollisionStatus status) {
   mCollisionStatus = status;
 }
 
 // ============================================================================
-CollisionStatus VertexProperties::getCollisionStatus() {
+CollisionStatus GLS::VertexProperties::getCollisionStatus() {
   return mCollisionStatus;
 }
 
 // ============================================================================
-void VertexProperties::setSearchIterator(
+void GLS::VertexProperties::setSearchIterator(
     const SearchQueue::SearchQueueIterator iterator) {
   mSearchIterator = iterator;
 }
 
 // ============================================================================
-SearchQueue::SearchQueueIterator VertexProperties::getSearchIterator() const {
+GLS::SearchQueue::SearchQueueIterator GLS::VertexProperties::getSearchIterator()
+    const {
   return mSearchIterator;
 }
 
 // ============================================================================
-void VertexProperties::clearSearchIterator() {
+void GLS::VertexProperties::clearSearchIterator() {
   mSearchIterator = SearchQueue::SearchQueueIterator();
   mInSearchQueue = false;
 }
 
 // ============================================================================
-bool VertexProperties::inSearchQueue() const { return mInSearchQueue; }
+bool GLS::VertexProperties::inSearchQueue() const { return mInSearchQueue; }
 
 // ============================================================================
-void EdgeProperties::setLength(double length) { mLength = length; }
+void GLS::EdgeProperties::setLength(double length) { mLength = length; }
 
 // ============================================================================
-double EdgeProperties::getLength() { return mLength; }
+double GLS::EdgeProperties::getLength() { return mLength; }
 
 // ============================================================================
-void EdgeProperties::setEvaluationStatus(EvaluationStatus evaluationStatus) {
+void GLS::EdgeProperties::setEvaluationStatus(
+    EvaluationStatus evaluationStatus) {
   mEvaluationStatus = evaluationStatus;
 }
 
 // ============================================================================
-EvaluationStatus EdgeProperties::getEvaluationStatus() {
+EvaluationStatus GLS::EdgeProperties::getEvaluationStatus() {
   return mEvaluationStatus;
 }
 
 // ============================================================================
-void EdgeProperties::setCollisionStatus(CollisionStatus status) {
+void GLS::EdgeProperties::setCollisionStatus(CollisionStatus status) {
   mCollisionStatus = status;
 }
 
 // ============================================================================
-CollisionStatus EdgeProperties::getCollisionStatus() {
+CollisionStatus GLS::EdgeProperties::getCollisionStatus() {
   return mCollisionStatus;
 }
 
-}  // namespace datastructures
 }  // namespace gls

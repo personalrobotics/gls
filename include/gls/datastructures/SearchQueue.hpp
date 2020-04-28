@@ -9,23 +9,22 @@
 #include <functional>
 #include <map>
 
+#include "gls/GLS.hpp"
 #include "gls/datastructures/Types.hpp"
 
 namespace gls {
-namespace datastructures {
 
 /// \brief A queue consists of vertices to be expanded during search. The queue
 /// is implemented as a ordered list of vertices prioritized by its total cost,
 /// specifically a multimap.
-class SearchQueue {
+class GLS::SearchQueue {
  public:
   /// \brief The function signature of the sorting function for the queue.
   using SearchQueueComparator =
       std::function<bool(const double&, const double&)>;
 
   /// \brief The underlying vertex queue implemented as a multimap.
-  using VertexQueueMMap =
-      std::multimap<double, gls::datastructures::Vertex, SearchQueueComparator>;
+  using VertexQueueMMap = std::multimap<double, Vertex, SearchQueueComparator>;
 
   /// \brief An iterator into the multimap.
   /// Map has the important property that inserting a new element into a map
@@ -40,26 +39,28 @@ class SearchQueue {
   /// \brief Destructor.
   virtual ~SearchQueue() = default;
 
+  /// \brief Provides access to the graph.
+  void setGraph(Graph* graph);
+
   /// \brief Clear the search queue.
   void clear();
 
   /// Add vertex to the search queue.
   /// \param[in] vertex Vertex to add to the search queue.
-  void enqueueVertex(const gls::datastructures::Vertex& vertex,
-                     const double& cost);
+  void enqueueVertex(const Vertex& vertex, const double& cost);
 
   /// Pop top vertex.
-  gls::datastructures::Vertex popTopVertex();
+  Vertex popTopVertex();
 
   /// Get top vertex. Does not remove from the queue.
-  gls::datastructures::Vertex getTopVertex() const;
+  Vertex getTopVertex() const;
 
   /// Get top vertex value.
   double getTopVertexCost() const;
 
   /// Remove vertex from search queue.
   /// \param[in] vertex Vertex to remove from the queue.
-  void dequeueVertex(gls::datastructures::Vertex& vertex);
+  void dequeueVertex(Vertex& vertex);
 
   /// Returns true if queue is empty.
   bool isEmpty() const;
@@ -83,9 +84,11 @@ class SearchQueue {
   /// \brief THe underlying queue of vertices.
   VertexQueueMMap mVertexQueue;
 
+  /// \brief Hold access to the graph to set vertex properties.
+  Graph* mGraph;
+
 };  // SearchQueue
 
-}  // namespace datastructures
 }  // namespace gls
 
 #endif  // GLS_DATASTRUCTURES_SEARCHQUEUE_HPP_

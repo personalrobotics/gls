@@ -2,14 +2,13 @@
 
 #include "gls/datastructures/SearchQueue.hpp"
 
-#include <ompl/util/Console.h>  // OMPL_INFORM
+#include <ompl/util/Console.h>
+
+#include "gls/datastructures/Graph.hpp"
 
 namespace gls {
-namespace datastructures {
 
-using gls::datastructures::Vertex;
-
-SearchQueue::SearchQueue(std::string name)
+GLS::SearchQueue::SearchQueue(std::string name)
     : mVertexQueue([this](const double& lhs, const double& rhs) {
         return queueComparison(lhs, rhs);
       }),
@@ -18,18 +17,22 @@ SearchQueue::SearchQueue(std::string name)
 }
 
 // ============================================================================
-void SearchQueue::clear() { mVertexQueue.clear(); }
+void GLS::SearchQueue::setGraph(Graph* graph) { mGraph = graph; }
 
 // ============================================================================
-void SearchQueue::enqueueVertex(const Vertex& vertex, const double& cost) {
+void GLS::SearchQueue::clear() { mVertexQueue.clear(); }
+
+// ============================================================================
+void GLS::SearchQueue::enqueueVertex(const Vertex& vertex, const double& cost) {
   SearchQueueIterator iterator =
       mVertexQueue.insert(std::pair<double, Vertex>(cost, vertex));
-  // TODO(avk): Make the graph available to the search queue.
-  // vertex.setSearchIterator(iterator);
+
+  auto& graph = *mGraph;
+  graph[vertex].setSearchIterator(iterator);
 }
 
 // ============================================================================
-Vertex SearchQueue::popTopVertex() {
+Vertex GLS::SearchQueue::popTopVertex() {
   if (isEmpty()) {
     throw std::invalid_argument("Cannot pop from empty queue");
   }
@@ -39,7 +42,7 @@ Vertex SearchQueue::popTopVertex() {
 }
 
 // ============================================================================
-Vertex SearchQueue::getTopVertex() const {
+Vertex GLS::SearchQueue::getTopVertex() const {
   if (isEmpty()) {
     throw std::invalid_argument("No top vertex in an empty queue");
   }
@@ -47,7 +50,7 @@ Vertex SearchQueue::getTopVertex() const {
 }
 
 // ============================================================================
-double SearchQueue::getTopVertexCost() const {
+double GLS::SearchQueue::getTopVertexCost() const {
   if (isEmpty()) {
     throw std::invalid_argument("No top vertex in an empty queue");
   }
@@ -55,35 +58,35 @@ double SearchQueue::getTopVertexCost() const {
 }
 
 // ============================================================================
-void SearchQueue::dequeueVertex(Vertex& vertex) {
+void GLS::SearchQueue::dequeueVertex(Vertex& vertex) {
   // If the queue is empty, no work to be done.
   if (this->isEmpty()) {
     return;
   }
 
-  // TODO(avk): Make the graph available to the search queue.
   // If the vertex to dequeue is not in the queue, no work to be done.
-  // if (!vertex.inSearchQueue()) {
-  // return;
-  // }
-  // mVertexQueue.erase(vertex.getSearchIterator());
+  auto& graph = *mGraph;
+  if (!graph[vertex].inSearchQueue()) {
+    return;
+  }
+  mVertexQueue.erase(graph[vertex].getSearchIterator());
 
   // Clear the iterator and mark the vertex to not be in search queue.
-  // vertex.clearSearchIterator();
+  graph[vertex].clearSearchIterator();
 }
 
 // ============================================================================
-bool SearchQueue::isEmpty() const { return mVertexQueue.empty(); }
+bool GLS::SearchQueue::isEmpty() const { return mVertexQueue.empty(); }
 
 // ============================================================================
-std::string SearchQueue::getName() const { return mName; }
+std::string GLS::SearchQueue::getName() const { return mName; }
 
 // ============================================================================
-std::size_t SearchQueue::getSize() const { return mVertexQueue.size(); }
+std::size_t GLS::SearchQueue::getSize() const { return mVertexQueue.size(); }
 
 // ============================================================================
-bool SearchQueue::queueComparison(const double& left,
-                                  const double& right) const {
+bool GLS::SearchQueue::queueComparison(const double& left,
+                                       const double& right) const {
   if (left <= right) {
     return true;
   }
@@ -91,7 +94,7 @@ bool SearchQueue::queueComparison(const double& left,
 }
 
 // ============================================================================
-void SearchQueue::printQueue() const {
+void GLS::SearchQueue::printQueue() const {
   std::cout << "--------------------" << std::endl;
   std::cout << "Queue Size: " << mVertexQueue.size() << std::endl;
   std::cout << "--------------------" << std::endl;
@@ -104,5 +107,4 @@ void SearchQueue::printQueue() const {
   std::cout << "--------------------" << std::endl;
 }
 
-}  // namespace datastructures
 }  // namespace gls
