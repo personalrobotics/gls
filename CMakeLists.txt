@@ -50,16 +50,16 @@ add_library(${PROJECT_NAME}
   src/common/ScopedTimer.cpp
   src/datastructures/Graph.cpp
   src/datastructures/SearchQueue.cpp
-#   src/datastructures/State.cpp
-#   src/GLS.cpp
-#   src/event/Event.cpp
-#   src/event/ShortestPathEvent.cpp
-#   src/event/ConstantDepthEvent.cpp
-#   src/selector/Selector.cpp
-#   src/selector/AlternateSelector.cpp
-#   src/selector/BackwardSelector.cpp
-#   src/selector/FailFastSelector.cpp
-#   src/selector/ForwardSelector.cpp
+  src/datastructures/State.cpp
+  src/GLS.cpp
+  src/event/Event.cpp
+  src/event/ShortestPathEvent.cpp
+  src/event/ConstantDepthEvent.cpp
+  src/selector/Selector.cpp
+  src/selector/AlternateSelector.cpp
+  src/selector/BackwardSelector.cpp
+  src/selector/FailFastSelector.cpp
+  src/selector/ForwardSelector.cpp
 )
 
 #================================================================================
