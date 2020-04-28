@@ -6,36 +6,34 @@
 #include "gls/event/Event.hpp"
 
 namespace gls {
-namespace event {
 
 /// Event that triggers when the search tree reaches a particular depth.
 /// Additionally, the event also triggers when the vertex is the target.
-class ConstantDepthEvent : public Event {
-public:
+class ConstantDepthEvent : public GLS::Event {
+ public:
   /// Constructor.
   explicit ConstantDepthEvent(std::size_t depth);
 
   /// Documentation inherited.
-  bool isTriggered(const gls::datastructures::Vertex& vertex) override;
+  bool isTriggered(const Vertex& vertex) override;
 
   /// Documentation inherited.
-  void updateVertexProperties(gls::datastructures::Vertex& vertex) override;
+  void updateVertexProperties(Vertex& vertex) override;
 
-private:
+ private:
   /// Get the depth of the vertex.
-  std::size_t getDepth(const gls::datastructures::Vertex& vertex);
+  std::size_t getDepth(const Vertex& vertex);
 
   /// Add vertex to the map.
-  void updateVertexInMap(gls::datastructures::Vertex& vertex);
+  void updateVertexInMap(Vertex& vertex);
 
   /// The threshold over depth.
   std::size_t mDepthThreshold;
 
   /// The map from vertex to depth in the search tree.
-  std::unordered_map<gls::datastructures::Vertex, std::size_t> mVertexDepthMap;
+  std::unordered_map<Vertex, std::size_t> mVertexDepthMap;
 };
 
-} // namespace event
-} // namespace gls
+}  // namespace gls
 
-#endif // GLS_EVENT_CONSTANTDEPTHEVENT_HPP_
+#endif  // GLS_EVENT_CONSTANTDEPTHEVENT_HPP_

@@ -1,12 +1,8 @@
 #include "gls/selector/FailFastSelector.hpp"
 
-namespace gls {
-namespace selector {
+#include "gls/datastructures/Graph.hpp"
 
-using gls::datastructures::Edge;
-using gls::datastructures::EvaluationStatus;
-using gls::datastructures::Path;
-using gls::datastructures::Vertex;
+namespace gls {
 
 //==============================================================================
 FailFastSelector::FailFastSelector(edgeToPriorMap& priorMap)
@@ -48,5 +44,4 @@ double FailFastSelector::getPrior(Edge edge) {
   return mPriorMap[std::make_pair(u, v)];
 }
 
-}  // namespace selector
 }  // namespace gls

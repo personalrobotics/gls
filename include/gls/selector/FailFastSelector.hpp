@@ -8,7 +8,6 @@
 #include "gls/selector/Selector.hpp"
 
 namespace gls {
-namespace selector {
 
 /// Unordered map defined as: <source name> <target name> <prior>
 typedef std::unordered_map<std::pair<std::size_t, std::size_t>, double,
@@ -16,24 +15,22 @@ typedef std::unordered_map<std::pair<std::size_t, std::size_t>, double,
     edgeToPriorMap;
 
 /// Selector that evaluates the edge most likely to be in collision.
-class FailFastSelector : public Selector {
+class FailFastSelector : public GLS::Selector {
  public:
   /// Constructor.
   FailFastSelector(edgeToPriorMap& priorMap);
 
   /// Documentation inherited.
-  gls::datastructures::Edge selectEdgeToEvaluate(
-      gls::datastructures::Path path) override;
+  Edge selectEdgeToEvaluate(Path path) override;
 
  protected:
   /// Evaluate the prior of given edge.
-  double getPrior(gls::datastructures::Edge edge);
+  double getPrior(Edge edge);
 
   /// Map that stores the priors.
   edgeToPriorMap mPriorMap;
 };
 
-}  // namespace selector
 }  // namespace gls
 
 #endif  // GLS_SELECTOR_FAILFASTSELECTOR_HPP_

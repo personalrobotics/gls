@@ -1,11 +1,8 @@
 #include "gls/selector/ForwardSelector.hpp"
 
-namespace gls {
-namespace selector {
+#include "gls/datastructures/Graph.hpp"
 
-using gls::datastructures::Edge;
-using gls::datastructures::EvaluationStatus;
-using gls::datastructures::Path;
+namespace gls {
 
 //==============================================================================
 ForwardSelector::ForwardSelector() {
@@ -15,7 +12,7 @@ ForwardSelector::ForwardSelector() {
 //==============================================================================
 Edge ForwardSelector::selectEdgeToEvaluate(Path path) {
   // Access the graph.
-  auto graph = *mGraph;
+  auto& graph = *mGraph;
   Edge edgeToEvaluate;
 
   // Return the first unevaluated edge closest to source.
@@ -23,12 +20,12 @@ Edge ForwardSelector::selectEdgeToEvaluate(Path path) {
     bool edgeExists;
     boost::tie(edgeToEvaluate, edgeExists) = edge(path[i], path[i - 1], graph);
 
-    if (graph[edgeToEvaluate].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
+    if (graph[edgeToEvaluate].getEvaluationStatus() ==
+        EvaluationStatus::NotEvaluated) {
       break;
+    }
   }
-
   return edgeToEvaluate;
 }
 
-} // namespace selector
-} // namespace gls
+}  // namespace gls

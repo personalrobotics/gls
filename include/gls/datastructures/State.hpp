@@ -5,11 +5,12 @@
 
 #include <ompl/base/StateSpace.h>
 
-namespace gls {
-namespace datastructures {
+#include "gls/GLS.hpp"
 
-class State {
-public:
+namespace gls {
+
+class GLS::State {
+ public:
   /// Constructor.
   State();
 
@@ -28,7 +29,7 @@ public:
   // TODO (avk): Should I make this function const?
   ompl::base::StateSpacePtr getStateSpace();
 
-private:
+ private:
   /// The OMPL statespace operating on.
   const ompl::base::StateSpacePtr mSpace;
 
@@ -36,13 +37,6 @@ private:
   ompl::base::State* mState;
 };
 
-/// Shared pointer to the State.
-typedef std::shared_ptr<State> StatePtr;
+}  // namespace gls
 
-/// Shared pointer to const State
-typedef std::shared_ptr<const State> ConstStatePtr;
-
-} // namespace datastructures
-} // namespace gls
-
-#endif // GLS_DATASTRUCTURES_STATE_HPP_
+#endif  // GLS_DATASTRUCTURES_STATE_HPP_

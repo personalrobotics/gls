@@ -4,20 +4,17 @@
 #include "gls/selector/Selector.hpp"
 
 namespace gls {
-namespace selector {
 
 /// Selector that evaluates the edge on the path closest to the source.
-class ForwardSelector : public Selector {
+class ForwardSelector : public GLS::Selector {
  public:
   /// Constructor.
   ForwardSelector();
 
   /// Documentation inherited.
-  gls::datastructures::Edge selectEdgeToEvaluate(
-      gls::datastructures::Path path) override;
+  Edge selectEdgeToEvaluate(Path path) override;
 };
 
-}  // namespace selector
 }  // namespace gls
 
 #endif  // GLS_SELECTOR_FORWARDSELECTOR_HPP_

@@ -19,8 +19,9 @@
 #include <sstream>
 #include <string>
 
+#include "gls/GLS.hpp"
+
 namespace gls {
-namespace io {
 
 /* RoadmapFromFilePutStateMap */
 /// The map used to decode the .graphml file and populate the vertex states.
@@ -106,7 +107,7 @@ inline void put(
 
 /* RoadmapFromFile */
 template <class Graph, class VStateMap, class StateWrapper, class ELength>
-class RoadmapFromFile {
+class GLS::RoadmapFromFile {
   typedef boost::graph_traits<Graph> GraphTypes;
   typedef typename GraphTypes::vertex_descriptor Vertex;
   typedef typename GraphTypes::vertex_iterator VertexIter;
@@ -141,7 +142,6 @@ class RoadmapFromFile {
   const ompl::base::StateSpacePtr mSpace;
 };
 
-}  // namespace io
 }  // namespace gls
 
 #endif  // GLS_INPUT_ROADMAPMANAGER_HPP_

@@ -19,21 +19,50 @@
 #include <ompl/datastructures/NearestNeighborsGNAT.h>
 #include <ompl/geometric/PathGeometric.h>
 
-// GLS headers. Include all the headers.
-#include "gls/datastructures.hpp"
-#include "gls/event.hpp"
-#include "gls/io.hpp"
-#include "gls/selector.hpp"
+#include "gls/datastructures/Types.hpp"
 
 namespace gls {
-
-enum TreeValidityStatus { Valid, NotValid };
-
-enum PlannerStatus { Solved, NotSolved };
 
 /// The OMPL Planner class that implements the algorithm.
 class GLS : public ompl::base::Planner {
  public:
+  // ==============================================================================================
+  /// Forward declaration of datastructure classes that belong to GLS.
+  /// Vertex.
+  class VertexProperties;
+  /// Edge.
+  class EdgeProperties;
+  /// Roadmap Manager.
+  template <class Graph, class VStateMap, class StateWrapper, class ELength>
+  class RoadmapFromFile;
+  /// Search Queue.
+  class SearchQueue;
+  /// The event.
+  class Event;
+  /// The selector.
+  class Selector;
+  /// The state.
+  class State;
+
+  // ==============================================================================================
+  /// Type declarations.
+  /// \brief State.
+  using StatePtr = std::shared_ptr<State>;
+  using ConstStatePtr = std::shared_ptr<const State>;
+  /// \brief Graph properties.
+  using Graph =
+      boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
+                            VertexProperties, EdgeProperties>;
+  /// \brief Search Queue.
+  using SearchQueuePtr = std::shared_ptr<SearchQueue>;
+  /// \brief Event.
+  using EventPtr = std::shared_ptr<Event>;
+  using ConstEventPtr = std::shared_ptr<const Event>;
+  /// \brief Selector.
+  using SelectorPtr = std::shared_ptr<Selector>;
+  using ConstSelectorPtr = std::shared_ptr<const Selector>;
+
+  // ==============================================================================================
   /// Constructor.
   /// \param[in] si The OMPL space information manager.
   explicit GLS(const ompl::base::SpaceInformationPtr& si);
@@ -59,17 +88,17 @@ class GLS : public ompl::base::Planner {
 
   /// Set the event to be used by GLS.
   /// \param[in] event Event that defines the trigger condition.
-  void setEvent(gls::event::EventPtr event);
+  void setEvent(EventPtr event);
 
   /// Returns the event used by the algorithm.
-  gls::event::ConstEventPtr getEvent() const;
+  ConstEventPtr getEvent() const;
 
   /// Set the selector to be used by GLS.
   /// \param[in] selector Selector that defines the evaluation strategy.
-  void setSelector(gls::selector::SelectorPtr selector);
+  void setSelector(SelectorPtr selector);
 
   /// Returns the selector used by the algorithm.
-  gls::selector::ConstSelectorPtr getSelector() const;
+  ConstSelectorPtr getSelector() const;
 
   /// Set the connection radius of the graph.
   void setConnectionRadius(double radius);
@@ -110,25 +139,22 @@ class GLS : public ompl::base::Planner {
   void setupPreliminaries();
 
   /// Returns edge between source and target vertices.
-  gls::datastructures::Edge getEdge(gls::datastructures::Vertex,
-                                    gls::datastructures::Vertex);
+  Edge getEdge(Vertex, Vertex);
 
   /// Returns the path from vertex to source.
-  gls::datastructures::Path getPathToSource(gls::datastructures::Vertex);
+  Path getPathToSource(Vertex);
 
   /// Returns true if the path to goal is collision-free.
   bool foundPathToGoal();
 
   /// Heuristic function.
-  double getGraphHeuristic(gls::datastructures::Vertex v);
+  double getGraphHeuristic(Vertex v);
 
   /// Evaluates an edge for collision.
-  gls::datastructures::CollisionStatus evaluateVertex(
-      gls::datastructures::Vertex v);
+  CollisionStatus evaluateVertex(Vertex v);
 
   /// Evaluates an edge for collision.
-  gls::datastructures::CollisionStatus evaluateEdge(
-      const gls::datastructures::Edge& e);
+  CollisionStatus evaluateEdge(const Edge& e);
 
   /// Extends the search tree forwards.
   void extendSearchTree();
@@ -143,17 +169,10 @@ class GLS : public ompl::base::Planner {
   void evaluateSearchTree();
 
   /// Return the path from source to target vertices.
-  ompl::base::PathPtr constructSolution(const gls::datastructures::Vertex&,
-                                        const gls::datastructures::Vertex&);
+  ompl::base::PathPtr constructSolution(const Vertex&, const Vertex&);
 
   /// The pointer to the OMPL state space.
   const ompl::base::StateSpacePtr mSpace;
-
-  /// Boost roadmap representation.
-  boost::shared_ptr<io::RoadmapFromFile<
-      gls::datastructures::Graph, gls::datastructures::VPStateMap,
-      gls::datastructures::State, gls::datastructures::EPLengthMap>>
-      mRoadmap;
 
   /// Connection radius in the graph.
   double mConnectionRadius;
@@ -174,31 +193,31 @@ class GLS : public ompl::base::Planner {
   TreeValidityStatus mTreeValidityStatus{TreeValidityStatus::Valid};
 
   /// SearchQueue representing the open list to extend.
-  gls::datastructures::SearchQueue mExtendQueue;
+  SearchQueuePtr mExtendQueue{nullptr};
 
   /// SearchQueue representing the vertices whose attirbutes need update.
-  gls::datastructures::SearchQueue mUpdateQueue;
+  SearchQueuePtr mUpdateQueue{nullptr};
 
   /// SearchQueue representing the search tree that needs repairing.
-  gls::datastructures::SearchQueue mRewireQueue;
+  SearchQueuePtr mRewireQueue{nullptr};
 
   /// Set of vertices used for rewiring.
-  std::set<gls::datastructures::Vertex> mRewireSet;
+  std::set<Vertex> mRewireSet;
 
   /// Event
-  gls::event::EventPtr mEvent;
+  EventPtr mEvent;
 
   /// Selector
-  gls::selector::SelectorPtr mSelector;
+  SelectorPtr mSelector;
 
   /// The fixed roadmap over which the search is done.
-  gls::datastructures::Graph mGraph;
+  Graph mGraph;
 
   /// Source vertex.
-  gls::datastructures::Vertex mSourceVertex;
+  Vertex mSourceVertex;
 
   /// Target vertex.
-  gls::datastructures::Vertex mTargetVertex;
+  Vertex mTargetVertex;
 
   /// TODO (avk): Move these into PlannerStatus class.
   /// Number of Edge Evaluations.

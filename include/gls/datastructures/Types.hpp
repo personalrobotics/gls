@@ -9,7 +9,6 @@
 #include <boost/property_map/dynamic_property_map.hpp>
 
 namespace gls {
-namespace datastructures {
 
 /// Basic Boost graph.
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS>
@@ -21,7 +20,7 @@ typedef std::shared_ptr<BasicGraph> BasicGraphPtr;
 /// Shared pointer to a const BasicGraph.
 typedef std::shared_ptr<const BasicGraph> ConstBasicGraphPtr;
 
-/// Boost vertex.
+/// Boost Vertex.
 typedef boost::graph_traits<BasicGraph>::vertex_descriptor Vertex;
 
 /// Shared pointer to a Vertex.
@@ -48,7 +47,21 @@ typedef std::shared_ptr<Edge> EdgePtr;
 /// Shared pointer to a const Edge.
 typedef std::shared_ptr<const Edge> ConstEdgePtr;
 
-}  // namespace datastructures
+/// Flags to determine collision status of vertex/edge.
+enum CollisionStatus { Collision, Free };
+
+/// Flags to determine visitation of a vertex.
+enum VisitStatus { NotVisited, Visited };
+
+/// Flags to determine the evaluation status of a vertex/edge.
+enum EvaluationStatus { NotEvaluated, Evaluated };
+
+/// Flags indicating the tree validity status.
+enum TreeValidityStatus { Valid, NotValid };
+
+/// Flags indicating if the planner has solved the problem.
+enum PlannerStatus { Solved, NotSolved };
+
 }  // namespace gls
 
 #endif  // GLS_DATASTRUCTURES_TYPES_HPP_

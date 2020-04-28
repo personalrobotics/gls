@@ -1,14 +1,8 @@
 #include "gls/event/ConstantDepthEvent.hpp"
 
-namespace gls {
-namespace event {
+#include "gls/datastructures/Graph.hpp"
 
-using gls::datastructures::CollisionStatus;
-using gls::datastructures::Edge;
-using gls::datastructures::EvaluationStatus;
-using gls::datastructures::Graph;
-using gls::datastructures::SearchQueue;
-using gls::datastructures::Vertex;
+namespace gls {
 
 //==============================================================================
 ConstantDepthEvent::ConstantDepthEvent(std::size_t depth)
@@ -91,5 +85,4 @@ void ConstantDepthEvent::updateVertexInMap(Vertex& vertex) {
   }
 }
 
-}  // namespace event
 }  // namespace gls

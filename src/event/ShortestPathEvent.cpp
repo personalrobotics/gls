@@ -1,11 +1,6 @@
 #include "gls/event/ShortestPathEvent.hpp"
 
 namespace gls {
-namespace event {
-
-using gls::datastructures::Graph;
-using gls::datastructures::SearchQueue;
-using gls::datastructures::Vertex;
 
 //==============================================================================
 ShortestPathEvent::ShortestPathEvent() {
@@ -25,5 +20,4 @@ void ShortestPathEvent::updateVertexProperties(Vertex& /*vertex*/) {
   // Do nothing.
 }
 
-} // namespace event
-} // namespace gls
+}  // namespace gls

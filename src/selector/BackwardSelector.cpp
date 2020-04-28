@@ -1,11 +1,8 @@
 #include "gls/selector/BackwardSelector.hpp"
 
-namespace gls {
-namespace selector {
+#include "gls/datastructures/Graph.hpp"
 
-using gls::datastructures::Edge;
-using gls::datastructures::EvaluationStatus;
-using gls::datastructures::Path;
+namespace gls {
 
 //==============================================================================
 BackwardSelector::BackwardSelector() {
@@ -31,5 +28,4 @@ Edge BackwardSelector::selectEdgeToEvaluate(Path path) {
   return edgeToEvaluate;
 }
 
-}  // namespace selector
 }  // namespace gls

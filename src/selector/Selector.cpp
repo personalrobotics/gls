@@ -3,17 +3,13 @@
 #include "gls/selector/Selector.hpp"
 
 namespace gls {
-namespace selector {
-
-using gls::datastructures::Graph;
 
 //==============================================================================
-Selector::Selector() {
+GLS::Selector::Selector() {
   // Do nothing.
 }
 
 //==============================================================================
-void Selector::setup(Graph* graph) { mGraph = graph; }
+void GLS::Selector::setup(Graph* graph) { mGraph = graph; }
 
-}  // namespace selector
 }  // namespace gls
