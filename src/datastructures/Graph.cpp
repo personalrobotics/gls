@@ -99,6 +99,7 @@ CollisionStatus GLS::VertexProperties::getCollisionStatus() {
 void GLS::VertexProperties::setSearchIterator(
     const SearchQueue::SearchQueueIterator iterator) {
   mSearchIterator = iterator;
+  mInSearchQueue = true;
 }
 
 // ============================================================================
