@@ -147,102 +147,99 @@ void GLS::setupPreliminaries() {
   mRewireQueue->setGraph(&mGraph);
 }
 
-// //
 // ============================================================================
-// void GLS::clear() {
-//   // Call the base clear
-//   ompl::base::Planner::clear();
+void GLS::clear() {
+  // Call the base clear
+  ompl::base::Planner::clear();
 
-//   // Clear the queues.
-//   mExtendQueue.clear();
-//   mRewireQueue.clear();
-//   mUpdateQueue.clear();
-//   mRewireSet.clear();
-//   assert(mExtendQueue.isEmpty());
-//   assert(mRewireQueue.isEmpty());
-//   assert(mUpdateQueue.isEmpty());
+  // Clear the queues.
+  mExtendQueue->clear();
+  mRewireQueue->clear();
+  mUpdateQueue->clear();
+  mRewireSet.clear();
 
-//   // Reset the vertices and edges.
-//   VertexIter vi, vi_end;
-//   for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi) {
-//     mGraph[*vi].setCostToCome(std::numeric_limits<double>::max());
-//     mGraph[*vi].setHeuristic(std::numeric_limits<double>::max());
-//     mGraph[*vi].removeAllChildren();
-//     mGraph[*vi].setVisitStatus(VisitStatus::NotVisited);
-//     mGraph[*vi].setCollisionStatus(CollisionStatus::Free);
-//   }
+  // Reset the vertices and edges.
+  VertexIter vi, vi_end;
+  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi) {
+    mGraph[*vi].setCostToCome(std::numeric_limits<double>::max());
+    mGraph[*vi].setHeuristic(std::numeric_limits<double>::max());
+    mGraph[*vi].removeAllChildren();
+    mGraph[*vi].setVisitStatus(VisitStatus::NotVisited);
+    mGraph[*vi].setCollisionStatus(CollisionStatus::Free);
+  }
 
-//   EdgeIter ei, ei_end;
-//   for (boost::tie(ei, ei_end) = edges(mGraph); ei != ei_end; ++ei) {
-//     mGraph[*ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
-//     mGraph[*ei].setCollisionStatus(CollisionStatus::Free);
-//   }
+  EdgeIter ei, ei_end;
+  for (boost::tie(ei, ei_end) = edges(mGraph); ei != ei_end; ++ei) {
+    mGraph[*ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+    mGraph[*ei].setCollisionStatus(CollisionStatus::Free);
+  }
 
-//   // Remove edges between source, target to other vertices.
-//   clear_vertex(mSourceVertex, mGraph);
-//   clear_vertex(mTargetVertex, mGraph);
+  // Remove edges between source, target to other vertices.
+  clear_vertex(mSourceVertex, mGraph);
+  clear_vertex(mTargetVertex, mGraph);
 
-//   // Remove the vertices themselves.
-//   remove_vertex(mSourceVertex, mGraph);
-//   remove_vertex(mTargetVertex, mGraph);
+  // Remove the vertices themselves.
+  remove_vertex(mSourceVertex, mGraph);
+  remove_vertex(mTargetVertex, mGraph);
 
-//   setBestPathCost(0);
-//   mNumberOfEdgeEvaluations = 0;
-//   mNumberOfEdgeRewires = 0;
-//   mTreeValidityStatus = TreeValidityStatus::Valid;
-//   mPlannerStatus = PlannerStatus::NotSolved;
+  setBestPathCost(0);
+  mNumberOfEdgeEvaluations = 0;
+  mNumberOfEdgeRewires = 0;
+  mTreeValidityStatus = TreeValidityStatus::Valid;
+  mPlannerStatus = PlannerStatus::NotSolved;
 
-//   // TODO(avk): Clear the selector and event.
+  // TODO(avk): Clear the selector and event.
 
-//   OMPL_INFORM("Cleared Everything");
-// }
+  OMPL_INFORM("Cleared Everything");
+}
 
-// //
 // ============================================================================
-// ompl::base::PlannerStatus GLS::solve(
-//     const ompl::base::PlannerTerminationCondition& /*ptc*/) {
-//   // TODO (avk): Use ptc to terminate the search.
+ompl::base::PlannerStatus GLS::solve(
+    const ompl::base::PlannerTerminationCondition& /*ptc*/) {
+  // TODO (avk): Use ptc to terminate the search.
 
-//   // Return if source or target are in collision.
-//   if (evaluateVertex(mSourceVertex) == CollisionStatus::Collision) {
-//     OMPL_INFORM("Start State is invalid.");
-//     return ompl::base::PlannerStatus::INVALID_START;
-//   }
+  // Return if source or target are in collision.
+  if (evaluateVertex(mSourceVertex) == CollisionStatus::Collision) {
+    OMPL_INFORM("Start State is invalid.");
+    return ompl::base::PlannerStatus::INVALID_START;
+  }
 
-//   if (evaluateVertex(mTargetVertex) == CollisionStatus::Collision) {
-//     OMPL_INFORM("Goal State is invalid.");
-//     return ompl::base::PlannerStatus::INVALID_GOAL;
-//   }
+  if (evaluateVertex(mTargetVertex) == CollisionStatus::Collision) {
+    OMPL_INFORM("Goal State is invalid.");
+    return ompl::base::PlannerStatus::INVALID_GOAL;
+  }
 
-//   // Add the source vertex to the search tree with zero cost-to-come.
-//   mGraph[mSourceVertex].setVisitStatus(VisitStatus::Visited);
-//   mEvent->updateVertexProperties(mSourceVertex);
+  // Add the source vertex to the search tree with zero cost-to-come.
+  mGraph[mSourceVertex].setVisitStatus(VisitStatus::Visited);
+  mEvent->updateVertexProperties(mSourceVertex);
 
-//   assert(mExtendQueue.isEmpty());
-//   mExtendQueue.addVertexWithValue(
-//       mSourceVertex, mGraph[mSourceVertex].getEstimatedTotalCost());
+  assert(mExtendQueue->isEmpty());
+  mExtendQueue->enqueueVertex(mSourceVertex,
+                              mGraph[mSourceVertex].getEstimatedTotalCost());
 
-//   // Run in loop.
-//   while (!mExtendQueue.isEmpty()) {
-//     // Extend the tree till the event is triggered.
-//     extendSearchTree();
+  // Run in loop.
+  while (!mExtendQueue->isEmpty()) {
+    // Extend the tree till the event is triggered.
+    extendSearchTree();
 
-//     // Evaluate the extended search tree.
-//     evaluateSearchTree();
+    // Evaluate the extended search tree.
+    evaluateSearchTree();
 
-//     // If the plan is successful, return.
-//     if (mPlannerStatus == PlannerStatus::Solved) break;
-//   }
+    // If the plan is successful, return.
+    if (mPlannerStatus == PlannerStatus::Solved) {
+      break;
+    }
+  }
 
-//   if (mPlannerStatus == PlannerStatus::Solved) {
-//     setBestPathCost(mGraph[mTargetVertex].getCostToCome());
-//     pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
-//     return ompl::base::PlannerStatus::EXACT_SOLUTION;
-//   } else {
-//     OMPL_INFORM("No Solution Found.");
-//     return ompl::base::PlannerStatus::TIMEOUT;
-//   }
-// }
+  if (mPlannerStatus == PlannerStatus::Solved) {
+    setBestPathCost(mGraph[mTargetVertex].getCostToCome());
+    pdef_->addSolutionPath(constructSolution(mSourceVertex, mTargetVertex));
+    return ompl::base::PlannerStatus::EXACT_SOLUTION;
+  } else {
+    OMPL_INFORM("No Solution Found.");
+    return ompl::base::PlannerStatus::TIMEOUT;
+  }
+}
 
 // ============================================================================
 void GLS::setEvent(EventPtr event) { mEvent = event; }
@@ -417,13 +414,12 @@ void GLS::extendSearchTree() {
 
   while (!mExtendQueue->isEmpty()) {
     // Check if the popping the top vertex triggers the event.
-    Vertex u = mExtendQueue->getTopVertex();
-    if (mEvent->isTriggered(u)) {
+    if (mEvent->isTriggered(mExtendQueue->getTopVertex())) {
       break;
     }
 
     // Pop the top vertex in the queue to extend the search tree.
-    u = mExtendQueue->popTopVertex();
+    Vertex u = mExtendQueue->popTopVertex();
 
     // The vertex being extended should have been marked visited.
     assert(mGraph[u].getVisitStatus() == VisitStatus::Visited);
@@ -469,8 +465,7 @@ void GLS::extendSearchTree() {
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited) {
         assert(v != mSourceVertex);
         mGraph[v].setVisitStatus(VisitStatus::Visited);
-        assert(mExtendQueue.hasVertexWithValue(
-                   v, mGraph[v].getEstimatedTotalCost()) == false);
+        assert(!mGraph[v].inSearchQueue());
       } else {
         double oldCostToCome = mGraph[v].getCostToCome();
         double newCostToCome = mGraph[u].getCostToCome() + edgeLength;
