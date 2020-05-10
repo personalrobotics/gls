@@ -31,6 +31,8 @@
 
 // Custom header files
 #include "gls/GLS.hpp"
+#include "gls/event/ShortestPathEvent.hpp"
+#include "gls/selector/ForwardSelector.hpp"
 
 namespace po = boost::program_options;
 
@@ -41,7 +43,8 @@ namespace po = boost::program_options;
 /// \return True if the state is collision-free
 bool isPointValid(cv::Mat image, const ompl::base::State* state) {
   // Obtain the state values
-  double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+  double* values =
+      state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
 
   // Get the required point on the map
   int numberOfRows = image.rows;
@@ -52,16 +55,17 @@ bool isPointValid(cv::Mat image, const ompl::base::State* state) {
 
   // Collision Check
   int intensity = (int)image.at<uchar>(point.y, point.x);
-  if (intensity == 0) // Pixel is black
+  if (intensity == 0) {
     return false;
-
+  }
   return true;
 }
 
 /// Displays path
 /// \param[in] obstacleFile The file with obstacles stored
 /// \param[in] path OMPL path
-void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::PathGeometric> path) {
+void displayPath(std::string obstacleFile,
+                 std::shared_ptr<ompl::geometric::PathGeometric> path) {
   // Get state count
   int pathSize = path->getStateCount();
 
@@ -73,11 +77,15 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
   for (int i = 0; i < pathSize - 1; ++i) {
     auto uState = path->getState(i);
     auto vState = path->getState(i + 1);
-    double* u = uState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-    double* v = vState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    double* u =
+        uState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    double* v =
+        vState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
 
-    cv::Point uPoint((int)(u[0] * numberOfColumns), (int)((1 - u[1]) * numberOfRows));
-    cv::Point vPoint((int)(v[0] * numberOfColumns), (int)((1 - v[1]) * numberOfRows));
+    cv::Point uPoint((int)(u[0] * numberOfColumns),
+                     (int)((1 - u[1]) * numberOfRows));
+    cv::Point vPoint((int)(v[0] * numberOfColumns),
+                     (int)((1 - v[1]) * numberOfRows));
 
     cv::line(image, uPoint, vPoint, cv::Scalar(255, 0, 0), 3);
   }
@@ -93,7 +101,8 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
 ompl::base::ScopedState<ompl::base::RealVectorStateSpace> make_state(
     const ompl::base::StateSpacePtr space, double x, double y) {
   ompl::base::ScopedState<ompl::base::RealVectorStateSpace> state(space);
-  double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+  double* values =
+      state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
   values[0] = x;
   values[1] = y;
   return state;
@@ -102,30 +111,13 @@ ompl::base::ScopedState<ompl::base::RealVectorStateSpace> make_state(
 /// The main function.
 int main(int argc, char* argv[]) {
   ros::init(argc, argv, "test2d_image");
-  po::options_description desc("2D Map Planner Options");
-  // clang-format off
-  desc.add_options()
-  ("help,h", "produce help message")
-  ("source,s", po::value<std::vector<float> >()->multitoken(), "source configuration")
-  ("target,t", po::value<std::vector<float> >()->multitoken(), "target configuration")
-  ("graph,g", po::value<std::string>()->required(), "graph specification")
-  ("obstacle,o", po::value<std::string>()->required(), "obstacle image (for visualization)");
-  // clang-format on
 
-  // Read arguments
-  po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    std::cout << desc << std::endl;
-    return 1;
-  }
-
-  std::vector<float> source(vm["source"].as<std::vector<float> >());
-  std::vector<float> target(vm["target"].as<std::vector<float> >());
-  std::string graphLocation(vm["graph"].as<std::string>());
-  std::string obstacleLocation(vm["obstacle"].as<std::string>());
+  std::vector<float> source{0.1, 0.1};
+  std::vector<float> target{0.9, 0.9};
+  std::string graphLocation =
+      "/home/adityavk/workspaces/lab-ws/src/gls/examples/graph_400.graphml";
+  std::string obstacleLocation =
+      "/home/adityavk/workspaces/lab-ws/src/gls/examples/world.png";
 
   // Define the state space: R^2
   auto space = std::make_shared<ompl::base::RealVectorStateSpace>(2);
@@ -135,8 +127,8 @@ int main(int argc, char* argv[]) {
 
   // Space Information
   cv::Mat image = cv::imread(obstacleLocation, 0);
-  std::function<bool(const ompl::base::State*)> isStateValid
-      = std::bind(isPointValid, image, std::placeholders::_1);
+  std::function<bool(const ompl::base::State*)> isStateValid =
+      std::bind(isPointValid, image, std::placeholders::_1);
   ompl::base::SpaceInformationPtr si(new ompl::base::SpaceInformation(space));
   si->setStateValidityChecker(isStateValid);
   si->setup();
@@ -152,8 +144,8 @@ int main(int argc, char* argv[]) {
   planner.setCollisionCheckResolution(0.1);
   planner.setRoadmap(graphLocation);
 
-  auto event = std::make_shared<gls::event::ShortestPathEvent>();
-  auto selector = std::make_shared<gls::selector::ForwardSelector>();
+  auto event = std::make_shared<gls::ShortestPathEvent>();
+  auto selector = std::make_shared<gls::ForwardSelector>();
   planner.setEvent(event);
   planner.setSelector(selector);
 
@@ -167,10 +159,12 @@ int main(int argc, char* argv[]) {
   // Obtain required data if plan was successful
   if (status == ompl::base::PlannerStatus::EXACT_SOLUTION) {
     // Display path and specify path size
-    auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(pdef->getSolutionPath());
-    std::cout << "Solution Path Cost: " << planner.getBestPathCost() << std::endl;
-    std::cout << "Number of Edge Evaluations: " << planner.getNumberOfEdgeEvaluations()
+    auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(
+        pdef->getSolutionPath());
+    std::cout << "Solution Path Cost: " << planner.getBestPathCost()
               << std::endl;
+    std::cout << "Number of Edge Evaluations: "
+              << planner.getNumberOfEdgeEvaluations() << std::endl;
     displayPath(obstacleLocation, path);
     return 0;
   }
