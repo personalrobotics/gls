@@ -6,7 +6,7 @@ list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
 # Compiler settings
 #================================================================================
 # Enforce the use of C++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wuninitialized -Wpedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wuninitialized -Wpedantic")
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 if(GENERALIZED_LAZY_SEARCH_TREAT_WARNINGS_AS_ERRORS)
@@ -67,9 +67,9 @@ add_library(${PROJECT_NAME}
 #================================================================================
 
 # Correctness Test Script
-# add_executable(test_ShortestPath_Forward examples/test_ShortestPath_Forward.cpp)
-# target_link_libraries(test_ShortestPath_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
-# install(TARGETS test_ShortestPath_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+add_executable(test_ShortestPath_Forward examples/test_ShortestPath_Forward.cpp)
+target_link_libraries(test_ShortestPath_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
+install(TARGETS test_ShortestPath_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 # 
 # add_executable(test_ConstantDepth_Forward examples/test_ConstantDepth_Forward.cpp)
 # target_link_libraries(test_ConstantDepth_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
