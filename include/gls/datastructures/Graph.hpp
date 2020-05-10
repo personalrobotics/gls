@@ -161,8 +161,10 @@ class GLS::EdgeProperties {
 };
 
 using VPStateMap =
-    boost::property_map<GLS::Graph, GLS::StatePtr GLS::VertexProperties::*>::type;
-using EPLengthMap = boost::property_map<GLS::Graph, double GLS::EdgeProperties::*>::type;
+    boost::property_map<GLS::Graph,
+                        GLS::StatePtr GLS::VertexProperties::*>::type;
+using EPLengthMap =
+    boost::property_map<GLS::Graph, double GLS::EdgeProperties::*>::type;
 
 /// Boost vertex iterator
 typedef boost::graph_traits<GLS::Graph>::vertex_iterator VertexIter;
