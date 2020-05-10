@@ -3,23 +3,14 @@
 #ifndef GLS_INPUT_ROADMAPMANAGER_HPP_
 #define GLS_INPUT_ROADMAPMANAGER_HPP_
 
-#include <ompl/base/ScopedState.h>
 #include <ompl/base/State.h>
 #include <ompl/base/StateSpace.h>
-#include <stdlib.h>
 
-#include <boost/function.hpp>
-#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphml.hpp>
 #include <boost/property_map/dynamic_property_map.hpp>
-#include <boost/shared_ptr.hpp>
-#include <cmath>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
-
-#include "gls/GLS.hpp"
 
 namespace gls {
 
@@ -106,7 +97,7 @@ inline void put(
 }
 
 /* RoadmapFromFile */
-template <class Graph, class VStateMap, class StateWrapper, class ELength>
+template <class Graph, class VStateMap, class StateWrapper, class ELengthMap>
 class GLS::RoadmapFromFile {
   typedef boost::graph_traits<Graph> GraphTypes;
   typedef typename GraphTypes::vertex_descriptor Vertex;
@@ -124,12 +115,12 @@ class GLS::RoadmapFromFile {
 
   ~RoadmapFromFile() {}
 
-  void generate(Graph& g, VStateMap stateMap, ELength lengthMap) {
+  void generate(Graph& g, VStateMap stateMap, ELengthMap lengthMap) {
     boost::dynamic_properties props;
     props.property("state", RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(
                                 stateMap, mSpace, mDim));
     props.property("length",
-                   RoadmapFromFilePutEdgeLengthMap<ELength>(lengthMap));
+                   RoadmapFromFilePutEdgeLengthMap<ELengthMap>(lengthMap));
 
     std::ifstream fp;
     fp.open(mFilename.c_str());
