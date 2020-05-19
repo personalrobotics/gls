@@ -102,7 +102,7 @@ install(FILES "package.xml"
 #================================================================================
 include(ClangFormat)
 
-clang_format_setup(VERSION 3.8)
+clang_format_setup(VERSION 3.9)
 
 if (CLANG_FORMAT_EXECUTABLE)
   FILE(GLOB_RECURSE gls_headers "include/*.hpp")

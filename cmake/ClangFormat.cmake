@@ -67,7 +67,7 @@ function(clang_format_add_targets)
 
     add_custom_target(format
       COMMAND ${CMAKE_COMMAND} -E echo "Formatting ${formatting_files_length} files..."
-      COMMAND ${CLANG_FORMAT_EXECUTABLE} -style=file -i ${formatting_files}
+      COMMAND ${CLANG_FORMAT_EXECUTABLE} -style=Google -i ${formatting_files}
       COMMAND ${CMAKE_COMMAND} -E echo "Done."
       DEPENDS ${CLANG_FORMAT_EXECUTABLE}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
