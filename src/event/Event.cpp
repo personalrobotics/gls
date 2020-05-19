@@ -21,21 +21,22 @@ void GLS::Event::setup(Graph* graph, Vertex& source, Vertex& target) {
 
 //==============================================================================
 void GLS::Event::updateVertexProperties(SearchQueuePtr updateQueue) {
-  // Access the graph.
-  auto graph = *mGraph;
+  // // Access the graph.
+  // auto graph = *mGraph;
 
-  while (!updateQueue->isEmpty()) {
-    // Update the top vertex.
-    Vertex vertex = updateQueue->popTopVertex();
-    updateVertexProperties(vertex);
+  // while (!updateQueue->isEmpty()) {
+  //   // Update the top vertex.
+  //   Vertex vertex = updateQueue->popTopVertex();
+  //   updateVertexProperties(vertex);
 
-    auto children = graph[vertex].getChildren();
-    for (auto iterV = children.begin(); iterV != children.end(); ++iterV) {
-      // Add the children into the queue for update.
-      assert(
-          !updateQueue->enqueueVertex(*iterV, graph[*iterV].getCostToCome()));
-      updateQueue->enqueueVertex(*iterV, graph[*iterV].getCostToCome());
-    }
-  }
+  //   auto children = graph[vertex].getChildren();
+  //   for (auto iterV = children.begin(); iterV != children.end(); ++iterV) {
+  //     // Add the children into the queue for update.
+  //     assert(
+  //         !updateQueue->enqueueVertex(*iterV,
+  //         graph[*iterV].getCostToCome()));
+  //     updateQueue->enqueueVertex(*iterV, graph[*iterV].getCostToCome());
+  //   }
+  // }
 }
 }  // namespace gls
