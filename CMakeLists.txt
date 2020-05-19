@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10.2)
 project(gls)
 list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
 
 #================================================================================
 # Compiler settings
 #================================================================================
-# Enforce the use of C++11
+# Enforce the use of C++14
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wuninitialized -Wpedantic")
 
 add_compile_options(-Wall -Wextra -Wpedantic)

@@ -42,6 +42,7 @@ namespace po = boost::program_options;
 /// \param[in] state The ompl state to check for validity
 /// \return True if the state is collision-free
 bool isPointValid(cv::Mat image, const ompl::base::State* state) {
+  return true;
   // Obtain the state values
   double* values =
       state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
