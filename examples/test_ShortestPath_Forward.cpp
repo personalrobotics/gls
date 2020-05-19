@@ -42,7 +42,6 @@ namespace po = boost::program_options;
 /// \param[in] state The ompl state to check for validity
 /// \return True if the state is collision-free
 bool isPointValid(cv::Mat image, const ompl::base::State* state) {
-  return true;
   // Obtain the state values
   double* values =
       state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
@@ -113,12 +112,32 @@ ompl::base::ScopedState<ompl::base::RealVectorStateSpace> make_state(
 int main(int argc, char* argv[]) {
   ros::init(argc, argv, "test2d_image");
 
+  ros::init(argc, argv, "test2d_image");
+  po::options_description desc("2D Map Planner Options");
+  // clang-format off
+  desc.add_options()
+  ("help,h", "produce help message")
+  ("graph,g", po::value<std::string>()->required(), "graph specification")
+  ("obstacle,o", po::value<std::string>()->required(), "obstacle image (for visualization)");
+  // clang-format on
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+  if (vm.count("help")) {
+    std::cout << desc << std::endl;
+    return 1;
+  }
+  std::string graphLocation(vm["graph"].as<std::string>());
+  std::string obstacleLocation(vm["obstacle"].as<std::string>());
+  graphLocation = "/home/adityavk/workspaces/lab-ws/src/gls/examples/graphs/" +
+                  graphLocation;
+  obstacleLocation =
+      "/home/adityavk/workspaces/lab-ws/src/gls/examples/environments/" +
+      obstacleLocation;
+
   std::vector<float> source{0.1, 0.1};
   std::vector<float> target{0.9, 0.9};
-  std::string graphLocation =
-      "/home/adityavk/workspaces/lab-ws/src/gls/examples/graph_400.graphml";
-  std::string obstacleLocation =
-      "/home/adityavk/workspaces/lab-ws/src/gls/examples/world.png";
 
   // Define the state space: R^2
   auto space = std::make_shared<ompl::base::RealVectorStateSpace>(2);
