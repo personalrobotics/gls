@@ -96,13 +96,13 @@ bool GLS::SearchQueue::queueComparison(const double& left,
 // ============================================================================
 void GLS::SearchQueue::printQueue() const {
   std::cout << "--------------------" << std::endl;
-  std::cout << "Queue Size: " << mVertexQueue.size() << std::endl;
+  std::cout << mName << " of size " << mVertexQueue.size() << std::endl;
   std::cout << "--------------------" << std::endl;
   for (auto iterQ = mVertexQueue.begin(); iterQ != mVertexQueue.end();
        ++iterQ) {
     auto pair = *iterQ;
-    std::cout << "Vertex: " << pair.first << " "
-              << "Cost: " << pair.second << std::endl;
+    std::cout << "Cost: " << pair.first << " "
+              << "Vertex: " << pair.second << std::endl;
   }
   std::cout << "--------------------" << std::endl;
 }
