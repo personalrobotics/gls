@@ -66,6 +66,10 @@ add_library(${PROJECT_NAME}
 # Example Scripts
 #================================================================================
 
+add_executable(testscript examples/testscript.cpp)
+target_link_libraries(testscript ${PROJECT_NAME})
+install(TARGETS testscript RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 # Correctness Test Script
 add_executable(test_ShortestPath_Forward examples/test_ShortestPath_Forward.cpp)
 target_link_libraries(test_ShortestPath_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
