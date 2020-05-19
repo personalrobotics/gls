@@ -411,15 +411,23 @@ CollisionStatus GLS::evaluateEdge(const Edge& e) {
 void GLS::extendSearchTree() {
   // Ideally extend search tree should not be called when the queue is empty.
   assert(!mExtendQueue->isEmpty());
+  mExtendQueue->printQueue();
 
   while (!mExtendQueue->isEmpty()) {
     // Check if the popping the top vertex triggers the event.
     if (mEvent->isTriggered(mExtendQueue->getTopVertex())) {
+      std::cout << "Top Vertex is " << mExtendQueue->getTopVertex()
+                << std::endl;
+      std::cout << mGraph[mExtendQueue->getTopVertex()].inSearchQueue()
+                << std::endl;
+      // std::cin.get();
       break;
     }
 
     // Pop the top vertex in the queue to extend the search tree.
     Vertex u = mExtendQueue->popTopVertex();
+    std::cout << "Popping " << u << std::endl;
+    // std::cin.get();
 
     // The vertex being extended should have been marked visited.
     assert(mGraph[u].getVisitStatus() == VisitStatus::Visited);
@@ -435,6 +443,8 @@ void GLS::extendSearchTree() {
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
          ++ni) {
       Vertex v = *ni;
+      std::cout << "neighbor " << v << std::endl;
+      // std::cin.get();
 
       // If the successor has been previously marked to be in collision,
       // continue to the next successor.
@@ -525,6 +535,7 @@ void GLS::extendSearchTree() {
       mGraph[u].addChild(v);
 
       mExtendQueue->enqueueVertex(v, mGraph[v].getEstimatedTotalCost());
+      mExtendQueue->printQueue();
     }
   }
 }
@@ -549,22 +560,28 @@ void GLS::rewireSearchTree() {
   // 1. Collect all the vertices that need to be rewired.
   while (!mRewireQueue->isEmpty()) {
     Vertex v = mRewireQueue->popTopVertex();
+    std::cout << "Rewire pop " << v << std::endl;
 
     // Add all the children of the current node to mRewireQueue.
     auto children = mGraph[v].getChildren();
     for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
-      mRewireQueue->enqueueVertex(*iterS, mGraph[*iterS].getCostToCome());
+      Vertex child = *iterS;
+      std::cout << "Child " << child << std::endl;
+      // Remove from extend queue if it exists there.
+      if (mGraph[child].inSearchQueue()) {
+        std::cout << "in search queue" << std::endl;
+        mExtendQueue->dequeueVertex(child);
+      } else {
+        std::cout << "not in q" << std::endl;
+      }
+      // Add to rewire queue.
+      mRewireQueue->enqueueVertex(child, mGraph[child].getCostToCome());
     }
     mGraph[v].removeAllChildren();
 
     // Add the vertex to set.
+    // TODO(avk): Replace this with a vector?
     mRewireSet.insert(v);
-
-    // Remove from mExtendQueue.
-    // TODO (avk): Can this happen?
-    if (mGraph[v].inSearchQueue()) {
-      mExtendQueue->dequeueVertex(v);
-    }
 
     // Assign default values
     mGraph[v].setParent(v);
@@ -574,11 +591,16 @@ void GLS::rewireSearchTree() {
     mGraph[v].setVisitStatus(VisitStatus::NotVisited);
     mEvent->updateVertexProperties(v);
   }
+  std::cout << "Printing extend queue after removing rewired" << std::endl;
+  mExtendQueue->printQueue();
+  // std::cin.get();
 
   // 2. Assign the nodes keys
   assert(mRewireQueue->isEmpty());
   for (auto iterS = mRewireSet.begin(); iterS != mRewireSet.end(); ++iterS) {
     Vertex v = *iterS;
+    std::cout << "Rewiring " << v << std::endl;
+    // std::cin.get();
 
     // If the vertex has been marked to be in collision, ignore.
     if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision) {
@@ -591,6 +613,7 @@ void GLS::rewireSearchTree() {
          ++ni) {
       // Get the possible parent.
       Vertex u = *ni;
+      std::cout << "possible parent " << u << std::endl;
 
       // If the parent has been marked in collision, ignore.
       if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision) {
@@ -644,14 +667,20 @@ void GLS::rewireSearchTree() {
       }
     }
     mRewireQueue->enqueueVertex(v, mGraph[v].getCostToCome());
+    mRewireQueue->printQueue();
+    // std::cin.get();
   }
 
   // 3. Start Rewiring in the cost space
   while (!mRewireQueue->isEmpty()) {
     Vertex u = mRewireQueue->popTopVertex();
+    std::cout << "Popping finally " << u << std::endl;
 
     // Ignore loops.
-    if (u == mGraph[u].getParent()) continue;
+    if (u == mGraph[u].getParent()) {
+      std::cout << "sad" << std::endl;
+      continue;
+    }
 
     // Since valid parent is found, mark as visited.
     mGraph[u].setVisitStatus(VisitStatus::Visited);
@@ -659,6 +688,9 @@ void GLS::rewireSearchTree() {
     // Let the parent know of its new child.
     Vertex p = mGraph[u].getParent();
     mGraph[p].addChild(u);
+
+    std::cout << "Rewired to " << p << std::endl;
+    // std::cin.get();
 
     // TODO(avk): If it is going to cause the event to trigger, why would you?
     mExtendQueue->enqueueVertex(u, mGraph[u].getEstimatedTotalCost());
@@ -703,6 +735,9 @@ void GLS::rewireSearchTree() {
         }
       }
     }
+    mRewireQueue->printQueue();
+    mExtendQueue->printQueue();
+    // std::cin.get();
   }
   mRewireSet.clear();
   assert(mRewireQueue->isEmpty());
@@ -741,7 +776,10 @@ void GLS::evaluateSearchTree() {
     Vertex previousParent = mGraph[v].getParent();
     mGraph[previousParent].removeChild(v);
 
-    // Add to the rewire queue.
+    // Remove v from search queue if it exists there and add to rewire.
+    if (mGraph[v].inSearchQueue()) {
+      mExtendQueue->dequeueVertex(v);
+    }
     mRewireQueue->enqueueVertex(v, mGraph[v].getCostToCome());
   }
 
