@@ -44,6 +44,12 @@ class GLS::VertexProperties {
   // Get heuristic.
   double getHeuristic();
 
+  // Set repair status.
+  void setInRepair(bool repairStatus);
+
+  // Get the repair status.
+  bool getInRepair();
+
   // Get estimated total cost.
   double getEstimatedTotalCost();
 
@@ -116,6 +122,9 @@ class GLS::VertexProperties {
 
   /// Value : min_{s' \in pred(v)}{g(s') + c(s', v)}}
   double mValue{std::numeric_limits<double>::infinity()};
+
+  /// Boolean indicating if the vertex is in the subtree being repaired.
+  bool mInRepair{false};
 
   /// Parent.
   Vertex mParent;
