@@ -11,10 +11,21 @@ void GLS::VertexProperties::setState(StatePtr state) { mState = state; }
 GLS::StatePtr GLS::VertexProperties::getState() { return mState; }
 
 // ============================================================================
-void GLS::VertexProperties::setCostToCome(double cost) { mCostToCome = cost; }
+void GLS::VertexProperties::setCostToCome(double cost, bool updateValue) {
+  mCostToCome = cost;
+  if (updateValue) {
+    setValue(cost);
+  }
+}
 
 // ============================================================================
 double GLS::VertexProperties::getCostToCome() { return mCostToCome; }
+
+// ============================================================================
+void GLS::VertexProperties::setValue(double value) { mValue = value; }
+
+// ============================================================================
+double GLS::VertexProperties::getValue() { return mValue; }
 
 // ============================================================================
 void GLS::VertexProperties::setHeuristic(double heuristic) {

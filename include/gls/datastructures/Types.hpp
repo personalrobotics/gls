@@ -11,7 +11,7 @@
 namespace gls {
 
 /// Basic Boost graph.
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS>
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS>
     BasicGraph;
 
 /// Shared pointer to a BasicGraph.

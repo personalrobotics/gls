@@ -27,10 +27,16 @@ class GLS::VertexProperties {
   StatePtr getState();
 
   // Set cost-to-come.
-  void setCostToCome(double cost);
+  void setCostToCome(double cost, bool updateValue = true);
 
   // Get cost-to-come.
   double getCostToCome();
+
+  // Set cost-to-come.
+  void setValue(double value);
+
+  // Get cost-to-come.
+  double getValue();
 
   // Set heuristic.
   void setHeuristic(double heuristic);
@@ -107,6 +113,9 @@ class GLS::VertexProperties {
 
   /// Heuristic value.
   double mHeuristic{std::numeric_limits<double>::infinity()};
+
+  /// Value : min_{s' \in pred(v)}{g(s') + c(s', v)}}
+  double mValue{std::numeric_limits<double>::infinity()};
 
   /// Parent.
   Vertex mParent;

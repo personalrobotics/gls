@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
   // clang-format off
   desc.add_options()
   ("help,h", "produce help message")
-  ("graph,g", po::value<std::string>()->required(), "graph specification");
+  ("graph,g", po::value<std::string>()->default_value("graph.graphml"), "graph specification");
   // clang-format on
 
   po::variables_map vm;

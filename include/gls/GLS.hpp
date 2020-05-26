@@ -51,7 +51,7 @@ class GLS : public ompl::base::Planner {
   using ConstStatePtr = std::shared_ptr<const State>;
   /// \brief Graph properties.
   using Graph =
-      boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
+      boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
                             VertexProperties, EdgeProperties>;
   /// \brief Search Queue.
   using SearchQueuePtr = std::shared_ptr<SearchQueue>;
