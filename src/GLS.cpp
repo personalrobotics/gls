@@ -420,14 +420,14 @@ void GLS::extendSearchTree() {
                 << std::endl;
       std::cout << mGraph[mExtendQueue->getTopVertex()].inSearchQueue()
                 << std::endl;
-      std::cin.get();
+      // std::cin.get();
       break;
     }
 
     // Pop the top vertex in the queue to extend the search tree.
     Vertex u = mExtendQueue->popTopVertex();
     std::cout << "Popping " << u << std::endl;
-    std::cin.get();
+    // std::cin.get();
 
     // The vertex being extended should have been marked visited.
     assert(mGraph[u].getVisitStatus() == VisitStatus::Visited);
@@ -444,7 +444,7 @@ void GLS::extendSearchTree() {
          ++ni) {
       Vertex v = *ni;
       std::cout << "neighbor " << v << std::endl;
-      std::cin.get();
+      // std::cin.get();
 
       // If the successor has been previously marked to be in collision,
       // continue to the next successor.
@@ -581,6 +581,11 @@ void GLS::rewireSearchTree() {
       // Get the possible parent.
       Vertex u = *ni;
 
+      // If the parent is in the repair subtree, ignore.
+      if (mGraph[u].getInRepair()) {
+        continue;
+      }
+
       // If the parent has been marked in collision, ignore.
       if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision) {
         continue;
@@ -614,7 +619,7 @@ void GLS::rewireSearchTree() {
       // Best parent determined, update vertex attribute.
       if (parentFound) {
         mGraph[v].setParent(bestParent);
-        std::cout << "Rewire to best parent " << v << " " << bestParent
+        std::cout << "Best parent for " << v << " is " << bestParent
                   << std::endl;
       } else {
         std::cout << "Parent not found!" << std::endl;
@@ -626,13 +631,34 @@ void GLS::rewireSearchTree() {
   };
 
   // TODO(avk): Handle the root during evaluation.
+  // Mark the entire subtree to be in repair.
+  Vertex repairRoot = mRewireQueue->getTopVertex();
+  std::vector<Vertex> repairVertices;
+  mGraph[repairRoot].setInRepair(true);
+  while (!mRewireQueue->isEmpty()) {
+    Vertex v = mRewireQueue->popTopVertex();
+    repairVertices.emplace_back(v);
+    auto children = mGraph[v].getChildren();
+    for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
+      Vertex child = *iterS;
+      mGraph[child].setInRepair(true);
+      if (mGraph[child].inSearchQueue()) {
+        mExtendQueue->dequeueVertex(child);
+      }
+      mRewireQueue->enqueueVertex(child, mGraph[child].getCostToCome());
+    }
+  }
+  std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
+  // std::cin.get();
+  mExtendQueue->printQueue();
+
   // Step 1: Find a better parent for the root of subtree.
-  Vertex v = mRewireQueue->popTopVertex();
-  std::cout << "Root " << v << std::endl;
-  std::cin.get();
-  mGraph[v].setValue(rewireToBestParent(v));
-  std::cout << "Value is " << mGraph[v].getValue() << std::endl;
-  updateVertex(v);
+  std::cout << "Root " << repairRoot << std::endl;
+  // std::cin.get();
+  mGraph[repairRoot].setValue(rewireToBestParent(repairRoot));
+  std::cout << "Value is " << mGraph[repairRoot].getValue() << std::endl;
+  updateVertex(repairRoot);
+  assert(!mRewireQueue->isEmpty());
 
   // Step 2: Process the entire subtree.
   while (!mRewireQueue->isEmpty()) {
@@ -641,13 +667,14 @@ void GLS::rewireSearchTree() {
     mRewireQueue->printQueue();
     if (mGraph[v].getCostToCome() > mGraph[v].getValue()) {
       std::cout << "g > v" << std::endl;
-      std::cin.get();
+      // std::cin.get();
       mGraph[v].setCostToCome(mGraph[v].getValue(), false);
       Vertex parent = mGraph[v].getParent();
       if (parent != v) {
         mGraph[mGraph[v].getParent()].addChild(v);
-        std::cout << "Rewired " << v << "to " << mGraph[v].getParent()
+        std::cout << "Rewired " << v << " to " << mGraph[v].getParent()
                   << std::endl;
+        mGraph[v].setInRepair(false);
         mEvent->updateVertexProperties(v);
         // TODO(avk): for now adding all vertices to extend queue
         mExtendQueue->enqueueVertex(v, mGraph[v].getEstimatedTotalCost());
@@ -669,23 +696,23 @@ void GLS::rewireSearchTree() {
       }
     } else {
       std::cout << "g <= v" << std::endl;
-      std::cin.get();
+      // std::cin.get();
       mGraph[v].setCostToCome(std::numeric_limits<double>::max(), false);
       updateVertex(v);
       auto children = mGraph[v].getChildren();
       std::cout << "Number of children " << children.size() << std::endl;
-      std::cin.get();
+      // std::cin.get();
       for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
         Vertex child = *iterS;
-        if (mGraph[child].inSearchQueue()) {
-          mExtendQueue->dequeueVertex(child);
-        }
         double bestValue = rewireToBestParent(child);
         mGraph[child].setValue(bestValue);
         updateVertex(child);
       }
       mGraph[v].removeAllChildren();
     }
+  }
+  for (auto& vertex : repairVertices) {
+    mGraph[vertex].setInRepair(false);
   }
 }
 
