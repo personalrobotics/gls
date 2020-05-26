@@ -36,6 +36,14 @@ void GLS::VertexProperties::setHeuristic(double heuristic) {
 double GLS::VertexProperties::getHeuristic() { return mHeuristic; }
 
 // ============================================================================
+void GLS::VertexProperties::setInRepair(bool repairStatus) {
+  mInRepair = repairStatus;
+}
+
+// ============================================================================
+bool GLS::VertexProperties::getInRepair() { return mInRepair; }
+
+// ============================================================================
 double GLS::VertexProperties::getEstimatedTotalCost() {
   return mCostToCome + mHeuristic;
 }
