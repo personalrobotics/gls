@@ -117,8 +117,8 @@ int main(int argc, char* argv[]) {
   // clang-format off
   desc.add_options()
   ("help,h", "produce help message")
-  ("graph,g", po::value<std::string>()->required(), "graph specification")
-  ("obstacle,o", po::value<std::string>()->required(), "obstacle image (for visualization)");
+  ("graph,g", po::value<std::string>()->default_value("graph_400.graphml"), "graph specification")
+  ("obstacle,o", po::value<std::string>()->default_value("world.png"), "obstacle image (for visualization)");
   // clang-format on
 
   po::variables_map vm;
