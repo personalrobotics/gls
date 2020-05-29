@@ -416,18 +416,11 @@ void GLS::extendSearchTree() {
   while (!mExtendQueue->isEmpty()) {
     // Check if the popping the top vertex triggers the event.
     if (mEvent->isTriggered(mExtendQueue->getTopVertex())) {
-      std::cout << "Top Vertex is " << mExtendQueue->getTopVertex()
-                << std::endl;
-      std::cout << mGraph[mExtendQueue->getTopVertex()].inSearchQueue()
-                << std::endl;
-      // std::cin.get();
       break;
     }
 
     // Pop the top vertex in the queue to extend the search tree.
     Vertex u = mExtendQueue->popTopVertex();
-    std::cout << "Popping " << u << std::endl;
-    // std::cin.get();
 
     // The vertex being extended should have been marked visited.
     assert(mGraph[u].getVisitStatus() == VisitStatus::Visited);
@@ -443,8 +436,6 @@ void GLS::extendSearchTree() {
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
          ++ni) {
       Vertex v = *ni;
-      std::cout << "neighbor " << v << std::endl;
-      // std::cin.get();
 
       // If the successor has been previously marked to be in collision,
       // continue to the next successor.
@@ -558,11 +549,11 @@ void GLS::updateSearchTree() {
 // ============================================================================
 void GLS::rewireSearchTree() {
   auto updateVertex = [&](Vertex& v) {
-    std::cout << "Updating " << v << std::endl;
     if (mGraph[v].inSearchQueue()) {
       mRewireQueue->dequeueVertex(v);
     }
     if (mGraph[v].getValue() == mGraph[v].getCostToCome()) {
+      mGraph[v].setInRepair(false);
       mGraph[v].setVisitStatus(VisitStatus::NotVisited);
       return;
     }
@@ -619,13 +610,9 @@ void GLS::rewireSearchTree() {
       // Best parent determined, update vertex attribute.
       if (parentFound) {
         mGraph[v].setParent(bestParent);
-        std::cout << "Best parent for " << v << " is " << bestParent
-                  << std::endl;
       } else {
-        std::cout << "Parent not found!" << std::endl;
         mGraph[v].setParent(v);
       }
-
       return value;
     }
   };
@@ -633,11 +620,9 @@ void GLS::rewireSearchTree() {
   // TODO(avk): Handle the root during evaluation.
   // Mark the entire subtree to be in repair.
   Vertex repairRoot = mRewireQueue->getTopVertex();
-  std::vector<Vertex> repairVertices;
   mGraph[repairRoot].setInRepair(true);
   while (!mRewireQueue->isEmpty()) {
     Vertex v = mRewireQueue->popTopVertex();
-    repairVertices.emplace_back(v);
     auto children = mGraph[v].getChildren();
     for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
       Vertex child = *iterS;
@@ -648,41 +633,31 @@ void GLS::rewireSearchTree() {
       mRewireQueue->enqueueVertex(child, mGraph[child].getCostToCome());
     }
   }
-  std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
-  // std::cin.get();
   mExtendQueue->printQueue();
 
   // Step 1: Find a better parent for the root of subtree.
-  std::cout << "Root " << repairRoot << std::endl;
-  // std::cin.get();
   mGraph[repairRoot].setValue(rewireToBestParent(repairRoot));
-  std::cout << "Value is " << mGraph[repairRoot].getValue() << std::endl;
   updateVertex(repairRoot);
   assert(!mRewireQueue->isEmpty());
 
   // Step 2: Process the entire subtree.
   while (!mRewireQueue->isEmpty()) {
-    mRewireQueue->printQueue();
     Vertex v = mRewireQueue->popTopVertex();
-    mRewireQueue->printQueue();
     if (mGraph[v].getCostToCome() > mGraph[v].getValue()) {
-      std::cout << "g > v" << std::endl;
-      // std::cin.get();
       mGraph[v].setCostToCome(mGraph[v].getValue(), false);
       Vertex parent = mGraph[v].getParent();
-      if (parent != v) {
-        mGraph[mGraph[v].getParent()].addChild(v);
-        std::cout << "Rewired " << v << " to " << mGraph[v].getParent()
-                  << std::endl;
-        mGraph[v].setInRepair(false);
-        mEvent->updateVertexProperties(v);
-        // TODO(avk): for now adding all vertices to extend queue
-        mExtendQueue->enqueueVertex(v, mGraph[v].getEstimatedTotalCost());
-      }
+      assert(parent != v);
+
+      // Parent has been found!
+      mGraph[v].setInRepair(false);
+      mGraph[mGraph[v].getParent()].addChild(v);
+      mEvent->updateVertexProperties(v);
+
+      // TODO(avk): for now adding all vertices to extend queue
+      mExtendQueue->enqueueVertex(v, mGraph[v].getEstimatedTotalCost());
 
       // Update the children as well, they must already be in the rewire queue
       // since we expect to cost of edges to only increase.
-      // TODO(avk): This should be all successors not just children.
       // Clean up of parents and children not done yet.
       auto children = mGraph[v].getChildren();
       for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
@@ -695,13 +670,9 @@ void GLS::rewireSearchTree() {
         }
       }
     } else {
-      std::cout << "g <= v" << std::endl;
-      // std::cin.get();
       mGraph[v].setCostToCome(std::numeric_limits<double>::max(), false);
       updateVertex(v);
       auto children = mGraph[v].getChildren();
-      std::cout << "Number of children " << children.size() << std::endl;
-      // std::cin.get();
       for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
         Vertex child = *iterS;
         double bestValue = rewireToBestParent(child);
@@ -711,203 +682,7 @@ void GLS::rewireSearchTree() {
       mGraph[v].removeAllChildren();
     }
   }
-  for (auto& vertex : repairVertices) {
-    mGraph[vertex].setInRepair(false);
-  }
 }
-
-/*
-// ============================================================================
-void GLS::rewireSearchTree() {
-  // 1. Collect all the vertices that need to be rewired.
-  while (!mRewireQueue->isEmpty()) {
-    Vertex v = mRewireQueue->popTopVertex();
-    std::cout << "Rewire pop " << v << std::endl;
-
-    // Add all the children of the current node to mRewireQueue.
-    auto children = mGraph[v].getChildren();
-    for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
-      Vertex child = *iterS;
-      std::cout << "Child " << child << std::endl;
-      // Remove from extend queue if it exists there.
-      if (mGraph[child].inSearchQueue()) {
-        std::cout << "in search queue" << std::endl;
-        mExtendQueue->dequeueVertex(child);
-      } else {
-        std::cout << "not in q" << std::endl;
-      }
-      // Add to rewire queue.
-      mRewireQueue->enqueueVertex(child, mGraph[child].getCostToCome());
-    }
-    mGraph[v].removeAllChildren();
-
-    // Add the vertex to set.
-    // TODO(avk): Replace this with a vector?
-    mRewireSet.insert(v);
-
-    // Assign default values
-    mGraph[v].setParent(v);
-    mGraph[v].setCostToCome(std::numeric_limits<double>::max());
-
-    // Mark it as not visited
-    mGraph[v].setVisitStatus(VisitStatus::NotVisited);
-    mEvent->updateVertexProperties(v);
-  }
-  std::cout << "Printing extend queue after removing rewired" << std::endl;
-  mExtendQueue->printQueue();
-  // std::cin.get();
-
-  // 2. Assign the nodes keys
-  assert(mRewireQueue->isEmpty());
-  for (auto iterS = mRewireSet.begin(); iterS != mRewireSet.end(); ++iterS) {
-    Vertex v = *iterS;
-    std::cout << "Rewiring " << v << std::endl;
-    // std::cin.get();
-
-    // If the vertex has been marked to be in collision, ignore.
-    if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision) {
-      continue;
-    }
-
-    // Look for possible parents in the rest of the graph.
-    NeighborIter ni, ni_end;
-    for (boost::tie(ni, ni_end) = adjacent_vertices(v, mGraph); ni != ni_end;
-         ++ni) {
-      // Get the possible parent.
-      Vertex u = *ni;
-      std::cout << "possible parent " << u << std::endl;
-
-      // If the parent has been marked in collision, ignore.
-      if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision) {
-        continue;
-      }
-
-      // No point rewiring to the target vertex.
-      if (u == mTargetVertex) {
-        continue;
-      }
-
-      // If the neighbor is one of the vertices to be rewires, ignore now.
-      if (mGraph[u].getCostToCome() == std::numeric_limits<double>::max()) {
-        continue;
-      }
-
-      // If the neighbor is currently not in search tree, ignore.
-      if (mGraph[u].getVisitStatus() == VisitStatus::NotVisited) {
-        continue;
-      }
-
-      // If the parent is gonna trigger the event, ignore.
-      if (mEvent->isTriggered(u)) {
-        assert(mGraph[u].inSearchQueue());
-        continue;
-      }
-
-      // If the parent is already in mExtendQueue, can be rewired later.
-      // if (mGraph[u].inSearchQueue()) {
-      //   continue;
-      // }
-
-      assert(mRewireSet.find(u) == mRewireSet.end());
-
-      Edge uv = getEdge(u, v);
-      double edgeLength = mGraph[uv].getLength();
-
-      if (mGraph[uv].getCollisionStatus() == CollisionStatus::Free) {
-        if (mGraph[v].getCostToCome() >
-                mGraph[u].getCostToCome() + edgeLength ||
-            (mGraph[v].getCostToCome() ==
-                 mGraph[u].getCostToCome() + edgeLength &&
-             u < mGraph[v].getParent())) {
-          // Update the vertex.
-          mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
-          mGraph[v].setParent(u);
-
-          // Update the vertex property associated with the event.
-          mEvent->updateVertexProperties(v);
-        }
-      }
-    }
-    mRewireQueue->enqueueVertex(v, mGraph[v].getCostToCome());
-    mRewireQueue->printQueue();
-    // std::cin.get();
-  }
-
-  // 3. Start Rewiring in the cost space
-  while (!mRewireQueue->isEmpty()) {
-    Vertex u = mRewireQueue->popTopVertex();
-    std::cout << "Popping finally " << u << std::endl;
-
-    // Ignore loops.
-    if (u == mGraph[u].getParent()) {
-      std::cout << "sad" << std::endl;
-      continue;
-    }
-
-    // Since valid parent is found, mark as visited.
-    mGraph[u].setVisitStatus(VisitStatus::Visited);
-
-    // Let the parent know of its new child.
-    Vertex p = mGraph[u].getParent();
-    mGraph[p].addChild(u);
-
-    std::cout << "Rewired to " << p << std::endl;
-    // std::cin.get();
-
-    // TODO(avk): If it is going to cause the event to trigger, why would you?
-    // if (mEvent->isTriggered(u)) {
-    mExtendQueue->enqueueVertex(u, mGraph[u].getEstimatedTotalCost());
-    // continue;
-    // }
-
-    // // Check if u can be a better parent to the vertices being rewired.
-    NeighborIter ni, ni_end;
-    for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
-         ++ni) {
-      Vertex v = *ni;
-
-      // TODO (avk): Is this necessary?
-      if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision) {
-        continue;
-      }
-
-      // Vertex needs to be in set to update.
-      if (mRewireSet.find(v) == mRewireSet.end()) {
-        continue;
-      }
-
-      Edge uv = getEdge(u, v);
-      double edgeLength = mGraph[uv].getLength();
-
-      if (mGraph[uv].getCollisionStatus() == CollisionStatus::Free) {
-        if (mGraph[v].getCostToCome() >
-                mGraph[u].getCostToCome() + edgeLength ||
-            (mGraph[v].getCostToCome() ==
-                 mGraph[u].getCostToCome() + edgeLength &&
-             u < mGraph[v].getParent())) {
-          if (mGraph[v].inSearchQueue()) {
-            mRewireQueue->dequeueVertex(v);
-          }
-
-          // Update the vertex.
-          mGraph[v].setCostToCome(mGraph[u].getCostToCome() + edgeLength);
-          mGraph[v].setParent(u);
-
-          // Update the vertex property associated with the event.
-          mEvent->updateVertexProperties(v);
-
-          mRewireQueue->enqueueVertex(v, mGraph[v].getCostToCome());
-        }
-      }
-    }
-    mRewireQueue->printQueue();
-    mExtendQueue->printQueue();
-    // std::cin.get();
-  }
-  mRewireSet.clear();
-  assert(mRewireQueue->isEmpty());
-}
-*/
 
 // ============================================================================
 void GLS::evaluateSearchTree() {
