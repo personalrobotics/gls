@@ -21,6 +21,8 @@ void GLS::Event::setup(Graph* graph, Vertex& source, Vertex& target) {
 
 //==============================================================================
 void GLS::Event::updateVertexProperties(SearchQueuePtr updateQueue) {
+  // TODO(avk): Currently only supporting LazySP.
+  updateQueue->clear();
   // // Access the graph.
   // auto graph = *mGraph;
 
