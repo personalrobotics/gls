@@ -58,7 +58,7 @@ double GLS::SearchQueue::getTopVertexCost() const {
 }
 
 // ============================================================================
-void GLS::SearchQueue::dequeueVertex(Vertex& vertex) {
+void GLS::SearchQueue::dequeueVertex(const Vertex& vertex) {
   // If the queue is empty, no work to be done.
   if (this->isEmpty()) {
     return;

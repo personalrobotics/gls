@@ -60,7 +60,7 @@ class GLS::SearchQueue {
 
   /// Remove vertex from search queue.
   /// \param[in] vertex Vertex to remove from the queue.
-  void dequeueVertex(Vertex& vertex);
+  void dequeueVertex(const Vertex& vertex);
 
   /// Returns true if queue is empty.
   bool isEmpty() const;

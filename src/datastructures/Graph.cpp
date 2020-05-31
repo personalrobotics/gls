@@ -75,14 +75,18 @@ void GLS::VertexProperties::addChildren(std::set<Vertex> children) {
 // ============================================================================
 void GLS::VertexProperties::removeChild(Vertex child) {
   auto iterS = mChildren.find(child);
-  if (iterS != mChildren.end()) mChildren.erase(iterS);
+  if (iterS != mChildren.end()) {
+    mChildren.erase(iterS);
+  }
 }
 
 // ============================================================================
 void GLS::VertexProperties::removeChildren(std::set<Vertex> children) {
   for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
     auto iterRemove = mChildren.find(*iterS);
-    if (iterRemove != mChildren.end()) mChildren.erase(iterRemove);
+    if (iterRemove != mChildren.end()) {
+      mChildren.erase(iterRemove);
+    }
   }
 }
 
@@ -92,7 +96,9 @@ void GLS::VertexProperties::removeAllChildren() { mChildren.clear(); }
 // ============================================================================
 bool GLS::VertexProperties::hasChild(Vertex child) {
   auto iterS = mChildren.find(child);
-  if (iterS != mChildren.end()) return true;
+  if (iterS != mChildren.end()) {
+    return true;
+  }
   return false;
 }
 
