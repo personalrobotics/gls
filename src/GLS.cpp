@@ -417,7 +417,7 @@ void GLS::extendSearchTree() {
   assert(!mExtendQueue->isEmpty());
 
   while (!mExtendQueue->isEmpty()) {
-    mExtendQueue->printQueue();
+    // mExtendQueue->printQueue();
 
     // Check if the popping the top vertex triggers the event.
     if (mEvent->isTriggered(mExtendQueue->getTopVertex())) {
@@ -426,7 +426,7 @@ void GLS::extendSearchTree() {
 
     // Pop the top vertex in the queue to extend the search tree.
     Vertex u = mExtendQueue->popTopVertex();
-    std::cout << "Popping out " << u << std::endl;
+    // std::cout << "Popping out " << u << std::endl;
     // std::cin.get();
 
     // The vertex being extended should have been marked visited.
@@ -443,7 +443,7 @@ void GLS::extendSearchTree() {
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end;
          ++ni) {
       Vertex v = *ni;
-      std::cout << "Possible neighbor " << v << std::endl;
+      // std::cout << "Possible neighbor " << v << std::endl;
 
       // If the successor has been previously marked to be in collision,
       // continue to the next successor.
@@ -485,14 +485,14 @@ void GLS::extendSearchTree() {
 
         // If the previous cost-to-come is lower, continue.
         if (oldCostToCome < newCostToCome) {
-          std::cout << __LINE__ << std::endl;
+          // std::cout << __LINE__ << std::endl;
           continue;
         }
 
         // Tie-Breaking Rule
         if (oldCostToCome == newCostToCome) {
           if (previousParent < u) {
-            std::cout << __LINE__ << std::endl;
+            // std::cout << __LINE__ << std::endl;
             continue;
           }
         }
@@ -512,7 +512,7 @@ void GLS::extendSearchTree() {
         while (!subtree.empty()) {
           auto iterT = subtree.rbegin();
           if (*iterT == 82) {
-            std::cout << "Clearning 82s children" << std::endl;
+            // std::cout << "Clearning 82s children" << std::endl;
           }
           std::set<Vertex>& children = mGraph[*iterT].getChildren();
           subtree.pop_back();
@@ -541,9 +541,9 @@ void GLS::extendSearchTree() {
       // Add it to its new siblings
       mGraph[u].addChild(v);
 
-      std::cout << "Adding " << v << " to the extend queue" << std::endl;
+      // std::cout << "Adding " << v << " to the extend queue" << std::endl;
       mExtendQueue->enqueueVertex(v, mGraph[v].getEstimatedTotalCost());
-      mExtendQueue->printQueue();
+      // mExtendQueue->printQueue();
       // std::cin.get();
     }
   }
@@ -572,7 +572,7 @@ void GLS::rewireSearchTree() {
     const auto vertex = mRewireQueue->popTopVertex();
 
     if (vertex == 82) {
-      std::cout << "Caught 82" << std::endl;
+      // std::cout << "Caught 82" << std::endl;
     }
 
     repairVertices.push_back(vertex);
@@ -589,13 +589,18 @@ void GLS::rewireSearchTree() {
 
   // Find the best parent.
   for (const auto& vertex : repairVertices) {
+    // TODO(avk): The following can happen only with repair root.
+    if (mGraph[vertex].getCollisionStatus() == CollisionStatus::Collision) {
+      continue;
+    }
+    assert(mGraph[vertex].getCollisionStatus() != CollisionStatus::Collision);
     const auto previousCostToCome = mGraph[vertex].getCostToCome();
     rewireToBestParent(vertex);
     // TODO(avk): If the vertex has found a good parent, and the cost has not
     // changed by much, terminate the rewire process.
     mRewireQueue->enqueueVertex(vertex, mGraph[vertex].getCostToCome());
   }
-  mRewireQueue->printQueue();
+  // mRewireQueue->printQueue();
   // std::cin.get();
 
   // Process the entire subtree.
@@ -606,26 +611,27 @@ void GLS::rewireSearchTree() {
     // If the vertex has already found a good parent, rewiring is complete.
     Vertex parent = mGraph[vertex].getParent();
     if (parent != vertex) {
-      std::cout << vertex << " rewired to " << parent << " whose parent is "
-                << mGraph[parent].getParent() << " "
-                << mGraph[parent].getCostToCome() << std::endl;
+      // std::cout << vertex << " rewired to " << parent << " whose parent is "
+      // << mGraph[parent].getParent() << " " << mGraph[parent].getCostToCome()
+      // << std::endl;
       // std::cin.get();
       // Let the parent know of its new child.
       mGraph[parent].addChild(vertex);
       if (parent == 82) {
-        std::cout << "caught 82" << std::endl;
+        // std::cout << "caught 82" << std::endl;
       }
 
-      // If the vertex triggers the event, simply add to extend queue.
+      // If the vertex triggers the event, simply add to extend queue, otherwise
+      // also rewire to children. TODO(avk): Should all vertices be added to
+      // queue?
+      mExtendQueue->enqueueVertex(vertex,
+                                  mGraph[vertex].getEstimatedTotalCost());
       if (mEvent->isTriggered(vertex)) {
-        mExtendQueue->enqueueVertex(vertex,
-                                    mGraph[vertex].getEstimatedTotalCost());
-      } else {
-        // See if it can be a better parent to its children who are in repair.
-        rewireToChildren(vertex);
+        continue;
       }
+      rewireToChildren(vertex);
     } else {
-      std::cout << vertex << " could not get rewired" << std::endl;
+      // std::cout << vertex << " could not get rewired" << std::endl;
       mGraph[vertex].setVisitStatus(VisitStatus::NotVisited);
     }
   }
@@ -647,21 +653,22 @@ void GLS::rewireToBestParent(const Vertex& vertex) {
       continue;
     }
 
-    // If the predecessor is a goal vertex, ignore.
-    if (v == mTargetVertex) {
+    // If the predecessor triggers the event, ignore.
+    if (mEvent->isTriggered(v)) {
       continue;
     }
 
     // If the predecessor has not been visited yet, ignore.
-    // if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited) {
-    // continue;
-    // }
+    if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited) {
+      continue;
+    }
     assert(vertex != mGraph[vertex].getParent());
 
     // If the vertex is in search queue (either), ignore.
-    // if (mGraph[v].inSearchQueue()) {
-    //   continue;
-    // }
+    // TODO(avk): Uncommenting this causes issues.
+    if (mGraph[v].inSearchQueue()) {
+      continue;
+    }
 
     // If the predecessor was marked in collision, or the edge, ignore.
     if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision) {
@@ -673,7 +680,9 @@ void GLS::rewireToBestParent(const Vertex& vertex) {
     }
     double potentialCostToCome =
         mGraph[v].getCostToCome() + mGraph[edge].getLength();
-    if (potentialCostToCome < bestCostToCome) {
+    if (potentialCostToCome < bestCostToCome ||
+        potentialCostToCome == bestCostToCome &&
+            v < mGraph[vertex].getParent()) {
       bestCostToCome = potentialCostToCome;
       bestParent = v;
     }
@@ -715,7 +724,9 @@ void GLS::rewireToChildren(const Vertex& vertex) {
 
     double potentialCostToCome =
         mGraph[vertex].getCostToCome() + mGraph[uv].getLength();
-    if (potentialCostToCome < mGraph[v].getCostToCome()) {
+    if (potentialCostToCome < mGraph[v].getCostToCome() ||
+        potentialCostToCome == mGraph[v].getCostToCome() &&
+            vertex < mGraph[v].getParent()) {
       // Update the vertex.
       mGraph[v].setCostToCome(potentialCostToCome);
       mGraph[v].setParent(vertex);
