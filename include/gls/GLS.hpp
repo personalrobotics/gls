@@ -156,6 +156,12 @@ class GLS : public ompl::base::Planner {
   /// Evaluates an edge for collision.
   CollisionStatus evaluateEdge(const Edge& e);
 
+  /// Rewires the vertex to the best parent not in subtree being rewired.
+  void rewireToBestParent(const Vertex& vertex);
+
+  /// Rewires to children if they find /c vertex to be a better parent.
+  void rewireToChildren(const Vertex& vertex);
+
   /// Extends the search tree forwards.
   void extendSearchTree();
 
