@@ -18,10 +18,10 @@ matrix:
       env: SUDO=sudo BUILD_TYPE=Release COMPILER=GCC
 
 install:
-  - .ci/install.sh;
+  - sudo -E .ci/install.sh;
 
 script:
-  - .ci/script.sh;
+  - sudo -E .ci/script.sh;
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
