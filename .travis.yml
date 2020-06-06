@@ -1,50 +1,34 @@
-dist: trusty
-
+language: cpp
 sudo: required
-
-language: generic
-
-env:
-  global:
-    - TIMEOUT=30
+dist: bionixc
 
 cache:
-  - apt
+  apt: true
+
+env:
+  - GLS_TREAT_WARNINGS_AS_ERRORS=ON
 
 matrix:
   include:
     - os: linux
       compiler: gcc
-      env: BUILD_TYPE=Debug CODECOV=ON CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DGLS_TREAT_WARNINGS_AS_ERRORS=ON"
+      env: SUDO=sudo BUILD_TYPE=Debug COMPILER=GCC
     - os: linux
       compiler: gcc
-      env: BUILD_TYPE=Release CODECOV=OFF CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release -DGLS_TREAT_WARNINGS_AS_ERRORS=ON"
-
-# Install test fixture dependencies.
-before_install:
-  - mkdir -p "${HOME}/workspace/src"
-  - cd "${HOME}/workspace"
-  - git clone https://github.com/personalrobotics/pr-cleanroom.git scripts
-  - curl -sS "${DISTRIBUTION}" > distribution.yml
-  - ./scripts/internal-setup.sh
-  - export PACKAGE_NAMES="$(./scripts/internal-get-packages.py distribution.yml ${REPOSITORY})"
+      env: SUDO=sudo BUILD_TYPE=Release COMPILER=GCC
 
 install:
-  - mv "${TRAVIS_BUILD_DIR}" src
-  - ./scripts/internal-distro.py --workspace=src distribution.yml --repository "${REPOSITORY}"
+  - .ci/install.sh;
 
 script:
-  - ./scripts/internal-build.sh ${PACKAGE_NAMES}
-  - ./scripts/internal-test.sh ${PACKAGE_NAMES}
-  # Check code style
-  - ./scripts/internal-run.sh catkin build --no-status --no-deps -p 1 -i --make-args check-format -- gls
-  # Manually build gls's tests; they are not run automatically because it is not a Catkin package.
-  # - ./scripts/internal-run.sh catkin build --no-status --no-deps -p 1 -i --cmake-args -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DGLS_TREAT_WARNINGS_AS_ERRORS=ON -DCODECOV=$CODECOV --make-args tests -- gls
-  # Measure test coverage if CodeCov is on; otherwise, just run tests.
-  # - if [ $CODECOV = ON ]; then ./scripts/internal-run.sh make -C build/gls gls_coverage; else ./scripts/internal-run.sh make -C build/gls test; fi
-  # Uploading code coverage report to CodeCov
-  # - if [ $CODECOV = ON ]; then bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports."; fi
+  - .ci/script.sh;
 
-after_failure:
-  - cat ./build/gls/Testing/Temporary/LastTest.log
-  - cat ./build/gls/Testing/Temporary/LastTestsFailed.log
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+after_failure: 
+  - cat Testing/Temporary/LastTest.log
+  - cat Testing/Temporary/LastTestsFailed.log
+
+notifications:
+  email: false

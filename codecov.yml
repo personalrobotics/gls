@@ -1,0 +1,9 @@
+# Reference: https://github.com/codecov/support/wiki/Codecov-Yaml
+
+coverage:
+  fixes:
+    - "src/gls::"  # reduce root "src/gls/" => "/"
+  ignore:
+    - "tests"
+comment:
+  layout: "diff, flags, files"
