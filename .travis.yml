@@ -1,9 +1,13 @@
 language: cpp
 sudo: required
-dist: bionixc
+dist: bionic
 
 cache:
-  apt: true
+  apt:
+    packages:
+       - libboost-all-dev
+       - libompl-dev
+       - libeigen3-dev
 
 env:
   - GLS_TREAT_WARNINGS_AS_ERRORS=ON
@@ -18,13 +22,15 @@ matrix:
       env: SUDO=sudo BUILD_TYPE=Release COMPILER=GCC
 
 install:
-  - sudo -E .ci/install.sh;
 
 script:
-  - sudo -E .ci/script.sh;
+  - mkdir build && cd build
+  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DGLS_TREAT_WARNINGS_AS_ERRORS=$GLS_TREAT_WARNINGS_AS_ERRORS ..
+  - make -j4 all
+  - make -j4 test
+  - sudo make install
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
 
 after_failure: 
   - cat Testing/Temporary/LastTest.log
