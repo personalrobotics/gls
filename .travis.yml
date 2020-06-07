@@ -22,6 +22,7 @@ jobs:
         - BUILD_TYPE=Release
         - CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release -DTREAT_WARNINGS_AS_ERRORS=ON"
         - USE_CATKIN=ON
+        - SUDO=sudo
       services: docker
 
     - os: linux
@@ -31,6 +32,7 @@ jobs:
         - BUILD_TYPE=Debug
         - CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DTREAT_WARNINGS_AS_ERRORS=ON"
         - USE_CATKIN=ON
+        - SUDO=sudo
       services: docker
 
     - os: linux
@@ -39,6 +41,7 @@ jobs:
         - DOCKER_FILE="ubuntu-bionic"
         - BUILD_TYPE=Release
         - USE_CATKIN=OFF
+        - SUDO=sudo
       services: docker
 
     - os: linux
@@ -47,6 +50,7 @@ jobs:
         - DOCKER_FILE="ubuntu-bionic"
         - BUILD_TYPE=Debug
         - USE_CATKIN=OFF
+        - SUDO=sudo
       services: docker
 
 before_install:
