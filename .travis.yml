@@ -33,21 +33,22 @@ jobs:
         - USE_CATKIN=ON
       services: docker
 
-    - os: linux
-      env:
-        - BUILD_NAME=BIONIC_CMAKE_RELEASE
-        - DOCKER_FILE="ubuntu-bionic"
-        - BUILD_TYPE=Release
-        - USE_CATKIN=OFF
-      services: docker
+    # Disabling CMake CI tests for now.
+    # - os: linux
+    #   env:
+    #     - BUILD_NAME=BIONIC_CMAKE_RELEASE
+    #     - DOCKER_FILE="ubuntu-bionic"
+    #     - BUILD_TYPE=Release
+    #     - USE_CATKIN=OFF
+    #   services: docker
 
-    - os: linux
-      env:
-        - BUILD_NAME=BIONIC_CMAKE_DEBUG
-        - DOCKER_FILE="ubuntu-bionic"
-        - BUILD_TYPE=Debug
-        - USE_CATKIN=OFF
-      services: docker
+    # - os: linux
+    #   env:
+    #     - BUILD_NAME=BIONIC_CMAKE_DEBUG
+    #     - DOCKER_FILE="ubuntu-bionic"
+    #     - BUILD_TYPE=Debug
+    #     - USE_CATKIN=OFF
+    #   services: docker
 
 before_install:
   - if [ -n "$DOCKER_FILE" ]; then
