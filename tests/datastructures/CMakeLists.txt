@@ -1,0 +1,1 @@
+gls_add_test(PriorityQueueTest PriorityQueueTest.cpp)

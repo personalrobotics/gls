@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10.2)
 project(gls)
 list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
 
 #================================================================================
 # Compiler settings
 #================================================================================
-# Enforce the use of C++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wuninitialized -Wpedantic -Werror")
+# Enforce the use of C++17
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wuninitialized -Wpedantic -Werror")
 
 #================================================================================
 # Link Libraries
@@ -53,6 +53,12 @@ add_library(${PROJECT_NAME}
 # add_executable(test_ShortestPath_Forward examples/test_ShortestPath_Forward.cpp)
 # target_link_libraries(test_ShortestPath_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
 # install(TARGETS test_ShortestPath_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+#================================================================================
+# Testing
+#================================================================================
+enable_testing()
+add_subdirectory("tests")
 
 #================================================================================
 # Installation
