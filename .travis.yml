@@ -22,7 +22,6 @@ jobs:
         - BUILD_TYPE=Release
         - CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release -DTREAT_WARNINGS_AS_ERRORS=ON"
         - USE_CATKIN=ON
-        - SUDO=sudo
       services: docker
 
     - os: linux
@@ -32,7 +31,6 @@ jobs:
         - BUILD_TYPE=Debug
         - CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DTREAT_WARNINGS_AS_ERRORS=ON"
         - USE_CATKIN=ON
-        - SUDO=sudo
       services: docker
 
     - os: linux
@@ -41,7 +39,6 @@ jobs:
         - DOCKER_FILE="ubuntu-bionic"
         - BUILD_TYPE=Release
         - USE_CATKIN=OFF
-        - SUDO=sudo
       services: docker
 
     - os: linux
@@ -50,42 +47,41 @@ jobs:
         - DOCKER_FILE="ubuntu-bionic"
         - BUILD_TYPE=Debug
         - USE_CATKIN=OFF
-        - SUDO=sudo
       services: docker
 
 before_install:
   - if [ -n "$DOCKER_FILE" ]; then
       docker build -t "$DOCKER_FILE" -f ".ci/docker/$DOCKER_FILE" .;
       docker run -itd -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR --env-file .ci/docker/env.list --name gls-docker "$DOCKER_FILE";
-      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && sudo ./.ci/before_install.sh";
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/before_install.sh";
     else
       '.ci/before_install.sh';
     fi
 
 install:
   - if [ -n "$DOCKER_FILE" ]; then
-      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && sudo ./.ci/install.sh";
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/install.sh";
     else
       '.ci/install.sh';
     fi
 
 script:
   - if [ -n "$DOCKER_FILE" ]; then
-      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && sudo ./.ci/script.sh";
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/script.sh";
     else
       '.ci/script.sh';
     fi
 
 after_script:
   - if [ -n "$DOCKER_FILE" ]; then
-      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && sudo ./.ci/after_script.sh";
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/after_script.sh";
     else
       '.ci/after_script.sh';
     fi
 
 after_failure:
   - if [ -n "$DOCKER_FILE" ]; then
-      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && sudo ./.ci/after_failure.sh";
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/after_failure.sh";
     else
       '.ci/after_failure.sh';
     fi
