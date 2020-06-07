@@ -15,7 +15,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wuninitialized
 find_package(catkin REQUIRED COMPONENTS roscpp)
 find_package(ompl REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options system)
-find_package(OpenCV REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -28,7 +27,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OMPL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
-  ${OpenCV_INCLUDE_DIRS}
 )
 
 link_directories(
