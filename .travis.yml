@@ -1,40 +1,100 @@
 language: cpp
-sudo: required
+os: linux
 dist: bionic
+group: travis_lts
+
+env:
+  global:
+    - TIMEOUT=30
 
 cache:
-  apt:
+  apt: true
     packages:
        - libboost-all-dev
        - libompl-dev
        - libeigen3-dev
 
-env:
-  - GLS_TREAT_WARNINGS_AS_ERRORS=ON
-
-matrix:
+jobs:
+  fast_finish: true
   include:
     - os: linux
-      compiler: gcc
-      env: SUDO=sudo BUILD_TYPE=Debug COMPILER=GCC
+      env:
+        - BUILD_NAME=BIONIC_CATKIN_FULL_RELEASE
+        - DOCKER_FILE="ubuntu-bionic"
+        - BUILD_TYPE=Release
+        - CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Release -DTREAT_WARNINGS_AS_ERRORS=ON"
+        - USE_CATKIN=ON
+      services: docker
+
     - os: linux
-      compiler: gcc
-      env: SUDO=sudo BUILD_TYPE=Release COMPILER=GCC
+      env:
+        - BUILD_NAME=BIONIC_CATKIN_FULL_DEBUG
+        - DOCKER_FILE="ubuntu-bionic"
+        - BUILD_TYPE=Debug
+        - CATKIN_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=Debug -DTREAT_WARNINGS_AS_ERRORS=ON"
+        - USE_CATKIN=ON
+      services: docker
+
+    - os: linux
+      env:
+        - BUILD_NAME=BIONIC_CMAKE_RELEASE
+        - DOCKER_FILE="ubuntu-bionic"
+        - BUILD_TYPE=Release
+        - USE_CATKIN=OFF
+      services: docker
+
+    - os: linux
+      env:
+        - BUILD_NAME=BIONIC_CMAKE_DEBUG
+        - DOCKER_FILE="ubuntu-bionic"
+        - BUILD_TYPE=Debug
+        - USE_CATKIN=OFF
+      services: docker
+
+before_install:
+  - if [ -n "$DOCKER_FILE" ]; then
+      docker build -t "$DOCKER_FILE" -f ".ci/docker/$DOCKER_FILE" .;
+      docker run -itd -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR --env-file .ci/docker/env.list --name gls-docker "$DOCKER_FILE";
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/before_install.sh";
+    else
+      '.ci/before_install.sh';
+    fi
 
 install:
+  - if [ -n "$DOCKER_FILE" ]; then
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/install.sh";
+    else
+      '.ci/install.sh';
+    fi
 
 script:
-  - mkdir build && cd build
-  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DGLS_TREAT_WARNINGS_AS_ERRORS=$GLS_TREAT_WARNINGS_AS_ERRORS ..
-  - make -j4 all
-  - make -j4 test
-  - sudo make install
+  - if [ -n "$DOCKER_FILE" ]; then
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/script.sh";
+    else
+      '.ci/script.sh';
+    fi
 
-after_success:
+after_script:
+  - if [ -n "$DOCKER_FILE" ]; then
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/after_script.sh";
+    else
+      '.ci/after_script.sh';
+    fi
 
-after_failure: 
-  - cat Testing/Temporary/LastTest.log
-  - cat Testing/Temporary/LastTestsFailed.log
+after_failure:
+  - if [ -n "$DOCKER_FILE" ]; then
+      docker exec gls-docker /bin/sh -c "cd $TRAVIS_BUILD_DIR && ./.ci/after_failure.sh";
+    else
+      '.ci/after_failure.sh';
+    fi
 
-notifications:
-  email: false
+deploy:
+  strategy: git
+  token: $GITHUB_TOKEN
+  provider: pages
+  local_dir: gh-pages
+  keep_history: false
+  verbose: true
+  on:
+    branch: master
+    condition: $BUILD_NAME == DOCS && $TRAVIS_EVENT_TYPE != cron
