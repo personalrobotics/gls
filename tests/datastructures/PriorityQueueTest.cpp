@@ -30,6 +30,15 @@ TEST_F(PriorityQueueTest, AddNode) {
 }
 
 // ==============================================================================
+TEST_F(PriorityQueueTest, HasNode) {
+  auto searchQueue = gls::PriorityQueue<gls::FValueComparator>();
+  gls::Node n;
+  n.costToCome = 1;
+  searchQueue.addNode(n);
+  EXPECT_TRUE(searchQueue.hasNode(n));
+}
+
+// ==============================================================================
 TEST_F(PriorityQueueTest, PopNode) {
   auto searchQueue = gls::PriorityQueue<gls::FValueComparator>();
   EXPECT_TRUE(searchQueue.isEmpty());
