@@ -9,10 +9,8 @@ env:
 
 cache:
   apt: true
-    packages:
-       - libboost-all-dev
-       - libompl-dev
-       - libeigen3-dev
+  directories:
+    - /usr/local/Cellar
 
 jobs:
   fast_finish: true
