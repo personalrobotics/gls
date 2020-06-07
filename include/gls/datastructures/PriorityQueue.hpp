@@ -12,7 +12,7 @@ namespace gls {
 
 /// Compares nodes based on their F-Value. Breaks ties by ID.
 struct FValueComparator {
-  inline bool operator()(const Node& left, const Node& right) {
+  inline bool operator()(const Node& left, const Node& right) const {
     const double& leftTotalCost = left.totalCost();
     const double& rightTotalCost = right.totalCost();
     if (leftTotalCost != rightTotalCost) {
@@ -24,7 +24,7 @@ struct FValueComparator {
 
 /// Compares nodes based on their G-Value. Breaks ties by ID.
 struct GValueComparator {
-  inline bool operator()(const Node& left, const Node& right) {
+  inline bool operator()(const Node& left, const Node& right) const {
     const double& leftCost = left.costToCome;
     const double& rightCost = right.costToCome;
     if (leftCost != rightCost) {
