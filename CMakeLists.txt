@@ -6,7 +6,12 @@ list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
 # Compiler settings
 #================================================================================
 # Enforce the use of C++17
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wuninitialized -Wpedantic -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+add_compile_options(-Wall -Wextra -Wuninitialized -Wpedantic 
+  -Wshadow -Wnon-virtual-dtor -Wcast-align -Wunused -Woverloaded-virtual
+  -Wconversion -Wsign-conversion -Wmisleading-indentation -Wduplicated-cond
+  -Wduplicated-branches -Wlogical-op -Wnull-dereference -Wuseless-cast 
+  -Wdouble-promotion)
 
 #================================================================================
 # Link Libraries
