@@ -68,6 +68,9 @@ class PriorityQueue {
       std::cout << "Cannot find node" << std::endl;
     }
   }
+  inline bool hasNode(const Node& node) const {
+    return (mNodeQueue.find(node) != mNodeQueue.end());
+  }
   inline std::size_t getSize() const { return mNodeQueue.size(); }
   inline bool isEmpty() const { return mNodeQueue.empty(); };
   inline const std::string& getName() const { return mName; }
