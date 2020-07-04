@@ -34,7 +34,7 @@ struct Node {
 
   /// Utility function to remove a child from \c children.
   inline void removeChild(const std::size_t& id) {
-    for (auto i = 0; i < children.size(); ++i) {
+    for (auto i = 0u; i < children.size(); ++i) {
       if (children[i] == id) {
         children[i] = children.back();
         children.pop_back();
