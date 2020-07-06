@@ -74,8 +74,14 @@ typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
 /// graph properties and has ownership.
 typedef std::unique_ptr<Graph> GraphPtr;
 
+/// Boost vertex
+typedef boost::graph_traits<Graph>::vertex_descriptor Vertex;
+
 /// Boost vertex iterator
 typedef boost::graph_traits<Graph>::vertex_iterator VertexIterator;
+
+/// Boost edge
+typedef boost::graph_traits<Graph>::edge_descriptor Edge;
 
 /// Boost edge iterator
 typedef boost::graph_traits<Graph>::edge_iterator EdgeIterator;

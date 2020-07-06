@@ -10,3 +10,4 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_subdirectory(datastructures)
 add_subdirectory(event)
+add_subdirectory(selector)
