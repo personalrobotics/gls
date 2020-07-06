@@ -23,8 +23,7 @@ class PriorityQueue {
 
   /// Contructor.
   /// \param[in] name Name of the queue.
-  explicit PriorityQueue(const Graph& graph,
-                         const std::string& name = "PriorityQueue")
+  PriorityQueue(const Graph& graph, const std::string& name = "PriorityQueue")
       : mGraph(graph),
         mName(name),
         mNodeQueue([this](const std::size_t& lhs, const std::size_t& rhs) {
@@ -109,7 +108,6 @@ class PriorityQueue {
   /// The graph is owned by the planner and is only modifiable by the planner.
   const Graph& mGraph;
 
- private:
   /// The name of the queue.
   const std::string& mName;
 
@@ -129,8 +127,8 @@ class GValueQueue final : public PriorityQueue {
   ~GValueQueue() = default;
 
   /// Compares nodes according to gvalues.
-  bool queueComparison(const std::size_t& lhs,
-                       const std::size_t& rhs) const override {
+  bool inline queueComparison(const std::size_t& lhs,
+                              const std::size_t& rhs) const override {
     const double& left = mGraph[lhs].costToCome;
     const double& right = mGraph[rhs].costToCome;
     if (left != right) {
