@@ -48,6 +48,7 @@ link_libraries(
 
 add_library(${PROJECT_NAME}
   src/datastructures/Graph.cpp
+  src/datastructures/ImplicitGraph.cpp
   src/datastructures/SearchQueue.cpp
   src/datastructures/State.cpp
   src/GLS.cpp
@@ -59,6 +60,7 @@ add_library(${PROJECT_NAME}
   src/selector/BackwardSelector.cpp
   src/selector/FailFastSelector.cpp
   src/selector/ForwardSelector.cpp
+  src/io/MotionPrimitiveReader.cpp
 )
 
 #================================================================================
@@ -73,6 +75,10 @@ install(TARGETS test_ShortestPath_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_B
 add_executable(test_ConstantDepth_Forward examples/test_ConstantDepth_Forward.cpp)
 target_link_libraries(test_ConstantDepth_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
 install(TARGETS test_ConstantDepth_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+add_executable(test_implicit examples/test_implicit.cpp)
+target_link_libraries(test_implicit ${PROJECT_NAME})
+install(TARGETS test_implicit RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #================================================================================
 # Installation

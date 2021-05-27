@@ -88,10 +88,10 @@ void GLS::setupPreliminaries() {
       targetState->getOMPLState(), pdef_->getGoal()->as<ompl::base::GoalState>()->getState());
 
   // Add start and goal vertices to the graph
-  mSourceVertex = boost::add_vertex(mGraph);
+  mSourceVertex = add_vertex(mGraph);
   mGraph[mSourceVertex].setState(sourceState);
 
-  mTargetVertex = boost::add_vertex(mGraph);
+  mTargetVertex = add_vertex(mGraph);
   mGraph[mTargetVertex].setState(targetState);
 
   // Assign default values.
@@ -118,7 +118,7 @@ void GLS::setupPreliminaries() {
       if (mSourceVertex == *vi)
         continue;
 
-      std::pair<Edge, bool> newEdge = boost::add_edge(mSourceVertex, *vi, mGraph);
+      std::pair<Edge, bool> newEdge = add_edge(mSourceVertex, *vi, mGraph);
 
       mGraph[newEdge.first].setLength(sourceDistance);
       mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
@@ -130,7 +130,7 @@ void GLS::setupPreliminaries() {
       if (mTargetVertex == *vi)
         continue;
 
-      std::pair<Edge, bool> newEdge = boost::add_edge(mTargetVertex, *vi, mGraph);
+      std::pair<Edge, bool> newEdge = add_edge(mTargetVertex, *vi, mGraph);
       mGraph[newEdge.first].setLength(targetDistance);
       mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
       mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
@@ -139,7 +139,7 @@ void GLS::setupPreliminaries() {
   }
 
   // Additionally connect the source and target with a straight line to snap.
-  std::pair<Edge, bool> newEdge = boost::add_edge(mSourceVertex, mTargetVertex, mGraph);
+  std::pair<Edge, bool> newEdge = add_edge(mSourceVertex, mTargetVertex, mGraph);
   mGraph[newEdge.first].setLength(
       mSpace->distance(sourceState->getOMPLState(), targetState->getOMPLState()));
   mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
@@ -346,6 +346,11 @@ void GLS::setRoadmap(std::string filename) {
 
   // Mark the graph to have been setup.
   mGraphSetup = true;
+}
+
+// ============================================================================
+void GLS::setImplicit(datastructures::NeighborFunc transition_function){
+    mImplicit = true;
 }
 
 // ============================================================================

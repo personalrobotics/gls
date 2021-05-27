@@ -81,8 +81,11 @@ public:
   /// Get the connection radius of the graph.
   double getCollisionCheckResolution();
 
-  /// Set the roadmap. Loads the graph.
+  /// Set the roadmap. Loads the graph. Explicit only.
   void setRoadmap(std::string filename);
+
+  /// Sets transition function for graph. Implicit only. 
+  void setImplicit(gls::datastructures::NeighborFunc transition_function);
 
   /// Set the best path cost.
   void setBestPathCost(double cost);
@@ -152,6 +155,8 @@ private:
       gls::datastructures::EPLengthMap>>
       mRoadmap;
 
+  bool mImplicit = false;
+
   /// Connection radius in the graph.
   double mConnectionRadius;
 
@@ -190,6 +195,9 @@ private:
 
   /// The fixed roadmap over which the search is done.
   gls::datastructures::Graph mGraph;
+
+  /// The implicit roadmap to search over.
+  gls::datastructures::ImplicitGraph mIGraph;
 
   /// Source vertex.
   gls::datastructures::Vertex mSourceVertex;
