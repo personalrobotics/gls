@@ -14,7 +14,6 @@ Vertex& Graph::addVertex(Vertex v, StatePtr state){
         mExplicitGraph[v.mExplicitVertex].setState(state);
     }
     mVertices.push_back(v);
-    //incrementVertices();
     return mVertices.back();
 }
 
@@ -60,11 +59,6 @@ EdgeProperties & Graph::operator[](Edge key) {
         return mImplicitGraph[key.mImplicitEdge];
     }
     return mExplicitGraph[key.mExplicitEdge];
-}
-
-// ============================================================================
-void Graph::incrementVertices(){
-   mVertexNum++; 
 }
 
 // ============================================================================
@@ -172,9 +166,13 @@ std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph& g){
     EdgeHash hash;
     Edge* e = new Edge(); // blank edge
     std::string hashed_edge = hash(std::pair<Vertex, Vertex>{v1, v2});
+    std::string reverse_hashed_edge = hash(std::pair<Vertex, Vertex>{v2, v1});
     std::map<std::string, Edge> lookup = g.getLookup();
     if(lookup.find(hashed_edge) != lookup.end()){
         return std::pair<Edge, bool>{lookup[hashed_edge], true};
+    }
+    if(!g.mImplicit && lookup.find(reverse_hashed_edge) != lookup.end()){ // TODO (schmittle) check reverse 4 implicit?
+        return std::pair<Edge, bool>{lookup[reverse_hashed_edge], true};
     }
     return std::pair<Edge, bool>{*e, false};
 }

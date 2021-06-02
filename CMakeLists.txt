@@ -78,7 +78,7 @@ target_link_libraries(test_ConstantDepth_Forward ${PROJECT_NAME} ${OpenCV_LIBS})
 install(TARGETS test_ConstantDepth_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 add_executable(test_implicit examples/test_implicit.cpp)
-target_link_libraries(test_implicit ${PROJECT_NAME})
+target_link_libraries(test_implicit ${PROJECT_NAME} ${OpenCV_LIBS})
 install(TARGETS test_implicit RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #================================================================================

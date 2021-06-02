@@ -9,6 +9,6 @@
   <arg name="target_y" default="0.9" />
 
   <!-- Test Node -->
-  <node name="test" pkg="gls" type="test2d_image" respawn="false" output="screen"
+  <node name="test" pkg="gls" type="test_ShortestPath_Forward" respawn="false" output="screen"
   	args="-o $(arg obstacles) -g $(arg graph) -s $(arg start_x) $(arg start_y) -t $(arg target_x) $(arg target_y)" />
 </launch>

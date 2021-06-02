@@ -58,7 +58,6 @@ class Graph {
 
         Vertex& addVertex(Vertex v, StatePtr state);
         std::pair<Edge&, bool> addEdge(Vertex v1, Vertex v2);
-        void incrementVertices();
         void setImplicit(ImplicitGraph g);
         std::pair<VertexIter,VertexIter> vertices();
         std::pair<EdgeIter, EdgeIter> edges();

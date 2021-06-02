@@ -9,6 +9,12 @@
 // OMPL base libraries
 #include <ompl/base/ProblemDefinition.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
+#include <ompl/geometric/PathGeometric.h>
+
+// OpenCV libraries
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 // Custom header files
 #include "gls/GLS.hpp"
@@ -68,13 +74,11 @@ std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi
             ntheta = mprim.endcell.theta;
 
             // Set state
-            // TODO this seems inefficient to make a new state
+            // TODO (schmittle) this seems inefficient to make a new state
             neighborProperties = VertexProperties();
             StatePtr newState(new State(space));
             space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
             neighborProperties.setState(newState);
-            //std::cout<<vi<< " "<< hash(neighborProperties.getState())<<std::endl;
-            //std::cout<<x<<","<<y<<","<<theta<< " "<< nx<<","<<ny<<","<<ntheta<<std::endl;
 
             neighbors.push_back(std::pair<IVertex, VertexProperties>(hash(neighborProperties.getState()), neighborProperties));
         }
@@ -83,16 +87,51 @@ std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi
     return neighbors;
 }
 
+/// Displays path
+/// \param[in] obstacleFile The file with obstacles stored
+/// \param[in] path OMPL path
+void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::PathGeometric> path) {
+  // Get state count
+  int pathSize = path->getStateCount();
+
+  // Obtain the image matrix
+  cv::Mat image = cv::imread(obstacleFile, 1);
+  int numberOfRows = image.rows;
+  int numberOfColumns = image.cols;
+
+  for (int i = 0; i < pathSize - 1; ++i) {
+    auto uState = path->getState(i);
+    auto vState = path->getState(i + 1);
+    double* u = uState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    double* v = vState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    // TODO (schmittle) use intermediate points in path
+
+    // TODO don't do this
+    double scale = 1.5;
+    int offsetx = -300;
+    int offsety = 600;
+    cv::Point uPoint((int)(u[0])*scale-offsetx, (int)((numberOfRows - u[1])*scale)-offsety);
+    cv::Point vPoint((int)(v[0])*scale-offsetx, (int)((numberOfRows - v[1])*scale)-offsety);
+
+    cv::line(image, uPoint, vPoint, cv::Scalar(255, 0, 0), 1);
+  }
+
+  cv::imshow("Solution Path", image);
+  cv::waitKey(0);
+}
+
 int main (int argc, char const *argv[]) {
 
   // Load Motion Primitives
   gls::io::MotionPrimitiveReader* mReader = new gls::io::MotionPrimitiveReader();
+  //TODO (schmittle) don't hardcode paths
   mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim");
+  std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
 
   // Define the state space: R^4
   auto space = std::make_shared<ompl::base::RealVectorStateSpace>(4);
   auto bounds = ompl::base::RealVectorBounds(4); 
-  bounds.setLow(-100.0); // TODO set real bounds
+  bounds.setLow(-100.0); // TODO set real bounds, although I don't think these are used
   bounds.setHigh(100.0);
   space->as<ompl::base::RealVectorStateSpace>()->setBounds(bounds);
   space->setLongestValidSegmentFraction(0.1 / space->getMaximumExtent());
@@ -106,7 +145,7 @@ int main (int argc, char const *argv[]) {
   si->setup();
 
   StatePtr sourceState(new State(space));
-  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{1, 20, 1, -1});
+  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{20, 20, 1, -1});
 
   StatePtr targetState(new State(space));
   space->copyFromReals(targetState->getOMPLState(), std::vector<double>{3, 3, 3, -1});
@@ -143,10 +182,14 @@ int main (int argc, char const *argv[]) {
 
   // Obtain required data if plan was successful
   if (status == ompl::base::PlannerStatus::EXACT_SOLUTION) {
-    std::cout << "Best Path Cost: " << planner.getBestPathCost() << std::endl;
+    // Display path and specify path size
+    auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(pdef->getSolutionPath());
+    std::cout << "Number of Edge Evaluations: " << planner.getNumberOfEdgeEvaluations()
+              << std::endl;
+    displayPath(obstacleLocation, path);
+    planner.clear();
     return 0;
   }
-  planner.clear();
 
   return 0;
 }
