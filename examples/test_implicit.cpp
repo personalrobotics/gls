@@ -15,18 +15,11 @@
 
 using namespace gls::datastructures;
 
-std::ostream& operator<<(std::ostream& output, const gls::datastructures::IEdge& e) {
-      return output << "(" << e.first << ", " << e.second << ")";
-}
-
 /// Dummy collision checker that return true always.
 /// This is bound to the stateValidityChecker of the ompl StateSpace.
 /// \param[in] state The ompl state to check for validity.
 bool isPointValid(const ompl::base::State* state) {
   double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-  if (values[0] >= 0.15 && values[0] <= 0.85)
-    if (values[1] <= 0.85)
-      return false;
   return true;
 }
 
@@ -58,16 +51,9 @@ std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi
     int theta = (int)values[2];
     int level = (int)values[3]; // TODO use me!
 
-    // OLD
-    // Readout state from vertex_descriptor 
-    //int x_idx = vi.find("|");
-    //int y_idx = vi.find("|", x_idx+1);
-    //int x = std::stoi(vi.substr(0, x_idx));
-    //int y = std::stoi(vi.substr(x_idx+1, y_idx-x_idx-1));
-    //int theta = std::stoi(vi.substr(y_idx+1, vi.size()-y_idx-1));
-
     // Neighbors
     int nx, ny, ntheta;
+    IVertexHash hash;
     IVertex neighbor;
     VertexProperties neighborProperties;
     std::vector<gls::io::MotionPrimitive> mprims = mReader->mprimV;
@@ -79,9 +65,6 @@ std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi
             nx = mprim.endcell.x + x;
             ny = mprim.endcell.y + y;
             ntheta = mprim.endcell.theta;
-            neighbor = std::to_string(nx) + 
-                "|" + std::to_string(ny) + 
-                "|" + std::to_string(ntheta);
 
             // Set state
             // TODO this seems inefficient to make a new state
@@ -90,7 +73,7 @@ std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi
             space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
             neighborProperties.setState(newState);
 
-            neighbors.push_back(std::pair<IVertex, VertexProperties>(neighbor, neighborProperties));
+            neighbors.push_back(std::pair<IVertex, VertexProperties>(hash(neighborProperties.getState()), neighborProperties));
         }
     }
 
@@ -119,33 +102,16 @@ int main (int argc, char const *argv[]) {
   si->setStateValidityChecker(isStateValid);
   si->setup();
 
-  // Create implicit graph
-  // Bind so we can pass mReader
-  ImplicitGraph g(std::bind(&fit_state2lattice,  
-                std::placeholders::_1, 
-                mReader,
-                space), 
-              std::bind(&transition_function, 
-                    std::placeholders::_1, 
-                    std::placeholders::_2, 
-                    space, 
-                    mReader));
-  IVertex sourceVertex = "source";
-  IVertex targetVertex = "target";
-
   StatePtr sourceState(new State(space));
   space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{1, 20, 1, -1});
 
   StatePtr targetState(new State(space));
   space->copyFromReals(targetState->getOMPLState(), std::vector<double>{3, 3, 3, -1});
 
-  g.addVertex(sourceVertex, sourceState);
-  g.addVertex(targetVertex, targetState);
-
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
   pdef->addStartState(sourceState->getOMPLState());
-  pdef->addStartState(targetState->getOMPLState());
+  pdef->setGoalState(targetState->getOMPLState());
 
   // Setup planner
   gls::GLS planner(si);
@@ -167,6 +133,18 @@ int main (int argc, char const *argv[]) {
 
   planner.setup();
   planner.setProblemDefinition(pdef);
+
+  // Solve the motion planning problem
+  ompl::base::PlannerStatus status;
+  status = planner.solve(ompl::base::plannerNonTerminatingCondition());
+
+  /*
+  // Obtain required data if plan was successful
+  if (status == ompl::base::PlannerStatus::EXACT_SOLUTION) {
+    std::cout << "Best Path Cost: " << planner.getBestPathCost() << std::endl;
+    return 0;
+  }
+  */
 
   return 0;
 }

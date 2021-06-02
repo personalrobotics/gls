@@ -122,9 +122,6 @@ private:
   /// Heuristic function.
   double getGraphHeuristic(gls::datastructures::Vertex v);
 
-  /// Heuristic function -- Implicit
-  double getGraphHeuristic(gls::datastructures::IVertex v);
-
   /// Evaluates an edge for collision.
   gls::datastructures::CollisionStatus evaluateVertex(gls::datastructures::Vertex v);
 
@@ -199,20 +196,11 @@ private:
   /// The fixed roadmap over which the search is done.
   gls::datastructures::Graph mGraph;
 
-  /// The implicit roadmap to search over.
-  gls::datastructures::ImplicitGraph mIGraph;
-
   /// Source vertex.
   gls::datastructures::Vertex mSourceVertex;
 
   /// Target vertex.
   gls::datastructures::Vertex mTargetVertex;
-
-  /// Source vertex. Implicit
-  gls::datastructures::IVertex mISourceVertex;
-
-  /// Target vertex. Implicit
-  gls::datastructures::IVertex mITargetVertex;
 
   /// TODO (avk): Move these into PlannerStatus class.
   /// Number of Edge Evaluations.

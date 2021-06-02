@@ -6,29 +6,64 @@ namespace gls {
 namespace datastructures {
 
 // ============================================================================
+bool Vertex::isImplicit() const{
+    return mImplicit;
+}
+
+// ============================================================================
 std::ostream& operator<<(std::ostream &os, const Vertex& vi){
-    os << vi.mExplicitVertex<< " "<< vi.mImplicitVertex;
+    if (vi.isImplicit()){
+        os<<vi.mImplicitVertex;
+    }
+    else{
+        os << vi.mExplicitVertex;
+    }
     return os;
 }
 
 // ============================================================================
 bool operator==(Vertex v1, Vertex v2){
-    return true; // TODO ALSO!!!!
+    if (v1.isImplicit()){ // note if there is a explicit implicit mismatch there will be probs 
+        return v1.mImplicitVertex == v2.mImplicitVertex;
+    }
+    else{
+        return v1.mExplicitVertex == v2.mExplicitVertex;
+    }
 }
 
 // ============================================================================
 bool operator!=(Vertex v1, Vertex v2){
-    return true; // TODO ALSO!!!!
+    if (v1.isImplicit()){ // note if there is a explicit implicit mismatch there will be probs 
+        return v1.mImplicitVertex != v2.mImplicitVertex;
+    }
+    else{
+        return v1.mExplicitVertex != v2.mExplicitVertex;
+    }
 }
 
 // ============================================================================
 bool operator<(Vertex v1, Vertex v2){
-    return true; // TODO THIS WILL BREAK PLANNING IF YOU DON"T FIX IT!
+    if (v1.isImplicit()){ // note if there is a explicit implicit mismatch there will be probs 
+        return v1.mImplicitVertex < v2.mImplicitVertex;
+    }
+    else{
+        return v1.mExplicitVertex < v2.mExplicitVertex;
+    }
 }
 
 // ============================================================================
-bool operator==(Edge v1, Edge v2){
-    return true; // TODO ALSO!!!!
+bool Edge::isImplicit() const{
+    return mImplicit;
+}
+
+// ============================================================================
+bool operator==(Edge e1, Edge e2){
+    if (e1.isImplicit()){ // note if there is a explicit implicit mismatch there will be probs 
+        return e1.mImplicitEdge.first == e2.mImplicitEdge.first && e1.mImplicitEdge.second == e2.mImplicitEdge.second; // note this does not allow multiple edges between vertices
+    }
+    else{
+        return e1.mExplicitEdge == e2.mExplicitEdge;
+    }
 }
 
 // Properties

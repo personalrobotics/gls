@@ -11,16 +11,10 @@ namespace gls {
 namespace selector {
 
 /// Unordered map defined as: <source name> <target name> <prior>
-/*typedef std::unordered_map<
-    std::pair<std::size_t, std::size_t>,
-    double,
-    boost::hash<std::pair<std::size_t, std::size_t>>>
-    edgeToPriorMap;
-    */
 typedef std::unordered_map<
-    gls::datastructures::Edge,
+    std::pair<gls::datastructures::Vertex, gls::datastructures::Vertex>,
     double,
-    gls::datastructures::EdgeHash>
+    gls::datastructures::EdgePriorHash>
     edgeToPriorMap;
 
 /// Selector that evaluates the edge most likely to be in collision.

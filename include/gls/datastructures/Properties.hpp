@@ -28,20 +28,27 @@ enum EvaluationStatus { NotEvaluated, Evaluated };
 class Vertex {
     public:
         Vertex(){};
-        Vertex(std::string name): mImplicitVertex(name){};
+        Vertex(std::string name): mImplicitVertex(name), mImplicit(true){};
         Vertex(EVertex evert): mExplicitVertex(evert){};
 
         EVertex mExplicitVertex;
         std::string mImplicitVertex;
         friend std::ostream& operator<<(std::ostream &os, const Vertex& vi);
+        bool isImplicit() const;
     private:
+        bool mImplicit = false;
 };
 
 // For unordered map
 struct VertexHash{
     std::size_t operator()(const Vertex& k) const{
-        //return (std::size_t) std::stoi(k.mExplicitVertex);// TODO
-        return 0;
+        if (k.isImplicit()){
+            std::cout<<"here: "<<k.mImplicitVertex<<" "<<std::stoi(k.mImplicitVertex)<<std::endl;
+            return std::stoi(k.mImplicitVertex);//TODO this could be wrong for -1 in name
+        }
+        else{
+            return k.mExplicitVertex;
+        }
     }
 };
 
@@ -54,28 +61,40 @@ bool operator<(Vertex v1, Vertex v2);
 class Edge {
     public:
         Edge(){};
-        Edge(Vertex v1, Vertex v2):first(v1),second(v2) {};
-        Edge(EEdge ei):mExplicitEdge(ei) {};
-        Edge(std::pair<std::string, std::string> ei):first(ei.first),second(ei.second),mImplicitEdge(ei) {};
+        Edge(Vertex v1, Vertex v2, bool implicit):first(v1),second(v2), mImplicit(implicit) {};
+        Edge(EEdge ei):mExplicitEdge(ei), mImplicit(false) {};
+        Edge(std::pair<std::string, std::string> ei):first(ei.first),second(ei.second),mImplicitEdge(ei), mImplicit(true) {};
         Vertex first; // TODO make private
         Vertex second;
 
-        // TODO NOT SET
         EEdge mExplicitEdge;
         std::pair<std::string, std::string> mImplicitEdge;
 
+        bool isImplicit() const;
     private:
+        bool mImplicit = false;
 };
 
-// For unordered map
+// For map
 struct EdgeHash{
-    std::size_t operator()(const Edge& k) const{
-        //return (std::size_t) std::stoi(k.mExplicitVertex);// TODO
-        return 0;
+    std::string operator()(const std::pair<Vertex, Vertex>& k) const{
+        if (k.first.isImplicit()){
+            return k.first.mImplicitVertex + k.second.mImplicitVertex;
+        }
+        else{
+            return std::to_string(k.first.mExplicitVertex) + std::to_string(k.second.mExplicitVertex);
+        }
     }
 };
 
-bool operator==(Edge v1, Edge v2);
+// For fail fast selector
+struct EdgePriorHash{
+    double operator()(const std::pair<Vertex, Vertex>& k) const{
+        return 0.5; // TODO (avk)
+    }
+};
+
+bool operator==(Edge e1, Edge e2);
 
 class VertexProperties {
 public:

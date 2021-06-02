@@ -5,6 +5,9 @@
 #include <vector>
 #include <string>
 
+// OMPL header
+#include <ompl/base/spaces/RealVectorStateSpace.h>
+
 // GLS headers
 #include "gls/datastructures/State.hpp"
 #include "gls/datastructures/Types.hpp"
@@ -40,12 +43,21 @@ class ImplicitGraph {
         fdiscretize fit2Lat; // member passed by constructor
         fneighbors neighbors; // member passed by constructor
 
-        void addVertex(vertex_descriptor vi, StatePtr state);
+        bool addVertex(vertex_descriptor vi, StatePtr state);
         std::pair<edge_descriptor, bool> addEdge(vertex_descriptor v1, vertex_descriptor v2);
 
     private:
         std::map<vertex_descriptor, VertexProperties> mVertices;
         std::map<edge_descriptor, EdgeProperties> mEdges;
+};
+
+// For map
+struct IVertexHash{
+    std::string operator()(StatePtr k) {
+        double* values = k->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+        return std::to_string((int)round(values[0])) + std::to_string((int)round(values[1])) + std::to_string((int)round(values[2])) + std::to_string((int)round(values[3]));
+
+    }
 };
 
 typedef ImplicitGraph::vertex_descriptor IVertex;
@@ -64,17 +76,16 @@ typedef ImplicitGraph::edge_iterator IEdgeIter;
 // Functions
 std::size_t num_vertices(const ImplicitGraph& g);
 std::vector<IVertex> vertices(const ImplicitGraph& g);
-IVertex source(IEdge e, ImplicitGraph g);
-IVertex target(IEdge e, ImplicitGraph g);
+IVertex source(const IEdge& e, const ImplicitGraph& g);
+IVertex target(const IEdge& e, const ImplicitGraph& g);
 
 // Functions
 std::vector<IEdge> edges(const ImplicitGraph& g);
-std::pair<IEdge, bool> edge(Vertex u, Vertex v, ImplicitGraph g);
 std::size_t num_edges(const ImplicitGraph& g);
 
 
 // Functions
-std::vector<IVertex> adjacent_vertices(IVertex u, ImplicitGraph& g);
+std::vector<std::tuple<IVertex, bool, bool>> adjacent_vertices(const IVertex& u, ImplicitGraph& g);
 
 // Extra Functions
 void clear_vertex(Vertex v, ImplicitGraph g); // Does nothing

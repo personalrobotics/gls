@@ -39,13 +39,12 @@ Edge FailFastSelector::selectEdgeToEvaluate(Path path) {
 
 //==============================================================================
 double FailFastSelector::getPrior(Edge edge) {
-  /*auto graph = *mGraph;
+  auto graph = *mGraph;
 
   Vertex u = source(edge, graph);
   Vertex v = target(edge, graph);
-  */
 
-  return mPriorMap[edge];
+  return mPriorMap[std::make_pair(u, v)];
 }
 
 } // namespace selector

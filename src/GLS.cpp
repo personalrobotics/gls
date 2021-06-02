@@ -88,7 +88,9 @@ void GLS::setupPreliminaries() {
       targetState->getOMPLState(), pdef_->getGoal()->as<ompl::base::GoalState>()->getState());
 
   mSourceVertex = addVertex(mGraph, sourceState);
+  std::cout<<"Source: "<< mSourceVertex.mImplicitVertex<<std::endl;
   mTargetVertex = addVertex(mGraph, targetState);
+  std::cout<<"Target: "<< mTargetVertex.mImplicitVertex<<std::endl;
 
   // Assign default values.
   mGraph[mSourceVertex].setCostToCome(0);
@@ -150,6 +152,7 @@ void GLS::setupPreliminaries() {
   // Setup the selector.
   mSelector->setup(&mGraph);
 }
+
 
 // ============================================================================
 void GLS::clear() {
@@ -221,19 +224,23 @@ ompl::base::PlannerStatus GLS::solve(const ompl::base::PlannerTerminationConditi
 
   assert(mExtendQueue.isEmpty());
   mExtendQueue.addVertexWithValue(mSourceVertex, mGraph[mSourceVertex].getEstimatedTotalCost());
+  std::cout<<"setup "<<mSourceVertex.mImplicitVertex<<std::endl;
 
   // Run in loop.
   while (!mExtendQueue.isEmpty()) {
     // Extend the tree till the event is triggered.
     extendSearchTree();
+    std::cout<<"extended"<<std::endl;
 
     // Evaluate the extended search tree.
     evaluateSearchTree();
+    std::cout<<"eval"<<std::endl;
 
     // If the plan is successful, return.
     if (mPlannerStatus == PlannerStatus::Solved)
       break;
   }
+  std::cout<<"done"<<std::endl;
 
   if (mPlannerStatus == PlannerStatus::Solved) {
     setBestPathCost(mGraph[mTargetVertex].getCostToCome());
@@ -312,13 +319,6 @@ double GLS::getGraphHeuristic(Vertex v) {
 }
 
 // ============================================================================
-double GLS::getGraphHeuristic(datastructures::IVertex v) {
-  double heuristic = mSpace->distance(
-      mIGraph[mITargetVertex].getState()->getOMPLState(), mIGraph[v].getState()->getOMPLState());
-  return heuristic;
-}
-
-// ============================================================================
 void GLS::setConnectionRadius(double radius) {
   mConnectionRadius = radius;
 }
@@ -350,13 +350,18 @@ void GLS::setRoadmap(std::string filename) {
   mRoadmap->generate(
       mGraph.mExplicitGraph, get(&VertexProperties::mState, mGraph.mExplicitGraph), get(&EdgeProperties::mLength, mGraph.mExplicitGraph));
 
+  // Explicit graph setup
+  mGraph.mImplicit = false;
+  mGraph.updateExplicit(); // assumes mGraph.mExplicitGraph already set
+
   // Mark the graph to have been setup.
   mGraphSetup = true;
 }
 
 // ============================================================================
 void GLS::setImplicit(datastructures::DiscFunc disc_function, datastructures::NeighborFunc transition_function){
-    mIGraph = datastructures::ImplicitGraph(disc_function, transition_function);
+    datastructures::ImplicitGraph iGraph = datastructures::ImplicitGraph(disc_function, transition_function);
+    mGraph.setImplicit(iGraph);
     mImplicit = true;
 }
 
@@ -465,13 +470,16 @@ void GLS::extendSearchTree() {
     // If the vertex has been marked to be in collision, do not extend.
     if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
       continue;
+    //std::cout<<"pop"<<std::endl;
 
     // Get the neighbors and extend.
     // TODO (avk): Have a wrapper in case the implicit vs explicit.
     NeighborIter ni, ni_end;
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end; ++ni) {
+      //std::cout<<"adjacent"<<std::endl;
       Vertex v = *ni;
 
+      //std::cout<<u.mImplicitVertex<< " "<<v.mImplicitVertex<<std::endl;
       // If the successor has been previously marked to be in collision,
       // continue to the next successor.
       if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision)
@@ -484,6 +492,7 @@ void GLS::extendSearchTree() {
       // Never come back to the source.
       if (v == mSourceVertex)
         continue;
+      //std::cout<<u.mImplicitVertex<< " "<<v.mImplicitVertex<<std::endl;
 
       // Get the edge between the two vertices.
       Edge uv = getEdge(u, v);
@@ -492,6 +501,7 @@ void GLS::extendSearchTree() {
       // continue to the next successor.
       if (mGraph[uv].getCollisionStatus() == CollisionStatus::Collision)
         continue;
+      //std::cout<<"collision"<<std::endl;
 
       double edgeLength = mGraph[uv].getLength();
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited) {

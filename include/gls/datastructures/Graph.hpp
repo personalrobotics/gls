@@ -5,6 +5,7 @@
 
 // STL headers
 #include <vector>
+#include <string>
 
 // Boost headers
 #include <boost/graph/adjacency_list.hpp>
@@ -43,38 +44,45 @@ typedef std::vector<Vertex>::iterator NeighborIter;
 // Graph wrapper class around boost explicit and custom implicit graphs
 class Graph {
     public:
-        Graph(){};
-        Graph(bool implicit):mImplicit(implicit){};
+        Graph():mVertexNum(0){};
+        Graph(bool implicit):mImplicit(implicit), mVertexNum(0){};
         
         VertexProperties & operator[](Vertex key);
         EdgeProperties & operator[](Edge key);
 
         // TODO (schmittle) make these private
         bool mImplicit = false;
-        int mVertexNum = 0;
-        void incrementVertices();
+        int mVertexNum;
         EGraph mExplicitGraph;
         ImplicitGraph mImplicitGraph;
 
+        Vertex& addVertex(Vertex v, StatePtr state);
+        std::pair<Edge&, bool> addEdge(Vertex v1, Vertex v2);
+        void incrementVertices();
+        void setImplicit(ImplicitGraph g);
         std::pair<VertexIter,VertexIter> vertices();
         std::pair<EdgeIter, EdgeIter> edges();
         std::pair<NeighborIter, NeighborIter> adjacents(Vertex u);
+        const std::map<std::string, Edge>& getLookup();
+
+        void updateExplicit();
     private:
         // Needed for edges(Graph), vertices(Graph), & adjacent_vertices(Graph)
         std::vector<Vertex> mVertices;
         std::vector<Edge> mEdges;
+        std::map<std::string, Edge> mEdgesLookup; // For O(1) lookup
         std::vector<Vertex> mAdjacents;
 };
 
 // Graph functions
-std::pair<VertexIter, VertexIter> vertices(Graph g);
-std::pair<EdgeIter, EdgeIter> edges(Graph g);
-std::pair<NeighborIter, NeighborIter> adjacent_vertices(Vertex u, Graph g);
-Vertex addVertex(Graph g, StatePtr state);
-std::pair<Edge, bool> addEdge(Vertex v1, Vertex v2, Graph g);
-std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph g);
-Vertex source(Edge e, Graph g);
-Vertex target(Edge e, Graph g);
+std::pair<VertexIter, VertexIter> vertices(Graph& g);
+std::pair<EdgeIter, EdgeIter> edges(Graph& g);
+std::pair<NeighborIter, NeighborIter> adjacent_vertices(Vertex u, Graph& g);
+Vertex addVertex(Graph& g, StatePtr state);
+std::pair<Edge&, bool> addEdge(Vertex v1, Vertex v2, Graph& g);
+std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph& g);
+Vertex source(Edge e, Graph& g);
+Vertex target(Edge e, Graph& g);
 
 void clear_vertex(Vertex v, Graph g);
 void remove_vertex(Vertex v, Graph g);

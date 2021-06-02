@@ -6,6 +6,47 @@ namespace gls {
 namespace datastructures {
 
 // ============================================================================
+Vertex& Graph::addVertex(Vertex v, StatePtr state){
+    if(mImplicit){
+        mImplicitGraph.addVertex(v.mImplicitVertex, state);
+    }
+    else{
+        mExplicitGraph[v.mExplicitVertex].setState(state);
+    }
+    mVertices.push_back(v);
+    //incrementVertices();
+    return mVertices.back();
+}
+
+// ============================================================================
+std::pair<Edge&, bool> Graph::addEdge(Vertex v1, Vertex v2){
+    bool exists;
+    Edge newEdge;
+    if (mImplicit){
+        std::pair<IEdge, bool> raw_edge = mImplicitGraph.addEdge(v1.mImplicitVertex, v2.mImplicitVertex);
+        newEdge = Edge(v1, v2, true);
+        newEdge.mImplicitEdge = raw_edge.first;
+        exists = raw_edge.second;
+    }
+    else{
+        newEdge = Edge(v1,v2, false);
+        std::pair<EEdge, bool> raw_edge  = add_edge(v1.mExplicitVertex, v2.mExplicitVertex, mExplicitGraph); 
+        newEdge.mExplicitEdge = raw_edge.first;
+        exists = raw_edge.second;
+    }
+    EdgeHash hash;
+    mEdges.push_back(newEdge);
+    mEdgesLookup[hash(std::pair<Vertex, Vertex>{v1, v2})] = mEdges.back();
+    return std::pair<Edge&, bool>{mEdges.back(), exists};
+}
+
+// ============================================================================
+void Graph::setImplicit(ImplicitGraph g){
+    mImplicitGraph = g;
+    mImplicit = true;
+}
+
+// ============================================================================
 VertexProperties & Graph::operator[](Vertex key) {
     if (mImplicit){
         return mImplicitGraph[key.mImplicitVertex];
@@ -28,50 +69,34 @@ void Graph::incrementVertices(){
 
 // ============================================================================
 std::pair<VertexIter, VertexIter> Graph::vertices(){
-    mVertices.clear();
-    if(mImplicit){
-        std::vector<IVertex> raw_verts = gls::datastructures::vertices(mImplicitGraph);
-        mVertices.reserve(raw_verts.size());
-        for (IVertex vi : raw_verts){
-            mVertices.push_back(Vertex(vi));
-        }
-    }
-    else{
-        EVertexIter vi, vi_end;
-        for (boost::tie(vi, vi_end) = boost::vertices(mExplicitGraph); vi != vi_end; ++vi) {
-            mVertices.push_back(Vertex(*vi));
-        }
-    }
     return std::pair<VertexIter,VertexIter>{mVertices.begin(), mVertices.end()};
 }
 
 // ============================================================================
 std::pair<EdgeIter, EdgeIter> Graph::edges(){
-    mEdges.clear();
-    if(mImplicit){
-        std::vector<IEdge> raw_edges = gls::datastructures::edges(mImplicitGraph);
-        mEdges.reserve(raw_edges.size());
-        for (IEdge ei : raw_edges){
-            mEdges.push_back(Edge(ei));
-        }
-    }
-    else{
-        EEdgeIter ei, ei_end;
-        for (boost::tie(ei, ei_end) = boost::edges(mExplicitGraph); ei != ei_end; ++ei) {
-            mEdges.push_back(Edge(*ei));
-        }
-    }
     return std::pair<EdgeIter, EdgeIter>{mEdges.begin(), mEdges.end()};
 }
 
 // ============================================================================
 std::pair<NeighborIter, NeighborIter> Graph::adjacents(Vertex u){
     mAdjacents.clear();
+    EdgeHash hash;
     if(mImplicit){
-        std::vector<IVertex> raw_adjs = gls::datastructures::adjacent_vertices(u.mImplicitVertex, mImplicitGraph);
+        std::vector<std::tuple<IVertex, bool, bool>> raw_adjs = gls::datastructures::adjacent_vertices(u.mImplicitVertex, mImplicitGraph);
         mAdjacents.reserve(raw_adjs.size());
-        for (IVertex vi : raw_adjs){
-            mAdjacents.push_back(Vertex(vi));
+        for (std::tuple<IVertex, bool, bool> vi : raw_adjs){
+            mAdjacents.push_back(Vertex(std::get<0>(vi)));
+
+            // Update mVertices, mEdges if we expanded internally
+            if(!std::get<1>(vi)){ // vertex didn't exist before now 
+                Vertex v(std::get<0>(vi)); 
+                mVertices.push_back(v);
+            }
+            if(!std::get<2>(vi)){ // edge didn't exist before now 
+                Edge newEdge = Edge(u, mAdjacents.back(), true); // I THINK this is okay
+                mEdges.push_back(newEdge);
+                mEdgesLookup[hash(std::pair<Vertex, Vertex>{u, mAdjacents.back()})] = mEdges.back();
+            }
         }
     }
     else{
@@ -84,64 +109,94 @@ std::pair<NeighborIter, NeighborIter> Graph::adjacents(Vertex u){
 }
 
 // ============================================================================
-std::pair<VertexIter, VertexIter> vertices(Graph g){
+const std::map<std::string, Edge>& Graph::getLookup(){
+    return mEdgesLookup;
+}
+
+// ============================================================================
+void Graph::updateExplicit(){
+    // Update mVertices to match
+    EVertexIter vi, vi_end;
+    for (boost::tie(vi, vi_end) = boost::vertices(mExplicitGraph); vi != vi_end; ++vi) {
+        Vertex v(*vi);
+        mVertices.push_back(v);
+    }
+    // Update mEdges to match
+    EdgeHash hash;
+    EEdgeIter ei, ei_end;
+    for (boost::tie(ei, ei_end) = boost::edges(mExplicitGraph); ei != ei_end; ++ei) {
+        EVertex u = boost::source(*ei, mExplicitGraph);
+        EVertex v = boost::target(*ei, mExplicitGraph);
+
+        Edge newEdge = Edge(*ei); // I THINK this is okay
+        mEdges.push_back(newEdge);
+        mEdgesLookup[hash(std::pair<Vertex, Vertex>{Vertex(u), Vertex(v)})] = mEdges.back();
+    }
+}
+
+// ============================================================================
+std::pair<VertexIter, VertexIter> vertices(Graph& g){
     return g.vertices();
 }
 
 // ============================================================================
-std::pair<EdgeIter, EdgeIter> edges(Graph g){
+std::pair<EdgeIter, EdgeIter> edges(Graph& g){
     return g.edges();
 }
 
 // ============================================================================
-std::pair<NeighborIter, NeighborIter> adjacent_vertices(Vertex u, Graph g){
+std::pair<NeighborIter, NeighborIter> adjacent_vertices(Vertex u, Graph& g){
     return g.adjacents(u);
 }
 
 // ============================================================================
-Vertex addVertex(Graph g, StatePtr state){
+Vertex addVertex(Graph& g, StatePtr state){
+    IVertexHash hash;
     if(g.mImplicit){
-        Vertex vert = Vertex(std::to_string(g.mVertexNum));
-        g.mImplicitGraph.addVertex(vert.mImplicitVertex, state);
-        g.incrementVertices();
-        return vert;
+        Vertex vert = Vertex(hash(g.mImplicitGraph.fit2Lat(state)));
+        return g.addVertex(vert, state);
     }
     else{
         EVertex evert = add_vertex(g.mExplicitGraph);
-        g.mExplicitGraph[evert].setState(state);
-        return Vertex(evert);
+        return g.addVertex(Vertex(evert), state);
     }
 }
 
 // ============================================================================
-std::pair<Edge, bool> addEdge(Vertex v1, Vertex v2, Graph g){
-    if (g.mImplicit){
-        std::pair<IEdge, bool> raw_edge = g.mImplicitGraph.addEdge(v1.mImplicitVertex, v2.mImplicitVertex);
-        Edge newEdge = Edge(v1, v2);
-        newEdge.mImplicitEdge = raw_edge.first;// TODO confirm with updated api
-        return std::pair<Edge, bool>{newEdge, raw_edge.second};
+std::pair<Edge&, bool> addEdge(Vertex v1, Vertex v2, Graph& g){
+    return g.addEdge(v1, v2);
+}
+
+// ============================================================================
+std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph& g){
+    EdgeHash hash;
+    Edge* e = new Edge(); // blank edge
+    std::string hashed_edge = hash(std::pair<Vertex, Vertex>{v1, v2});
+    std::map<std::string, Edge> lookup = g.getLookup();
+    if(lookup.find(hashed_edge) != lookup.end()){
+        return std::pair<Edge, bool>{lookup[hashed_edge], true};
+    }
+    return std::pair<Edge, bool>{*e, false};
+}
+
+// ============================================================================
+Vertex source(Edge e, Graph& g){
+    if(e.isImplicit()){
+        return e.first;
     }
     else{
-        Edge newEdge = Edge(v1,v2);
-        std::pair<EEdge, bool> raw_edge  = add_edge(v1.mExplicitVertex, v2.mExplicitVertex, g.mExplicitGraph); 
-        newEdge.mExplicitEdge = raw_edge.first;
-        return std::pair<Edge, bool>{newEdge, raw_edge.second};
+        return boost::source(e.mExplicitEdge, g.mExplicitGraph);
     }
 }
 
 // ============================================================================
-std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph g){
-    return addEdge(v1, v2, g);
-}
-
-// ============================================================================
-Vertex source(Edge e, Graph g){
-    return e.first;
-}
-
-// ============================================================================
-Vertex target(Edge e, Graph g){
-    return e.second;
+Vertex target(Edge e, Graph& g){
+    if(e.isImplicit()){
+        return e.second;
+    }
+    else{
+        return boost::target(e.mExplicitEdge, g.mExplicitGraph);
+    }
 }
 
 // ============================================================================
