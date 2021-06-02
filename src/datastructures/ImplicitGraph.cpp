@@ -5,10 +5,10 @@
 namespace gls {
 namespace datastructures {
 
-VertexProperties ImplicitGraph::operator[](IVertex key){
+VertexProperties & ImplicitGraph::operator[](IVertex key){
     return mVertices[key];
 }
-EdgeProperties ImplicitGraph::operator[](IEdge key){
+EdgeProperties & ImplicitGraph::operator[](IEdge key){
     return mEdges[key];
 }
 
@@ -28,26 +28,31 @@ std::size_t ImplicitGraph::num_edges() const{
     return mEdges.size();
 }
 
-void ImplicitGraph::addVertex(vertex_descriptor vi){
+void ImplicitGraph::addVertex(vertex_descriptor vi, StatePtr state){
     if(mVertices.find(vi) == mVertices.end()){
 
+        VertexProperties* vp = new VertexProperties();
+        vp->setState(fit2Lat(state));
+
         // Add to map
-        mVertices[vi] = VertexProperties();
-        //TODO add vi content to properties
+        mVertices[vi] = *vp;
     }
 }
 
-void ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descriptor v2){
+std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descriptor v2){
     IEdge ei = std::pair<IVertex, IVertex>{v1, v2}; 
+    bool created = false;
     if(mEdges.find(ei) == mEdges.end()){
 
         // Add to map
         mEdges[ei] = EdgeProperties();
         //TODO add ei content to properties
+        created = true;
     }
+    return std::pair<IEdge, bool>{ei, created};
 }
 
-// Bosst similar API Functions
+// Boost similar API Functions
 std::size_t num_vertices(const ImplicitGraph& g) {
     return g.num_vertices();
 }
@@ -82,20 +87,25 @@ IVertex target(IEdge e, ImplicitGraph g) {
     return e.second;
 }
 
+std::pair<IEdge, bool> edge(IVertex u, IVertex v, ImplicitGraph g){
+    return g.addEdge(u, v);
+}
+
 // wish I could return iterator, but can't because vector is made in function
 std::vector<IVertex> adjacent_vertices(IVertex u, ImplicitGraph& g) {
-  // Add vertex if not in graph
-  g.addVertex(u); 
 
   // Generate neighbors
-  std::vector<IVertex> neighbors = g.neighbors(u);
+  std::vector<std::pair<IVertex, VertexProperties>> neighbors = g.neighbors(u, g[u]);
+
+  std::vector<IVertex> return_neighbors;
 
   // Update internal graph
-  for(IVertexIter it = neighbors.begin(); it != neighbors.end(); ++it) {
-      g.addVertex(*it); // Add vertex to map if not already in
-      g.addEdge(u, *it); // Add edge to map if not already in
+  for(INeighborIter it = neighbors.begin(); it != neighbors.end(); ++it) {
+      g.addVertex(it->first, it->second.getState()); // Add vertex to map if not already in
+      g.addEdge(u, it->first); // Add edge to map if not already in
+      return_neighbors.push_back(it->first);
   }
-  return neighbors;
+  return return_neighbors;
 }
 
 } // namespace datastructures

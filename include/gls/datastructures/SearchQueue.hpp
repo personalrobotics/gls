@@ -13,6 +13,7 @@
 
 // GLS headers
 #include "gls/datastructures/Types.hpp"
+#include "gls/datastructures/Graph.hpp"
 
 namespace gls {
 namespace datastructures {

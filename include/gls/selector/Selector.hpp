@@ -8,7 +8,7 @@
 #include <vector>  // std::vector
 
 #include "gls/datastructures/Graph.hpp"
-#include "gls/datastructures/Types.hpp"
+//#include "gls/datastructures/Types.hpp"
 
 namespace gls {
 namespace selector {

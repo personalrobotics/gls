@@ -9,7 +9,7 @@
 
 #include "gls/datastructures/Graph.hpp"
 #include "gls/datastructures/SearchQueue.hpp"
-#include "gls/datastructures/Types.hpp"
+//#include "gls/datastructures/Types.hpp"
 
 namespace gls {
 namespace event {

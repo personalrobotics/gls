@@ -46,7 +46,7 @@ private:
   std::size_t mExistenceThreshold;
 
   /// The map from vertex to depth in the search tree.
-  std::unordered_map<gls::datastructures::Vertex, double> mSubPathExistenceMap;
+  std::unordered_map<gls::datastructures::Vertex, double, gls::datastructures::VertexHash> mSubPathExistenceMap;
 };
 
 } // namespace event

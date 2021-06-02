@@ -51,7 +51,7 @@ void GLS::setup() {
   ompl::base::Planner::setup();
 
   // Check if the graph has been setup.
-  if (!mGraphSetup)
+  if (!mGraphSetup && !mImplicit)
     std::invalid_argument("Graph has not been provided.");
 
   // TODO (avk): If the graph is not provided, use implicit representation
@@ -87,12 +87,8 @@ void GLS::setupPreliminaries() {
   mSpace->copyState(
       targetState->getOMPLState(), pdef_->getGoal()->as<ompl::base::GoalState>()->getState());
 
-  // Add start and goal vertices to the graph
-  mSourceVertex = add_vertex(mGraph);
-  mGraph[mSourceVertex].setState(sourceState);
-
-  mTargetVertex = add_vertex(mGraph);
-  mGraph[mTargetVertex].setState(targetState);
+  mSourceVertex = addVertex(mGraph, sourceState);
+  mTargetVertex = addVertex(mGraph, targetState);
 
   // Assign default values.
   mGraph[mSourceVertex].setCostToCome(0);
@@ -106,44 +102,47 @@ void GLS::setupPreliminaries() {
   mGraph[mTargetVertex].setVisitStatus(VisitStatus::NotVisited);
   mGraph[mTargetVertex].setCollisionStatus(CollisionStatus::Free);
 
-  // TODO (AVK): Make this kNN + R-disc. Additionally join the start and goal.
-  VertexIter vi, vi_end;
-  for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi) {
-    double sourceDistance
-        = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), sourceState->getOMPLState());
-    double targetDistance
-        = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), targetState->getOMPLState());
+  // If explicit, connect start and goal to graph and eachother
+  if(!mImplicit){
+      // TODO (AVK): Make this kNN + R-disc. Additionally join the start and goal.
+      VertexIter vi, vi_end;
+      for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi) {
+        double sourceDistance
+            = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), sourceState->getOMPLState());
+        double targetDistance
+            = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), targetState->getOMPLState());
 
-    if (sourceDistance < mConnectionRadius) {
-      if (mSourceVertex == *vi)
-        continue;
+        if (sourceDistance < mConnectionRadius) {
+          if (mSourceVertex == *vi)
+            continue;
 
-      std::pair<Edge, bool> newEdge = add_edge(mSourceVertex, *vi, mGraph);
+          std::pair<Edge, bool> newEdge = addEdge(mSourceVertex, *vi, mGraph);
 
-      mGraph[newEdge.first].setLength(sourceDistance);
+          mGraph[newEdge.first].setLength(sourceDistance);
+          mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+          mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
+          assert(newEdge.second);
+        }
+
+        if (targetDistance < mConnectionRadius) {
+          if (mTargetVertex == *vi)
+            continue;
+
+          std::pair<Edge, bool> newEdge = addEdge(mTargetVertex, *vi, mGraph);
+          mGraph[newEdge.first].setLength(targetDistance);
+          mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+          mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
+          assert(newEdge.second);
+        }
+      }
+
+      // Additionally connect the source and target with a straight line to snap.
+      std::pair<Edge, bool> newEdge = addEdge(mSourceVertex, mTargetVertex, mGraph);
+      mGraph[newEdge.first].setLength(
+          mSpace->distance(sourceState->getOMPLState(), targetState->getOMPLState()));
       mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
       mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
-      assert(newEdge.second);
-    }
-
-    if (targetDistance < mConnectionRadius) {
-      if (mTargetVertex == *vi)
-        continue;
-
-      std::pair<Edge, bool> newEdge = add_edge(mTargetVertex, *vi, mGraph);
-      mGraph[newEdge.first].setLength(targetDistance);
-      mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
-      mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
-      assert(newEdge.second);
-    }
   }
-
-  // Additionally connect the source and target with a straight line to snap.
-  std::pair<Edge, bool> newEdge = add_edge(mSourceVertex, mTargetVertex, mGraph);
-  mGraph[newEdge.first].setLength(
-      mSpace->distance(sourceState->getOMPLState(), targetState->getOMPLState()));
-  mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
-  mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
 
   // Setup the event.
   mEvent->setup(&mGraph, mSourceVertex, mTargetVertex);
@@ -313,6 +312,13 @@ double GLS::getGraphHeuristic(Vertex v) {
 }
 
 // ============================================================================
+double GLS::getGraphHeuristic(datastructures::IVertex v) {
+  double heuristic = mSpace->distance(
+      mIGraph[mITargetVertex].getState()->getOMPLState(), mIGraph[v].getState()->getOMPLState());
+  return heuristic;
+}
+
+// ============================================================================
 void GLS::setConnectionRadius(double radius) {
   mConnectionRadius = radius;
 }
@@ -338,18 +344,19 @@ void GLS::setRoadmap(std::string filename) {
     std::invalid_argument("Roadmap Filename cannot be empty!");
 
   // Load the graph.
-  mRoadmap = boost::shared_ptr<io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>>(
-      new io::RoadmapFromFile<Graph, VPStateMap, State, EPLengthMap>(mSpace, filename));
+  mRoadmap = boost::shared_ptr<io::RoadmapFromFile<datastructures::EGraph, VPStateMap, State, EPLengthMap>>(
+      new io::RoadmapFromFile<datastructures::EGraph, VPStateMap, State, EPLengthMap>(mSpace, filename));
 
   mRoadmap->generate(
-      mGraph, get(&VertexProperties::mState, mGraph), get(&EdgeProperties::mLength, mGraph));
+      mGraph.mExplicitGraph, get(&VertexProperties::mState, mGraph.mExplicitGraph), get(&EdgeProperties::mLength, mGraph.mExplicitGraph));
 
   // Mark the graph to have been setup.
   mGraphSetup = true;
 }
 
 // ============================================================================
-void GLS::setImplicit(datastructures::NeighborFunc transition_function){
+void GLS::setImplicit(datastructures::DiscFunc disc_function, datastructures::NeighborFunc transition_function){
+    mIGraph = datastructures::ImplicitGraph(disc_function, transition_function);
     mImplicit = true;
 }
 

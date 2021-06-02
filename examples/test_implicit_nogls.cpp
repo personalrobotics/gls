@@ -142,31 +142,36 @@ int main (int argc, char const *argv[]) {
   g.addVertex(sourceVertex, sourceState);
   g.addVertex(targetVertex, targetState);
 
-  // Problem Definition
-  ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
-  pdef->addStartState(sourceState->getOMPLState());
-  pdef->addStartState(targetState->getOMPLState());
+  // TODO setup GLS and create flip
+  std::cout << "Vertices, outgoing edges, and adjacent vertices" << std::endl;
+  std::vector<IVertex> verts = vertices(g);
+  IVertexIter vi_end = verts.end();
+  for (IVertexIter vi = verts.begin(); vi != vi_end; vi++) {
+    IVertex u = *vi;
+    std::cout << "Vertex " << u << ": "<<std::endl;
 
-  // Setup planner
-  gls::GLS planner(si);
+    std::cout << " Adjacent vertices "<<std::endl;
+    std::vector<IVertex> ajs = adjacent_vertices(u, g);
+    IVertexIter ai_end = ajs.end();
+    IVertexIter ai = ajs.begin();
+    for (IVertexIter ai = ajs.begin(); ai != ai_end; ai++) {
+      IVertex ni = *ai;
+      double* vals = g[ni].getState()->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+      std::cout <<  vals[0] << " "<< vals[1]<< " "<< vals[2] << std::endl;
+    }
+    
+    std::cout << std::endl;
+  }
+  std::cout << num_vertices(g) << " vertices" << std::endl << std::endl;
 
-  planner.setImplicit(
-          std::bind(&fit_state2lattice,  
-                std::placeholders::_1, 
-                mReader,
-                space),
-          std::bind(&transition_function, 
-                std::placeholders::_1, 
-                std::placeholders::_2, 
-                space, 
-                mReader));
-  auto event = std::make_shared<gls::event::ShortestPathEvent>();
-  auto selector = std::make_shared<gls::selector::ForwardSelector>();
-  planner.setEvent(event);
-  planner.setSelector(selector);
-
-  planner.setup();
-  planner.setProblemDefinition(pdef);
+  std::cout << "Edges and weights" << std::endl;
+  std::vector<IEdge> edgs = edges(g);
+  IEdgeIter ei_end = edgs.end();
+  for (IEdgeIter ei = edgs.begin(); ei != ei_end; ei++) {
+    IEdge e = *ei;
+    std::cout << e << std::endl;
+  }
+  std::cout << num_edges(g) << " edges"  << std::endl;
 
   return 0;
 }

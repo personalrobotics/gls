@@ -85,7 +85,7 @@ public:
   void setRoadmap(std::string filename);
 
   /// Sets transition function for graph. Implicit only. 
-  void setImplicit(gls::datastructures::NeighborFunc transition_function);
+  void setImplicit(gls::datastructures::DiscFunc disc_function, gls::datastructures::NeighborFunc transition_function);
 
   /// Set the best path cost.
   void setBestPathCost(double cost);
@@ -122,6 +122,9 @@ private:
   /// Heuristic function.
   double getGraphHeuristic(gls::datastructures::Vertex v);
 
+  /// Heuristic function -- Implicit
+  double getGraphHeuristic(gls::datastructures::IVertex v);
+
   /// Evaluates an edge for collision.
   gls::datastructures::CollisionStatus evaluateVertex(gls::datastructures::Vertex v);
 
@@ -149,7 +152,7 @@ private:
 
   /// Boost roadmap representation.
   boost::shared_ptr<io::RoadmapFromFile<
-      gls::datastructures::Graph,
+      gls::datastructures::EGraph,
       gls::datastructures::VPStateMap,
       gls::datastructures::State,
       gls::datastructures::EPLengthMap>>
@@ -204,6 +207,12 @@ private:
 
   /// Target vertex.
   gls::datastructures::Vertex mTargetVertex;
+
+  /// Source vertex. Implicit
+  gls::datastructures::IVertex mISourceVertex;
+
+  /// Target vertex. Implicit
+  gls::datastructures::IVertex mITargetVertex;
 
   /// TODO (avk): Move these into PlannerStatus class.
   /// Number of Edge Evaluations.

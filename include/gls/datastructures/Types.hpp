@@ -5,8 +5,6 @@
 
 // Boost headers
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/properties.hpp>
-#include <boost/property_map/dynamic_property_map.hpp>
 
 namespace gls {
 namespace datastructures {
@@ -21,31 +19,11 @@ typedef std::shared_ptr<BasicGraph> BasicGraphPtr;
 typedef std::shared_ptr<const BasicGraph> ConstBasicGraphPtr;
 
 /// Boost vertex.
-typedef boost::graph_traits<BasicGraph>::vertex_descriptor Vertex;
-
-/// Shared pointer to a Vertex.
-typedef std::shared_ptr<Vertex> VertexPtr;
-
-/// Shared pointer to a const Vertex.
-typedef std::shared_ptr<const Vertex> ConstVertexPtr;
-
-/// Path represented by a series of vertices.
-typedef std::vector<Vertex> Path;
-
-/// Shared pointer to a Path.
-typedef std::shared_ptr<Path> PathPtr;
-
-/// Shared pointer to a const Path.
-typedef std::shared_ptr<const Path> ConstPathPtr;
+typedef boost::graph_traits<BasicGraph>::vertex_descriptor EVertex;
 
 /// Boost edge
-typedef boost::graph_traits<BasicGraph>::edge_descriptor Edge;
+typedef boost::graph_traits<BasicGraph>::edge_descriptor EEdge;
 
-/// Shared pointer to an Edge.
-typedef std::shared_ptr<Edge> EdgePtr;
-
-/// Shared pointer to a const Edge.
-typedef std::shared_ptr<const Edge> ConstEdgePtr;
 
 } // namespace datastructures
 } // namespace gls

@@ -32,7 +32,7 @@ private:
   std::size_t mDepthThreshold;
 
   /// The map from vertex to depth in the search tree.
-  std::unordered_map<gls::datastructures::Vertex, std::size_t> mVertexDepthMap;
+  std::unordered_map<gls::datastructures::Vertex, std::size_t, gls::datastructures::VertexHash> mVertexDepthMap;
 };
 
 } // namespace event

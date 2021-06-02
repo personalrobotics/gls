@@ -51,6 +51,7 @@ add_library(${PROJECT_NAME}
   src/datastructures/ImplicitGraph.cpp
   src/datastructures/SearchQueue.cpp
   src/datastructures/State.cpp
+  src/datastructures/Properties.cpp
   src/GLS.cpp
   src/event/Event.cpp
   src/event/ShortestPathEvent.cpp

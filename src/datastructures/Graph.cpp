@@ -6,149 +6,162 @@ namespace gls {
 namespace datastructures {
 
 // ============================================================================
-void VertexProperties::setState(StatePtr state) {
-  mState = state;
+VertexProperties & Graph::operator[](Vertex key) {
+    if (mImplicit){
+        return mImplicitGraph[key.mImplicitVertex];
+    }
+    return mExplicitGraph[key.mExplicitVertex];
 }
 
 // ============================================================================
-StatePtr VertexProperties::getState() {
-  return mState;
+EdgeProperties & Graph::operator[](Edge key) {
+    if (mImplicit){
+        return mImplicitGraph[key.mImplicitEdge];
+    }
+    return mExplicitGraph[key.mExplicitEdge];
 }
 
 // ============================================================================
-void VertexProperties::setCostToCome(double cost) {
-  mCostToCome = cost;
+void Graph::incrementVertices(){
+   mVertexNum++; 
 }
 
 // ============================================================================
-double VertexProperties::getCostToCome() {
-  return mCostToCome;
+std::pair<VertexIter, VertexIter> Graph::vertices(){
+    mVertices.clear();
+    if(mImplicit){
+        std::vector<IVertex> raw_verts = gls::datastructures::vertices(mImplicitGraph);
+        mVertices.reserve(raw_verts.size());
+        for (IVertex vi : raw_verts){
+            mVertices.push_back(Vertex(vi));
+        }
+    }
+    else{
+        EVertexIter vi, vi_end;
+        for (boost::tie(vi, vi_end) = boost::vertices(mExplicitGraph); vi != vi_end; ++vi) {
+            mVertices.push_back(Vertex(*vi));
+        }
+    }
+    return std::pair<VertexIter,VertexIter>{mVertices.begin(), mVertices.end()};
 }
 
 // ============================================================================
-void VertexProperties::setHeuristic(double heuristic) {
-  mHeuristic = heuristic;
+std::pair<EdgeIter, EdgeIter> Graph::edges(){
+    mEdges.clear();
+    if(mImplicit){
+        std::vector<IEdge> raw_edges = gls::datastructures::edges(mImplicitGraph);
+        mEdges.reserve(raw_edges.size());
+        for (IEdge ei : raw_edges){
+            mEdges.push_back(Edge(ei));
+        }
+    }
+    else{
+        EEdgeIter ei, ei_end;
+        for (boost::tie(ei, ei_end) = boost::edges(mExplicitGraph); ei != ei_end; ++ei) {
+            mEdges.push_back(Edge(*ei));
+        }
+    }
+    return std::pair<EdgeIter, EdgeIter>{mEdges.begin(), mEdges.end()};
 }
 
 // ============================================================================
-double VertexProperties::getHeuristic() {
-  return mHeuristic;
+std::pair<NeighborIter, NeighborIter> Graph::adjacents(Vertex u){
+    mAdjacents.clear();
+    if(mImplicit){
+        std::vector<IVertex> raw_adjs = gls::datastructures::adjacent_vertices(u.mImplicitVertex, mImplicitGraph);
+        mAdjacents.reserve(raw_adjs.size());
+        for (IVertex vi : raw_adjs){
+            mAdjacents.push_back(Vertex(vi));
+        }
+    }
+    else{
+        ENeighborIter ni, ni_end;
+        for (boost::tie(ni, ni_end) = boost::adjacent_vertices(u.mExplicitVertex, mExplicitGraph); ni != ni_end; ++ni) {
+            mAdjacents.push_back(Vertex(*ni));
+        }
+    }
+    return std::pair<NeighborIter, NeighborIter>{mAdjacents.begin(), mAdjacents.end()};
 }
 
 // ============================================================================
-double VertexProperties::getEstimatedTotalCost() {
-  return mCostToCome + mHeuristic;
+std::pair<VertexIter, VertexIter> vertices(Graph g){
+    return g.vertices();
 }
 
 // ============================================================================
-void VertexProperties::setParent(Vertex parent) {
-  mParent = parent;
+std::pair<EdgeIter, EdgeIter> edges(Graph g){
+    return g.edges();
 }
 
 // ============================================================================
-Vertex VertexProperties::getParent() {
-  return mParent;
+std::pair<NeighborIter, NeighborIter> adjacent_vertices(Vertex u, Graph g){
+    return g.adjacents(u);
 }
 
 // ============================================================================
-std::set<Vertex>& VertexProperties::getChildren() {
-  return mChildren;
+Vertex addVertex(Graph g, StatePtr state){
+    if(g.mImplicit){
+        Vertex vert = Vertex(std::to_string(g.mVertexNum));
+        g.mImplicitGraph.addVertex(vert.mImplicitVertex, state);
+        g.incrementVertices();
+        return vert;
+    }
+    else{
+        EVertex evert = add_vertex(g.mExplicitGraph);
+        g.mExplicitGraph[evert].setState(state);
+        return Vertex(evert);
+    }
 }
 
 // ============================================================================
-void VertexProperties::setChildren(std::set<Vertex> children) {
-  mChildren = children;
+std::pair<Edge, bool> addEdge(Vertex v1, Vertex v2, Graph g){
+    if (g.mImplicit){
+        std::pair<IEdge, bool> raw_edge = g.mImplicitGraph.addEdge(v1.mImplicitVertex, v2.mImplicitVertex);
+        Edge newEdge = Edge(v1, v2);
+        newEdge.mImplicitEdge = raw_edge.first;// TODO confirm with updated api
+        return std::pair<Edge, bool>{newEdge, raw_edge.second};
+    }
+    else{
+        Edge newEdge = Edge(v1,v2);
+        std::pair<EEdge, bool> raw_edge  = add_edge(v1.mExplicitVertex, v2.mExplicitVertex, g.mExplicitGraph); 
+        newEdge.mExplicitEdge = raw_edge.first;
+        return std::pair<Edge, bool>{newEdge, raw_edge.second};
+    }
 }
 
 // ============================================================================
-void VertexProperties::addChild(Vertex child) {
-  mChildren.emplace(child);
+std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph g){
+    return addEdge(v1, v2, g);
 }
 
 // ============================================================================
-void VertexProperties::addChildren(std::set<Vertex> children) {
-  for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
-    mChildren.emplace(*iterS);
-  }
+Vertex source(Edge e, Graph g){
+    return e.first;
 }
 
 // ============================================================================
-void VertexProperties::removeChild(Vertex child) {
-  auto iterS = mChildren.find(child);
-  if (iterS != mChildren.end())
-    mChildren.erase(iterS);
+Vertex target(Edge e, Graph g){
+    return e.second;
 }
 
 // ============================================================================
-void VertexProperties::removeChildren(std::set<Vertex> children) {
-  for (auto iterS = children.begin(); iterS != children.end(); ++iterS) {
-    auto iterRemove = mChildren.find(*iterS);
-    if (iterRemove != mChildren.end())
-      mChildren.erase(iterRemove);
-  }
+void clear_vertex(Vertex v, Graph g){
+    if (!g.mImplicit){
+        clear_vertex(v.mExplicitVertex, g.mExplicitGraph);
+    }
+    else{
+        // TODO
+    }
 }
 
 // ============================================================================
-void VertexProperties::removeAllChildren() {
-  mChildren.clear();
-}
-
-// ============================================================================
-bool VertexProperties::hasChild(Vertex child) {
-  auto iterS = mChildren.find(child);
-  if (iterS != mChildren.end())
-    return true;
-  return false;
-}
-
-// ============================================================================
-void VertexProperties::setVisitStatus(VisitStatus status) {
-  mVisitStatus = status;
-}
-
-// ============================================================================
-VisitStatus VertexProperties::getVisitStatus() {
-  return mVisitStatus;
-}
-
-// ============================================================================
-void VertexProperties::setCollisionStatus(CollisionStatus status) {
-  mCollisionStatus = status;
-}
-
-// ============================================================================
-CollisionStatus VertexProperties::getCollisionStatus() {
-  return mCollisionStatus;
-}
-
-// ============================================================================
-void EdgeProperties::setLength(double length) {
-  mLength = length;
-}
-
-// ============================================================================
-double EdgeProperties::getLength() {
-  return mLength;
-}
-
-// ============================================================================
-void EdgeProperties::setEvaluationStatus(EvaluationStatus evaluationStatus) {
-  mEvaluationStatus = evaluationStatus;
-}
-
-// ============================================================================
-EvaluationStatus EdgeProperties::getEvaluationStatus() {
-  return mEvaluationStatus;
-}
-
-// ============================================================================
-void EdgeProperties::setCollisionStatus(CollisionStatus status) {
-  mCollisionStatus = status;
-}
-
-// ============================================================================
-CollisionStatus EdgeProperties::getCollisionStatus() {
-  return mCollisionStatus;
+void remove_vertex(Vertex v, Graph g){
+    if (!g.mImplicit){
+        remove_vertex(v.mExplicitVertex, g.mExplicitGraph);
+    }
+    else{
+        // TODO
+    }
 }
 
 } // namespace datastructures

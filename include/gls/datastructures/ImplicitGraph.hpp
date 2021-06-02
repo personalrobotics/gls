@@ -1,17 +1,14 @@
-/* Authors: Matt Schmittle */
-
 #ifndef GLS_DATASTRUCTURES_IMPLICITGRAPH_HPP_
 #define GLS_DATASTRUCTURES_IMPLICITGRAPH_HPP_
 
 // STL headers
-#include <set>
 #include <vector>
 #include <string>
 
 // GLS headers
-#include "gls/datastructures/Graph.hpp"
 #include "gls/datastructures/State.hpp"
 #include "gls/datastructures/Types.hpp"
+#include "gls/datastructures/Properties.hpp"
 
 namespace gls {
 namespace datastructures {
@@ -22,24 +19,29 @@ class ImplicitGraph {
         typedef std::pair<vertex_descriptor, vertex_descriptor> edge_descriptor;
 
         typedef std::vector<vertex_descriptor>::iterator vertex_iterator;
+        typedef std::vector<std::pair<vertex_descriptor, VertexProperties>>::iterator neighbor_iterator;
         typedef std::vector<edge_descriptor>::iterator edge_iterator;
-        typedef std::function<std::vector<vertex_descriptor>(vertex_descriptor)> fneighbors;
+        typedef std::function<StatePtr(StatePtr)> fdiscretize;
+        typedef std::function<std::vector<std::pair<vertex_descriptor, VertexProperties>>(vertex_descriptor, VertexProperties)> fneighbors;
 
         ImplicitGraph(){};
-        ImplicitGraph(fneighbors neighborfunc):neighbors(neighborfunc){};
+        ImplicitGraph(fdiscretize discretizefunc, fneighbors neighborfunc):
+            fit2Lat(discretizefunc), 
+            neighbors(neighborfunc){};
 
-        VertexProperties operator[](vertex_descriptor key);
-        EdgeProperties operator[](edge_descriptor key); 
+        VertexProperties & operator[](vertex_descriptor key);
+        EdgeProperties & operator[](edge_descriptor key); 
 
         std::map<vertex_descriptor, VertexProperties> get_vmap() const;
         std::map<edge_descriptor, EdgeProperties> get_emap() const;
         std::size_t num_vertices() const;
         std::size_t num_edges() const;
 
+        fdiscretize fit2Lat; // member passed by constructor
         fneighbors neighbors; // member passed by constructor
 
-        void addVertex(vertex_descriptor vi);
-        void addEdge(vertex_descriptor v1, vertex_descriptor v2);
+        void addVertex(vertex_descriptor vi, StatePtr state);
+        std::pair<edge_descriptor, bool> addEdge(vertex_descriptor v1, vertex_descriptor v2);
 
     private:
         std::map<vertex_descriptor, VertexProperties> mVertices;
@@ -52,13 +54,14 @@ typedef std::shared_ptr<IVertex> IVertexPtr;
 typedef std::shared_ptr<IEdge> IEdgePtr;
 
 typedef ImplicitGraph::fneighbors NeighborFunc;
+typedef ImplicitGraph::fdiscretize DiscFunc;
 
 /// vertex/edge iterator
 typedef ImplicitGraph::vertex_iterator IVertexIter;
+typedef ImplicitGraph::neighbor_iterator INeighborIter;
 typedef ImplicitGraph::edge_iterator IEdgeIter;
 
 // Functions
-void add_vertex(ImplicitGraph g); // TODO
 std::size_t num_vertices(const ImplicitGraph& g);
 std::vector<IVertex> vertices(const ImplicitGraph& g);
 IVertex source(IEdge e, ImplicitGraph g);
@@ -66,7 +69,7 @@ IVertex target(IEdge e, ImplicitGraph g);
 
 // Functions
 std::vector<IEdge> edges(const ImplicitGraph& g);
-std::pair<IEdge, bool> edge(Vertex u, Vertex v, ImplicitGraph g); // TODO
+std::pair<IEdge, bool> edge(Vertex u, Vertex v, ImplicitGraph g);
 std::size_t num_edges(const ImplicitGraph& g);
 
 

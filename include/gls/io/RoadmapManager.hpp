@@ -105,9 +105,9 @@ inline void put(
 }
 
 /* RoadmapFromFile */
-template <class Graph, class VStateMap, class StateWrapper, class ELength>
+template <class EGraph, class VStateMap, class StateWrapper, class ELength>
 class RoadmapFromFile {
-  typedef boost::graph_traits<Graph> GraphTypes;
+  typedef boost::graph_traits<EGraph> GraphTypes;
   typedef typename GraphTypes::vertex_descriptor Vertex;
   typedef typename GraphTypes::vertex_iterator VertexIter;
   typedef typename GraphTypes::edge_descriptor Edge;
@@ -124,7 +124,7 @@ public:
   ~RoadmapFromFile() {
   }
 
-  void generate(Graph& g, VStateMap stateMap, ELength lengthMap) {
+  void generate(EGraph& g, VStateMap stateMap, ELength lengthMap) {
     boost::dynamic_properties props;
     props.property(
         "state", RoadmapFromFilePutStateMap<VStateMap, StateWrapper>(stateMap, mSpace, mDim));
