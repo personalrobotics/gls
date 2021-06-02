@@ -52,9 +52,9 @@ class MotionPrimitiveReader{
         std::vector<MotionPrimitive> mprimV; // primitives
 
         int ContTheta2DiscNew(double theta);
+        double DiscTheta2ContNew(int theta);
     private:
         bool ReadinPose(pt_xyt* pose, FILE* fIn);
-        double DiscTheta2ContNew(int theta);
         double DiscTheta2ContFromSet(int theta);
         int ContTheta2DiscFromSet(double theta);
 

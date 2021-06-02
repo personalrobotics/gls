@@ -21,12 +21,19 @@
 
 using namespace gls::datastructures;
 
-/// Dummy collision checker that return true always.
+/// Checks for bounds only
 /// This is bound to the stateValidityChecker of the ompl StateSpace.
 /// \param[in] state The ompl state to check for validity.
-bool isPointValid(const ompl::base::State* state) {
+bool isPointValid(const ompl::base::State* state, ompl::base::RealVectorBounds& bounds, std::function<std::vector<double>(std::vector<double>)> lat2real) {
+  //StatePtr real_state = lat2real(state);
   double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-  return true;
+  std::vector<double> vec_vals = std::vector<double>{values[0], values[1], values[2], values[3]};
+  std::vector<double> real_values = lat2real(vec_vals);
+  if(real_values[0] > bounds.low[0] && real_values[0] < bounds.high[0]){
+    if(real_values[1] > bounds.low[1] && real_values[1] < bounds.high[1])
+        return true;
+  }
+  return false;
 }
 
 // Discretize state to graph
@@ -39,6 +46,28 @@ StatePtr fit_state2lattice(StatePtr state, gls::io::MotionPrimitiveReader *mRead
     vals[1] = (double)CONTXY2DISC(vals[1], mReader->resolution);
     vals[2] = (double) mReader->ContTheta2DiscNew(vals[2]);
 
+    StatePtr newState(new State(space));
+    space->copyFromReals(newState->getOMPLState(), vals);
+    return newState;
+}
+
+// Reverse continuous state from lattice 
+// This must be user-defined because it varies per state space
+std::vector<double> lattice2real(std::vector<double> vals, gls::io::MotionPrimitiveReader *mReader){
+    vals[0] = (double)DISCXY2CONT(vals[0], mReader->resolution);
+    vals[1] = (double)DISCXY2CONT(vals[1], mReader->resolution);
+    vals[2] = (double) mReader->DiscTheta2ContNew(vals[2]);
+
+    return vals;
+}
+
+// Reverse continuous state from lattice 
+// This must be user-defined because it varies per state space
+StatePtr lattice2state(StatePtr state, gls::io::MotionPrimitiveReader *mReader,std::shared_ptr<ompl::base::RealVectorStateSpace> space){
+    std::vector<double> vals;
+    vals.reserve(4);
+    space->copyToReals(vals, state->getOMPLState());
+    vals = lattice2real(vals, mReader);
     StatePtr newState(new State(space));
     space->copyFromReals(newState->getOMPLState(), vals);
     return newState;
@@ -82,6 +111,25 @@ std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi
 
             neighbors.push_back(std::pair<IVertex, VertexProperties>(hash(neighborProperties.getState()), neighborProperties));
         }
+
+        /*
+        // reverse prims for current theta
+        if(mprim.endcell.theta == theta){
+            // Apply mprim
+            nx = x - mprim.endcell.x;
+            ny = y - mprim.endcell.y;
+            ntheta = mprim.starttheta_c;
+
+            // Set state
+            // TODO (schmittle) this seems inefficient to make a new state
+            neighborProperties = VertexProperties();
+            StatePtr newState(new State(space));
+            space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
+            neighborProperties.setState(newState);
+
+            neighbors.push_back(std::pair<IVertex, VertexProperties>(hash(neighborProperties.getState()), neighborProperties));
+        }
+        */
     }
 
     return neighbors;
@@ -138,8 +186,9 @@ int main (int argc, char const *argv[]) {
   space->setup();
 
   // Space Information
+  std::function<std::vector<double>(std::vector<double>)> lat2real = std::bind(&lattice2real, std::placeholders::_1, mReader);
   std::function<bool(const ompl::base::State*)> isStateValid
-      = std::bind(isPointValid, std::placeholders::_1);
+      = std::bind(&isPointValid, std::placeholders::_1, bounds, lat2real);
   ompl::base::SpaceInformationPtr si(new ompl::base::SpaceInformation(space));
   si->setStateValidityChecker(isStateValid);
   si->setup();

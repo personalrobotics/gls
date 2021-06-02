@@ -198,7 +198,7 @@ Vertex target(Edge e, Graph& g){
 }
 
 // ============================================================================
-void clear_vertex(Vertex v, Graph g){
+void clear_vertex(Vertex v, Graph& g){
     if (!g.mImplicit){
         clear_vertex(v.mExplicitVertex, g.mExplicitGraph);
     }
@@ -208,7 +208,7 @@ void clear_vertex(Vertex v, Graph g){
 }
 
 // ============================================================================
-void remove_vertex(Vertex v, Graph g){
+void remove_vertex(Vertex v, Graph& g){
     if (!g.mImplicit){
         remove_vertex(v.mExplicitVertex, g.mExplicitGraph);
     }

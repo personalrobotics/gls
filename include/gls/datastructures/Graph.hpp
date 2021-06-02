@@ -83,8 +83,8 @@ std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph& g);
 Vertex source(Edge e, Graph& g);
 Vertex target(Edge e, Graph& g);
 
-void clear_vertex(Vertex v, Graph g);
-void remove_vertex(Vertex v, Graph g);
+void clear_vertex(Vertex v, Graph& g);
+void remove_vertex(Vertex v, Graph& g);
 
 /// Shared pointer to Graph.
 typedef std::shared_ptr<Graph> GraphPtr;
