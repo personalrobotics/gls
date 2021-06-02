@@ -44,6 +44,7 @@ class ImplicitGraph {
         fneighbors neighbors; // member passed by constructor
 
         bool addVertex(vertex_descriptor vi, StatePtr state);
+        bool addAdjVertex(vertex_descriptor vi, StatePtr state); // add vertex w/o fit
         std::pair<edge_descriptor, bool> addEdge(vertex_descriptor v1, vertex_descriptor v2);
 
     private:

@@ -42,6 +42,20 @@ bool ImplicitGraph::addVertex(vertex_descriptor vi, StatePtr state){
     return exists;
 }
 
+bool ImplicitGraph::addAdjVertex(vertex_descriptor vi, StatePtr state){
+    bool exists = true;
+    if(mVertices.find(vi) == mVertices.end()){
+
+        VertexProperties* vp = new VertexProperties();
+        vp->setState(state);
+
+        // Add to map
+        mVertices[vi] = *vp;
+        exists = false;
+    }
+    return exists;
+}
+
 std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descriptor v2){
     IEdge ei = std::pair<IVertex, IVertex>{v1, v2};  // TODO this may be wrong
     bool exists = true; // TODO (schmittle) check this is cool todo
@@ -99,7 +113,7 @@ std::vector<std::tuple<IVertex, bool, bool>> adjacent_vertices(const IVertex& u,
 
   // Update internal graph
   for(INeighborIter it = neighbors.begin(); it != neighbors.end(); ++it) {
-      bool vexists = g.addVertex(it->first, it->second.getState()); // Add vertex to map if not already in
+      bool vexists = g.addAdjVertex(it->first, it->second.getState()); // Add vertex to map if not already in
       std::pair<IEdge, bool> edge_pair = g.addEdge(u, it->first); // Add edge to map if not already in
       return_neighbors.push_back(std::tuple<IVertex, bool, bool>{it->first, vexists, edge_pair.second});
   }

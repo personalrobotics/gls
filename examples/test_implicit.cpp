@@ -33,8 +33,9 @@ StatePtr fit_state2lattice(StatePtr state, gls::io::MotionPrimitiveReader *mRead
     vals[1] = (double)CONTXY2DISC(vals[1], mReader->resolution);
     vals[2] = (double) mReader->ContTheta2DiscNew(vals[2]);
 
-    space->copyFromReals(state->getOMPLState(), vals);
-    return state;
+    StatePtr newState(new State(space));
+    space->copyFromReals(newState->getOMPLState(), vals);
+    return newState;
 }
 
 // Transition function from one state to another
@@ -72,6 +73,8 @@ std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi
             StatePtr newState(new State(space));
             space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
             neighborProperties.setState(newState);
+            //std::cout<<vi<< " "<< hash(neighborProperties.getState())<<std::endl;
+            //std::cout<<x<<","<<y<<","<<theta<< " "<< nx<<","<<ny<<","<<ntheta<<std::endl;
 
             neighbors.push_back(std::pair<IVertex, VertexProperties>(hash(neighborProperties.getState()), neighborProperties));
         }
@@ -138,13 +141,12 @@ int main (int argc, char const *argv[]) {
   ompl::base::PlannerStatus status;
   status = planner.solve(ompl::base::plannerNonTerminatingCondition());
 
-  /*
   // Obtain required data if plan was successful
   if (status == ompl::base::PlannerStatus::EXACT_SOLUTION) {
     std::cout << "Best Path Cost: " << planner.getBestPathCost() << std::endl;
     return 0;
   }
-  */
+  planner.clear();
 
   return 0;
 }
