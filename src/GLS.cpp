@@ -224,7 +224,7 @@ ompl::base::PlannerStatus GLS::solve(const ompl::base::PlannerTerminationConditi
 
   assert(mExtendQueue.isEmpty());
   mExtendQueue.addVertexWithValue(mSourceVertex, mGraph[mSourceVertex].getEstimatedTotalCost());
-  std::cout<<"setup "<<mSourceVertex.mImplicitVertex<<std::endl;
+  std::cout<<"setup "<<mSourceVertex.mImplicitVertex<<" "<<mTargetVertex.mImplicitVertex<<std::endl;
 
   // Run in loop.
   while (!mExtendQueue.isEmpty()) {
@@ -470,16 +470,15 @@ void GLS::extendSearchTree() {
     // If the vertex has been marked to be in collision, do not extend.
     if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
       continue;
-    //std::cout<<"pop"<<std::endl;
+    //std::cout<<u.mImplicitVertex<<std::endl;
 
     // Get the neighbors and extend.
     // TODO (avk): Have a wrapper in case the implicit vs explicit.
     NeighborIter ni, ni_end;
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end; ++ni) {
-      //std::cout<<"adjacent"<<std::endl;
       Vertex v = *ni;
 
-      //std::cout<<u.mImplicitVertex<< " "<<v.mImplicitVertex<<std::endl;
+      //std::cout<<"      "<<v.mImplicitVertex<<std::endl;
       // If the successor has been previously marked to be in collision,
       // continue to the next successor.
       if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision)
@@ -492,7 +491,6 @@ void GLS::extendSearchTree() {
       // Never come back to the source.
       if (v == mSourceVertex)
         continue;
-      //std::cout<<u.mImplicitVertex<< " "<<v.mImplicitVertex<<std::endl;
 
       // Get the edge between the two vertices.
       Edge uv = getEdge(u, v);
@@ -501,7 +499,6 @@ void GLS::extendSearchTree() {
       // continue to the next successor.
       if (mGraph[uv].getCollisionStatus() == CollisionStatus::Collision)
         continue;
-      //std::cout<<"collision"<<std::endl;
 
       double edgeLength = mGraph[uv].getLength();
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited) {

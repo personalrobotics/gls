@@ -22,7 +22,8 @@ std::pair<Edge&, bool> Graph::addEdge(Vertex v1, Vertex v2){
     bool exists;
     Edge newEdge;
     if (mImplicit){
-        std::pair<IEdge, bool> raw_edge = mImplicitGraph.addEdge(v1.mImplicitVertex, v2.mImplicitVertex);
+        //TODO (schmittle) this never gets run and we don't have the edge length so set to 0
+        std::pair<IEdge, bool> raw_edge = mImplicitGraph.addEdge(v1.mImplicitVertex, v2.mImplicitVertex, 0);
         newEdge = Edge(v1, v2, true);
         newEdge.mImplicitEdge = raw_edge.first;
         exists = raw_edge.second;
@@ -87,7 +88,7 @@ std::pair<NeighborIter, NeighborIter> Graph::adjacents(Vertex u){
                 mVertices.push_back(v);
             }
             if(!std::get<2>(vi)){ // edge didn't exist before now 
-                Edge newEdge = Edge(u, mAdjacents.back(), true); // I THINK this is okay
+                Edge newEdge = Edge(u, mAdjacents.back(), true); // I THINK this is okay 
                 mEdges.push_back(newEdge);
                 mEdgesLookup[hash(std::pair<Vertex, Vertex>{u, mAdjacents.back()})] = mEdges.back();
             }

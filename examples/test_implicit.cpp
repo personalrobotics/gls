@@ -77,8 +77,8 @@ StatePtr lattice2state(StatePtr state, gls::io::MotionPrimitiveReader *mReader,s
 // Each new vertex must have a unique vertex_descriptor for lookup
 // The same state should ALWAYS have the same descriptor
 // AKA use the state to create the descriptor
-std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi, VertexProperties vp, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
-    std::vector<std::pair<IVertex, VertexProperties>> neighbors; 
+std::vector<std::tuple<IVertex, VertexProperties, double>> transition_function(IVertex vi, VertexProperties vp, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
+    std::vector<std::tuple<IVertex, VertexProperties, double>> neighbors; 
 
     // Get State
     double* values = vp.getState()->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
@@ -109,27 +109,8 @@ std::vector<std::pair<IVertex, VertexProperties>> transition_function(IVertex vi
             space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
             neighborProperties.setState(newState);
 
-            neighbors.push_back(std::pair<IVertex, VertexProperties>(hash(neighborProperties.getState()), neighborProperties));
+            neighbors.push_back(std::tuple<IVertex, VertexProperties, double>(hash(neighborProperties.getState()), neighborProperties, mprim.length));
         }
-
-        /*
-        // reverse prims for current theta
-        if(mprim.endcell.theta == theta){
-            // Apply mprim
-            nx = x - mprim.endcell.x;
-            ny = y - mprim.endcell.y;
-            ntheta = mprim.starttheta_c;
-
-            // Set state
-            // TODO (schmittle) this seems inefficient to make a new state
-            neighborProperties = VertexProperties();
-            StatePtr newState(new State(space));
-            space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
-            neighborProperties.setState(newState);
-
-            neighbors.push_back(std::pair<IVertex, VertexProperties>(hash(neighborProperties.getState()), neighborProperties));
-        }
-        */
     }
 
     return neighbors;
@@ -197,7 +178,7 @@ int main (int argc, char const *argv[]) {
   space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{20, 20, 1, -1});
 
   StatePtr targetState(new State(space));
-  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{3, 3, 3, -1});
+  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{3, 3, 2, -1});
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));

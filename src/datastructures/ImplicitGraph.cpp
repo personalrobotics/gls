@@ -9,7 +9,7 @@ VertexProperties & ImplicitGraph::operator[](IVertex key){
     return mVertices[key];
 }
 EdgeProperties & ImplicitGraph::operator[](IEdge key){
-    return mEdges[key];
+    return mEdges[mEdgeHashTable[key.first+key.second]];
 }
 
 std::map<IVertex, VertexProperties> ImplicitGraph::get_vmap() const{
@@ -56,13 +56,18 @@ bool ImplicitGraph::addAdjVertex(vertex_descriptor vi, StatePtr state){
     return exists;
 }
 
-std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descriptor v2){
-    IEdge ei = std::pair<IVertex, IVertex>{v1, v2};  // TODO this may be wrong
-    bool exists = true; // TODO (schmittle) check this is cool todo
-    if(mEdges.find(ei) == mEdges.end()){
+std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descriptor v2, double length){
+    IEdge ei = {v1, v2}; // EdgeHash effectively
+    std::string eh = v1 + v2; // EdgeHash effectively
+    bool exists = true;
+    if(mEdgeHashTable.find(eh) == mEdgeHashTable.end()){
 
         // Add to map
         mEdges[ei] = EdgeProperties();
+        mEdges[ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+        mEdges[ei].setCollisionStatus(CollisionStatus::Free);
+        mEdges[ei].setLength(length);
+        mEdgeHashTable[eh] = ei;
         exists = false;
     }
     return std::pair<IEdge, bool>{ei, exists};
@@ -107,15 +112,15 @@ IVertex target(const IEdge& e, const ImplicitGraph& g) {
 std::vector<std::tuple<IVertex, bool, bool>> adjacent_vertices(const IVertex& u, ImplicitGraph& g) {
 
   // Generate neighbors
-  std::vector<std::pair<IVertex, VertexProperties>> neighbors = g.neighbors(u, g[u]);
+  std::vector<std::tuple<IVertex, VertexProperties, double>> neighbors = g.neighbors(u, g[u]);
 
   std::vector<std::tuple<IVertex, bool, bool>> return_neighbors;
 
   // Update internal graph
   for(INeighborIter it = neighbors.begin(); it != neighbors.end(); ++it) {
-      bool vexists = g.addAdjVertex(it->first, it->second.getState()); // Add vertex to map if not already in
-      std::pair<IEdge, bool> edge_pair = g.addEdge(u, it->first); // Add edge to map if not already in
-      return_neighbors.push_back(std::tuple<IVertex, bool, bool>{it->first, vexists, edge_pair.second});
+      bool vexists = g.addAdjVertex(std::get<0>(*it), std::get<1>(*it).getState()); // Add vertex to map if not already in
+      std::pair<IEdge, bool> edge_pair = g.addEdge(u, std::get<0>(*it), std::get<2>(*it)); // Add edge to map if not already in
+      return_neighbors.push_back(std::tuple<IVertex, bool, bool>{std::get<0>(*it), vexists, edge_pair.second});
   }
   return return_neighbors;
 }

@@ -260,6 +260,19 @@ bool MotionPrimitiveReader::ReadinMotionPrimitive(
         return false;
     }
 
+    // Calculate motion primitive length using l2 between interm points. This is an approx!!!
+    double length = 0;
+    int prev_idx = 0;
+    for(int idx=0; idx < pMotPrim->intermptV.size(); idx++){
+        if(prev_idx != idx){
+            length += std::sqrt(
+                    std::pow(pMotPrim->intermptV[idx].x - pMotPrim->intermptV[prev_idx].x, 2) + 
+                    std::pow(pMotPrim->intermptV[idx].y - pMotPrim->intermptV[prev_idx].y, 2));
+        }
+        prev_idx = idx;
+    }
+    pMotPrim->length = length;
+
     return true;
 }
 

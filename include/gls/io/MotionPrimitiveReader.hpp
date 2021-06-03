@@ -10,6 +10,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <math.h>
+#include <cmath>
 #include <vector>
 
 namespace gls {
@@ -38,6 +39,7 @@ struct MotionPrimitive{
     float turning_radius;
     std::vector<pt_xyt> intermptV;
     cell_xyt endcell;
+    double length;
 };
 
 class MotionPrimitiveReader{

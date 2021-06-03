@@ -43,7 +43,6 @@ class Vertex {
 struct VertexHash{
     std::size_t operator()(const Vertex& k) const{
         if (k.isImplicit()){
-            std::cout<<"here: "<<k.mImplicitVertex<<" "<<std::stoi(k.mImplicitVertex)<<std::endl;
             return std::stoi(k.mImplicitVertex);//TODO this could be wrong for -1 in name
         }
         else{
@@ -61,7 +60,7 @@ bool operator<(Vertex v1, Vertex v2);
 class Edge {
     public:
         Edge(){};
-        Edge(Vertex v1, Vertex v2, bool implicit):first(v1),second(v2), mImplicit(implicit) {};
+        Edge(Vertex v1, Vertex v2, bool implicit):first(v1),second(v2), mImplicit(implicit) {if(implicit){mImplicitEdge = {v1.mImplicitVertex, v2.mImplicitVertex};}};
         Edge(EEdge ei):mExplicitEdge(ei), mImplicit(false) {};
         Edge(std::pair<std::string, std::string> ei):first(ei.first),second(ei.second),mImplicitEdge(ei), mImplicit(true) {};
         Vertex first; // TODO make private

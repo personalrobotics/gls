@@ -22,10 +22,10 @@ class ImplicitGraph {
         typedef std::pair<vertex_descriptor, vertex_descriptor> edge_descriptor;
 
         typedef std::vector<vertex_descriptor>::iterator vertex_iterator;
-        typedef std::vector<std::pair<vertex_descriptor, VertexProperties>>::iterator neighbor_iterator;
+        typedef std::vector<std::tuple<vertex_descriptor, VertexProperties, double>>::iterator neighbor_iterator;
         typedef std::vector<edge_descriptor>::iterator edge_iterator;
         typedef std::function<StatePtr(StatePtr)> fdiscretize;
-        typedef std::function<std::vector<std::pair<vertex_descriptor, VertexProperties>>(vertex_descriptor, VertexProperties)> fneighbors;
+        typedef std::function<std::vector<std::tuple<vertex_descriptor, VertexProperties, double>>(vertex_descriptor, VertexProperties)> fneighbors;
 
         ImplicitGraph(){};
         ImplicitGraph(fdiscretize discretizefunc, fneighbors neighborfunc):
@@ -45,11 +45,12 @@ class ImplicitGraph {
 
         bool addVertex(vertex_descriptor vi, StatePtr state);
         bool addAdjVertex(vertex_descriptor vi, StatePtr state); // add vertex w/o fit
-        std::pair<edge_descriptor, bool> addEdge(vertex_descriptor v1, vertex_descriptor v2);
+        std::pair<edge_descriptor, bool> addEdge(vertex_descriptor v1, vertex_descriptor v2, double length);
 
     private:
         std::map<vertex_descriptor, VertexProperties> mVertices;
         std::map<edge_descriptor, EdgeProperties> mEdges;
+        std::map<std::string, edge_descriptor> mEdgeHashTable;
 };
 
 // For map
