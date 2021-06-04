@@ -9,6 +9,7 @@
 // OMPL base libraries
 #include <ompl/base/ProblemDefinition.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
+#include <ompl/base/spaces/ReedsSheppStateSpace.h>
 #include <ompl/geometric/PathGeometric.h>
 
 // OpenCV libraries
@@ -117,6 +118,13 @@ std::vector<std::tuple<IVertex, VertexProperties, double>> transition_function(I
     return neighbors;
 }
 
+// Precompute reconfigure motion primitives using ReedShepp
+//std::vector<gls::io::MotionPrimitive> computeReconfigures(double block_length, double turning_radius){
+    //ompl::base::ReedsSheppStateSpace* rs_space = new ompl::base::ReedsSheppStateSpace(turning_radius);
+//} 
+
+
+
 /// Displays path
 /// \param[in] obstacleFile The file with obstacles stored
 /// \param[in] path OMPL path
@@ -155,6 +163,7 @@ int main (int argc, char const *argv[]) {
   // Load Motion Primitives
   gls::io::MotionPrimitiveReader* mReader = new gls::io::MotionPrimitiveReader();
   //TODO (schmittle) don't hardcode paths
+  // TODO pushr.mprim
   mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim");
   std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
 
