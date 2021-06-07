@@ -109,7 +109,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
             space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
             neighborProperties.setState(newState);
 
-            neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, mprim.length, mprim.motprimID));
+            neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, mprim.additionalactioncostmult*mprim.length, mprim.motprimID));
         }
     }
 
@@ -129,13 +129,9 @@ std::vector<StatePtr> interpolate(StatePtr state, int motPrimID, std::shared_ptr
             for(gls::io::pt_xyt point : mprim.intermptV){
                 StatePtr newState(new State(space));
                 space->copyFromReals(newState->getOMPLState(), 
-                        /*std::vector<double>{(double)point.x + values[0], 
-                                            (double)point.y + values[1], 
+                        std::vector<double>{(double)point.x + DISCXY2CONT(values[0], res), 
+                                            (double)point.y + DISCXY2CONT(values[1], res), 
                                             (double)point.theta, -1});
-                                        */
-                        std::vector<double>{(double)CONTXY2DISC((double)point.x, res) + values[0], 
-                                            (double)CONTXY2DISC((double)point.y, res) + values[1], 
-                                            (double) mReader->ContTheta2DiscNew((double)point.theta), -1});
                                             
                 states.push_back(newState);
             }
@@ -147,7 +143,7 @@ std::vector<StatePtr> interpolate(StatePtr state, int motPrimID, std::shared_ptr
 /// Displays path
 /// \param[in] obstacleFile The file with obstacles stored
 /// \param[in] path OMPL path
-void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::PathGeometric> path, double resolution) {
+void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::PathGeometric> path, double resolution, gls::io::MotionPrimitiveReader *mReader) {
   // Get state count
   int pathSize = path->getStateCount();
 
@@ -157,44 +153,69 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
   int numberOfColumns = image.cols;
 
   // TODO don't do this
-  double scale = 200.0;
-  //int offsetx = 500;
-  //int offsety = -500;
-  int offsetx = 0;
-  int offsety = 0;
-  for (int i = 0; i < pathSize - 1; ++i) {
+  double scale = 500.0;
+  int offsetx = 700;
+  int offsety = -700;
+  int car_int = 4;
+  cv::Scalar box_color(255, 0, 0);
+  auto goalState = path->getState(pathSize-1);
+  double* goalVals = goalState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+  bool cutshort = false;
+  for (int i = 0; i < pathSize; ++i) {
     auto uState = path->getState(i);
-    auto vState = path->getState(i + 1);
     double* u = uState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-    double* v = vState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-    // make copy
-    double nx = v[0];
-    double ny = v[1];
-
-    u[0] = (double)DISCXY2CONT(u[0],resolution);
-    u[1] = (double)DISCXY2CONT(u[1],resolution);
-    nx = (double)DISCXY2CONT(nx,resolution);
-    ny = (double)DISCXY2CONT(ny,resolution);
-    //std::cout<<u[0]<<","<<u[1]<<"   "<<nx<<","<<ny<<std::endl;
-
     cv::Point uPoint((int)(u[0]*scale-offsetx), (int)(numberOfRows - u[1]*scale)-offsety);
-    cv::Point vPoint((int)(nx*scale-offsetx), (int)(numberOfRows - ny*scale)-offsety);
 
-    cv::line(image, uPoint, vPoint, cv::Scalar(255, 0, 0), 1);
-    cv::circle(image, uPoint, 2, cv::Scalar(255, 0, 255), cv::FILLED);
+    if (i != pathSize-1){ // this is an optimization that shouldn't just be in viz
+        auto vState = path->getState(i + 1);
+        double* v = vState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+        cv::Point vPoint((int)(v[0]*scale-offsetx), (int)(numberOfRows - v[1]*scale)-offsety);
+        cv::line(image, uPoint, vPoint, cv::Scalar(0, 0, 0), 1);
+        if(CONTXY2DISC(v[0],resolution) == CONTXY2DISC(goalVals[0],resolution) 
+                && CONTXY2DISC(v[1],resolution) == CONTXY2DISC(goalVals[1],resolution)
+                && mReader->ContTheta2DiscNew(v[2]) == mReader->ContTheta2DiscNew(goalVals[2])){
+            cutshort = true;
+            u = goalVals;
+        }
+    }
+
+
+    if(i%car_int == 0 || i==pathSize-1 || cutshort){
+        if(i == 0){
+            box_color = cv::Scalar(0, 255, 0);
+        }
+        if(i == pathSize-1 || cutshort){
+            box_color = cv::Scalar(0, 0, 255);
+        }
+        std::pair<double,double> blc = {-0.44*std::cos(u[2]) + 0.135*std::sin(u[2]), -0.44*std::sin(u[2]) - 0.135*std::cos(u[2])};
+        std::pair<double,double> tlc = {-0.44*std::cos(u[2]) - 0.135*std::sin(u[2]), -0.44*std::sin(u[2]) + 0.135*std::cos(u[2])};
+        std::pair<double,double> trc = {-0.135*std::sin(u[2]), 0.135*std::cos(u[2])};
+        std::pair<double,double> brc = {0.135*std::sin(u[2]),-0.135*std::cos(u[2])};
+
+        cv::Point corner1((int)((u[0]+blc.first)*scale-offsetx), (int)(numberOfRows - (u[1]+blc.second)*scale)-offsety);
+        cv::Point corner2((int)((u[0]+tlc.first)*scale-offsetx), (int)(numberOfRows - (u[1]+tlc.second)*scale)-offsety);
+        cv::Point corner3((int)((u[0]+trc.first)*scale-offsetx), (int)(numberOfRows - (u[1]+trc.second)*scale)-offsety);
+        cv::Point corner4((int)((u[0]+brc.first)*scale-offsetx), (int)(numberOfRows - (u[1]+brc.second)*scale)-offsety);
+        cv::line(image, corner1, corner2, box_color, 1);
+        cv::line(image, corner1, corner4, box_color, 1);
+        cv::line(image, corner3, corner2, box_color, 1);
+        cv::line(image, corner3, corner4, box_color, 1);
+        box_color = cv::Scalar(255, 0, 0);
+    }
+
+    cv::circle(image, uPoint, 1, cv::Scalar(255, 0, 0), cv::FILLED);
+    if(cutshort){
+        break;
+    }
   }
   // Start/goal
   auto startState = path->getState(0);
   double* startVals = startState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-  //startVals[0] = (double)DISCXY2CONT(startVals[0],resolution);
-  //startVals[1] = (double)DISCXY2CONT(startVals[1],resolution);
   cv::Point startPoint((int)(startVals[0]*scale-offsetx), (int)(numberOfRows - startVals[1]*scale)-offsety);
   cv::circle(image, startPoint, 3, cv::Scalar(0, 255, 0), cv::FILLED);
 
-  auto goalState = path->getState(pathSize-1);
-  double* goalVals = goalState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-  goalVals[0] = (double)DISCXY2CONT(goalVals[0],resolution);
-  goalVals[1] = (double)DISCXY2CONT(goalVals[1],resolution);
+  //auto goalState = path->getState(pathSize-1);
+  //double* goalVals = goalState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
   cv::Point goalPoint((int)(goalVals[0]*scale-offsetx), (int)(numberOfRows - goalVals[1]*scale)-offsety);
   cv::circle(image, goalPoint, 3, cv::Scalar(0, 0, 255), cv::FILLED);
 
@@ -208,6 +229,7 @@ int main (int argc, char const *argv[]) {
   gls::io::MotionPrimitiveReader* mReader = new gls::io::MotionPrimitiveReader();
   //TODO (schmittle) don't hardcode paths
   mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim");
+  //mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/pushr/mprim/pushr_sandpaper.mprim");
   std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
 
   // Define the state space: R^4
@@ -228,10 +250,10 @@ int main (int argc, char const *argv[]) {
   si->setup();
 
   StatePtr sourceState(new State(space));
-  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{5, 5, 1, -1});
+  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{3, 3, 0, -1});
 
   StatePtr targetState(new State(space));
-  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{3, 3, 3, -1});
+  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 3, 0, -1});
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
@@ -275,7 +297,7 @@ int main (int argc, char const *argv[]) {
     auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(pdef->getSolutionPath());
     std::cout << "Number of Edge Evaluations: " << planner.getNumberOfEdgeEvaluations()
               << std::endl;
-    displayPath(obstacleLocation, path, mReader->resolution);
+    displayPath(obstacleLocation, path, mReader->resolution, mReader); // TODO (schmittle) mReader should not need to be here
     planner.clear();
     return 0;
   }

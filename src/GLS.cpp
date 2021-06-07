@@ -777,9 +777,7 @@ ompl::base::PathPtr GLS::constructSolution(const Vertex& source, const Vertex& t
   Vertex u; // temp vertex
   int uvID; // for interpolation
   std::vector<StatePtr> intermStates;
-
   while (v != source) {
-    path->append(mGraph[v].getState()->getOMPLState());
     u = mGraph[v].getParent();
     if(mInterpolate){
         uvID = mGraph[getEdge(u,v)].getPrimID();
@@ -789,11 +787,16 @@ ompl::base::PathPtr GLS::constructSolution(const Vertex& source, const Vertex& t
             path->append(state->getOMPLState());
         }
     }
+    else{
+        path->append(mGraph[v].getState()->getOMPLState());
+    }
     v = u;
   }
 
   if (v == source) {
-    path->append(mGraph[source].getState()->getOMPLState());
+    if(!mInterpolate){
+        path->append(mGraph[source].getState()->getOMPLState());
+    }
   }
   path->reverse();
   return ompl::base::PathPtr(path);

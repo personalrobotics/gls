@@ -261,6 +261,7 @@ bool MotionPrimitiveReader::ReadinMotionPrimitive(
     }
 
     // Calculate motion primitive length using l2 between interm points. This is an approx!!!
+    // This varies for a give prim based on angle
     double length = 0;
     int prev_idx = 0;
     for(int idx=0; idx < pMotPrim->intermptV.size(); idx++){
