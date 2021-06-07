@@ -301,13 +301,18 @@ bool GLS::foundPathToGoal() {
 }
 
 // ============================================================================
-// TODO (avk): I should be able to set the heuristic function from the demo
-// script. Create a Heuristic Class and send it in. Have a default heuristic
-// if nothing has been set.
 double GLS::getGraphHeuristic(Vertex v) {
-  double heuristic = mSpace->distance(
-      mGraph[mTargetVertex].getState()->getOMPLState(), mGraph[v].getState()->getOMPLState());
-  return heuristic;
+  if (!mHeuristic){
+      return mSpace->distance(
+          mGraph[mTargetVertex].getState()->getOMPLState(), mGraph[v].getState()->getOMPLState());
+  }
+  else{
+      return mHeuristic(mGraph[v].getState(), mGraph[mTargetVertex].getState());
+  }
+}
+
+void GLS::setHeuristic(HeuristicFunction heuristic){
+    mHeuristic = heuristic;
 }
 
 // ============================================================================

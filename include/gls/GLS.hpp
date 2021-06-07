@@ -31,6 +31,8 @@ enum TreeValidityStatus { Valid, NotValid };
 
 enum PlannerStatus { Solved, NotSolved };
 
+typedef std::function<double(datastructures::StatePtr, datastructures::StatePtr)> HeuristicFunction;
+
 /// The OMPL Planner class that implements the algorithm.
 class GLS : public ompl::base::Planner {
 public:
@@ -86,6 +88,9 @@ public:
 
   /// Sets transition function for graph. Implicit only. 
   void setImplicit(gls::datastructures::DiscFunc disc_function, gls::datastructures::NeighborFunc transition_function, datastructures::InterpolateFunc interpolate_function=NULL);
+
+  /// Set heuristic function, optional 
+  void setHeuristic(HeuristicFunction heuristic);
 
   /// Set the best path cost.
   void setBestPathCost(double cost);
@@ -155,11 +160,14 @@ private:
       gls::datastructures::EPLengthMap>>
       mRoadmap;
 
-  // True if using implicit graph
+  /// True if using implicit graph
   bool mImplicit = false;
 
-  // For reconstructing the full path, optional
+  /// For reconstructing the full path, optional
   datastructures::InterpolateFunc mInterpolate;
+
+  /// Heuristic function, optional
+  HeuristicFunction mHeuristic = NULL;
 
   /// Connection radius in the graph.
   double mConnectionRadius;

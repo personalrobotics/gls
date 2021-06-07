@@ -34,6 +34,10 @@ bool ImplicitGraph::addVertex(vertex_descriptor vi, StatePtr state){
 
         VertexProperties* vp = new VertexProperties();
         vp->setState(fit2Lat(state));
+        vp->setVisitStatus(VisitStatus::NotVisited);
+        vp->setCollisionStatus(CollisionStatus::Free);
+        vp->setCostToCome(std::numeric_limits<double>::max());
+        vp->setHeuristic(std::numeric_limits<double>::max());
 
         // Add to map
         mVertices[vi] = *vp;

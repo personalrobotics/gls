@@ -9,6 +9,7 @@
 // OMPL base libraries
 #include <ompl/base/ProblemDefinition.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
+#include <ompl/base/spaces/ReedsSheppStateSpace.h>
 #include <ompl/geometric/PathGeometric.h>
 
 // OpenCV libraries
@@ -91,6 +92,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
     int nx, ny, ntheta;
     IVertexHash hash;
     IVertex neighbor;
+    double length; //debug
     VertexProperties neighborProperties;
     std::vector<gls::io::MotionPrimitive> mprims = mReader->mprimV;
     for (gls::io::MotionPrimitive mprim : mprims){
@@ -101,6 +103,12 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
             nx = mprim.endcell.x + x;
             ny = mprim.endcell.y + y;
             ntheta = mprim.endcell.theta;
+            // debug somehow a straight line is not returned as the solution
+            // I think the length/heuristic are causing problems
+            length = mprim.additionalactioncostmult*CONTXY2DISC(mprim.length, mReader->resolution);
+            if(mprim.motprimID == 3 || mprim.motprimID == 0){
+                //length = 0;
+            }
 
             // Set state
             // TODO (schmittle) this seems inefficient to make a new state
@@ -109,7 +117,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
             space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
             neighborProperties.setState(newState);
 
-            neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, mprim.additionalactioncostmult*mprim.length, mprim.motprimID));
+            neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, mprim.motprimID));
         }
     }
 
@@ -138,6 +146,16 @@ std::vector<StatePtr> interpolate(StatePtr state, int motPrimID, std::shared_ptr
         }
     }
     return states;
+}
+
+double heuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::base::RealVectorStateSpace> space){
+    double* values = 
+        v->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    double* goal_values = 
+        target->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+
+    return std::sqrt(std::pow(values[0]-goal_values[0],2) + std::pow(values[1]-goal_values[1], 2));
+
 }
 
 /// Displays path
@@ -214,8 +232,6 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
   cv::Point startPoint((int)(startVals[0]*scale-offsetx), (int)(numberOfRows - startVals[1]*scale)-offsety);
   cv::circle(image, startPoint, 3, cv::Scalar(0, 255, 0), cv::FILLED);
 
-  //auto goalState = path->getState(pathSize-1);
-  //double* goalVals = goalState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
   cv::Point goalPoint((int)(goalVals[0]*scale-offsetx), (int)(numberOfRows - goalVals[1]*scale)-offsety);
   cv::circle(image, goalPoint, 3, cv::Scalar(0, 0, 255), cv::FILLED);
 
@@ -253,7 +269,7 @@ int main (int argc, char const *argv[]) {
   space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{3, 3, 0, -1});
 
   StatePtr targetState(new State(space));
-  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 3, 0, -1});
+  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 3, 1.57, -1});
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
@@ -279,6 +295,10 @@ int main (int argc, char const *argv[]) {
               space, 
               mReader)
           );
+  planner.setHeuristic(std::bind(&heuristic,  
+                std::placeholders::_1, 
+                std::placeholders::_2, 
+                space));
   auto event = std::make_shared<gls::event::ShortestPathEvent>();
   auto selector = std::make_shared<gls::selector::ForwardSelector>();
   planner.setEvent(event);
