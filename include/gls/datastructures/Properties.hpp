@@ -210,12 +210,21 @@ public:
   /// TODO (avk): Why is this public?
   double mLength;
 
+  // Set prim ID, Implicit only
+  void setPrimID(int id);
+
+  // Get prim ID, Implicit only
+  int getPrimID();
+
 private:
   /// Evaluation status.
   EvaluationStatus mEvaluationStatus{EvaluationStatus::NotEvaluated};
 
   /// Collision status..
   CollisionStatus mCollisionStatus{CollisionStatus::Free};
+
+  // Implict only
+  int mPrimID;
 };
 
 /// Shared pointer to a Vertex.

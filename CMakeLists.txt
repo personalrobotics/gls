@@ -1,17 +1,6 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5.1)
 project(gls)
 list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
-
-#================================================================================
-# Compiler settings
-#================================================================================
-# Enforce the use of C++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wuninitialized -Wpedantic")
-
-add_compile_options(-Wall -Wextra -Wpedantic)
-if(GENERALIZED_LAZY_SEARCH_TREAT_WARNINGS_AS_ERRORS)
-  add_compile_options(-Werror)
-endif()
 
 #================================================================================
 # Link Libraries
@@ -65,6 +54,26 @@ add_library(${PROJECT_NAME}
 )
 
 #================================================================================
+# Compiler settings
+#================================================================================
+
+# Set this project to use C++17
+if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3)
+      set(CMAKE_C_COMPILER gcc-7)
+        set(CMAKE_CXX_COMPILER g++-7)
+    endif()
+    set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0 ${CMAKE_CXX_FLAGS}")
+
+    if(${CMAKE_VERSION} VERSION_LESS "3.8.0")
+          set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}")
+      else()
+            set(CMAKE_CXX_STANDARD 17)
+        endif()
+
+        add_compile_options(-Wall -Wextra -Wpedantic)
+
+
+#================================================================================
 # Example Scripts
 #================================================================================
 
@@ -80,6 +89,10 @@ install(TARGETS test_ConstantDepth_Forward RUNTIME DESTINATION ${CATKIN_PACKAGE_
 add_executable(test_implicit examples/test_implicit.cpp)
 target_link_libraries(test_implicit ${PROJECT_NAME} ${OpenCV_LIBS})
 install(TARGETS test_implicit RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+add_executable(rc_lattice examples/rc_lattice.cpp)
+target_link_libraries(rc_lattice ${PROJECT_NAME} ${OpenCV_LIBS})
+install(TARGETS rc_lattice RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #================================================================================
 # Installation

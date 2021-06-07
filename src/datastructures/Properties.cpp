@@ -213,5 +213,16 @@ CollisionStatus EdgeProperties::getCollisionStatus() {
   return mCollisionStatus;
 }
 
+// ============================================================================
+void EdgeProperties::setPrimID(int id) {
+  mPrimID = id;
+}
+
+// ============================================================================
+int EdgeProperties::getPrimID() {
+  return mPrimID;
+}
+
+
 } // namespace datastructures
 } // namespace gls

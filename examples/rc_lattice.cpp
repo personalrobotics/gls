@@ -5,6 +5,8 @@
 #include <sstream>
 #include <string>
 #include <typeinfo>
+#include <math.h>
+#include <cmath>
 
 // OMPL base libraries
 #include <ompl/base/ProblemDefinition.h>
@@ -21,12 +23,12 @@
 #include "gls/GLS.hpp"
 
 using namespace gls::datastructures;
+typedef std::pair<double, double> xy_pt;
 
 /// Checks for bounds only
 /// This is bound to the stateValidityChecker of the ompl StateSpace.
 /// \param[in] state The ompl state to check for validity.
 bool isPointValid(const ompl::base::State* state, ompl::base::RealVectorBounds& bounds, std::function<std::vector<double>(std::vector<double>)> lat2real) {
-  //StatePtr real_state = lat2real(state);
   double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
   std::vector<double> vec_vals = std::vector<double>{values[0], values[1], values[2], values[3]};
   std::vector<double> real_values = lat2real(vec_vals);
@@ -79,8 +81,8 @@ StatePtr lattice2state(StatePtr state, gls::io::MotionPrimitiveReader *mReader,s
 // Each new vertex must have a unique vertex_descriptor for lookup
 // The same state should ALWAYS have the same descriptor
 // AKA use the state to create the descriptor
-std::vector<std::tuple<IVertex, VertexProperties, double>> transition_function(IVertex vi, VertexProperties vp, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
-    std::vector<std::tuple<IVertex, VertexProperties, double>> neighbors; 
+std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_function(IVertex vi, VertexProperties vp, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
+    std::vector<std::tuple<IVertex, VertexProperties, double, int>> neighbors; 
 
     // Get State
     double* values = vp.getState()->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
@@ -111,7 +113,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double>> transition_function(I
             space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
             neighborProperties.setState(newState);
 
-            neighbors.push_back(std::tuple<IVertex, VertexProperties, double>(hash(neighborProperties.getState()), neighborProperties, mprim.length));
+            neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, mprim.length, mprim.motprimID));
         }
     }
 
@@ -119,11 +121,66 @@ std::vector<std::tuple<IVertex, VertexProperties, double>> transition_function(I
 }
 
 // Precompute reconfigure motion primitives using ReedShepp
-//std::vector<gls::io::MotionPrimitive> computeReconfigures(double block_length, double turning_radius){
-    //ompl::base::ReedsSheppStateSpace* rs_space = new ompl::base::ReedsSheppStateSpace(turning_radius);
-//} 
+std::vector<gls::io::MotionPrimitive> computeReconfigures(double block_length, double rear2block, double turning_radius){
+    ompl::base::ReedsSheppStateSpace* rs_space = new ompl::base::ReedsSheppStateSpace(turning_radius);
 
+    ompl::base::State* startState = rs_space->allocState();
+    rs_space->copyFromReals(startState, std::vector<double>{0.0, 0.0, 0.0});
 
+    ompl::base::State* rightState = rs_space->allocState();
+    rs_space->copyFromReals(rightState, std::vector<double>{block_length/2.0+rear2block, -(block_length/2.0 + rear2block), M_PI/2.0});
+
+    ompl::base::State* opState = rs_space->allocState();
+    rs_space->copyFromReals(opState, std::vector<double>{block_length+2*rear2block, 0.0, M_PI});
+
+    ompl::base::State* leftState = rs_space->allocState();
+    rs_space->copyFromReals(leftState, std::vector<double>{block_length/2.0+rear2block, block_length/2.0 + rear2block, 1.5*M_PI});
+
+    //TODO finish this. Current problem is ompl reedshepp only gives the shortest curve not all curves so if that curve is in collision you are shit out of luck
+} 
+
+// Make mushr car footprint for collision checking
+std::vector<xy_pt> make_robot_footprint(double width, double length, double resolution){
+    // Assuming car oriented at [0, 0, 0] and position is with respect to the rear axle
+    std::vector<xy_pt> footprint;
+
+    // We want discretization to be conservative
+    double ceil_length = std::ceil(length/resolution)*resolution;
+    double ceil_width = std::ceil(width/resolution)*resolution;
+
+    double halfwidthd = (double)CONTXY2DISC(ceil_width/2.0, resolution);
+    double lengthd = (double)CONTXY2DISC(ceil_length, resolution);
+    // small sides
+    for (double z=-halfwidthd; z <= halfwidthd; z +=1.0){
+        // long sides
+        for (double j=0.0; j <= lengthd; j +=1.0){
+            footprint.push_back(xy_pt{j, z});
+        } 
+    } 
+
+    return footprint;
+}
+
+// Make block footprint for collision checking
+std::vector<xy_pt> make_block_footprint(double width, double resolution){
+    // Assuming block oriented at [0, 0, 0] and cube
+    
+    std::vector<xy_pt> footprint;
+
+    // We want discretization to be conservative
+    double ceil_width = std::ceil(width/resolution)*resolution;
+
+    double halfwidthd = (double)CONTXY2DISC(ceil_width/2.0, resolution);
+    // small sides
+    for (double z=-halfwidthd; z <= halfwidthd; z +=1.0){
+        // long sides
+        for (double j=-halfwidthd; j <= halfwidthd; j +=1.0){
+            footprint.push_back(xy_pt{j, z});
+        } 
+    } 
+
+    return footprint;
+}
 
 /// Displays path
 /// \param[in] obstacleFile The file with obstacles stored
@@ -175,6 +232,19 @@ int main (int argc, char const *argv[]) {
   space->as<ompl::base::RealVectorStateSpace>()->setBounds(bounds);
   space->setLongestValidSegmentFraction(0.1 / space->getMaximumExtent());
   space->setup();
+
+  // TODO (schmittle) synchronize these hard-coded measurements across all of pushr
+  std::vector<xy_pt> robot_footprint = make_robot_footprint(0.27, 0.44, mReader->resolution);
+  std::vector<xy_pt> block_footprint = make_block_footprint(0.1, mReader->resolution);
+
+  std::cout<< "ROBOT"<<std::endl;
+  for(xy_pt pt:robot_footprint){
+      std::cout<<pt.first<<" "<<pt.second<<std::endl;
+  }
+  std::cout<< "BLOCK"<<std::endl;
+  for(xy_pt pt:block_footprint){
+      std::cout<<pt.first<<" "<<pt.second<<std::endl;
+  }
 
   // Space Information
   std::function<std::vector<double>(std::vector<double>)> lat2real = std::bind(&lattice2real, std::placeholders::_1, mReader);

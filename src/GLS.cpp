@@ -54,10 +54,6 @@ void GLS::setup() {
   if (!mGraphSetup && !mImplicit)
     std::invalid_argument("Graph has not been provided.");
 
-  // TODO (avk): If the graph is not provided, use implicit representation
-  // for the edges using the NearestNeighbor representation.
-  // Check if roadmap has been provided.
-
   OMPL_INFORM("Planner has been setup.");
 }
 
@@ -224,23 +220,19 @@ ompl::base::PlannerStatus GLS::solve(const ompl::base::PlannerTerminationConditi
 
   assert(mExtendQueue.isEmpty());
   mExtendQueue.addVertexWithValue(mSourceVertex, mGraph[mSourceVertex].getEstimatedTotalCost());
-  std::cout<<"setup "<<mSourceVertex.mImplicitVertex<<" "<<mTargetVertex.mImplicitVertex<<std::endl;
 
   // Run in loop.
   while (!mExtendQueue.isEmpty()) {
     // Extend the tree till the event is triggered.
     extendSearchTree();
-    std::cout<<"extended"<<std::endl;
 
     // Evaluate the extended search tree.
     evaluateSearchTree();
-    std::cout<<"eval"<<std::endl;
 
     // If the plan is successful, return.
     if (mPlannerStatus == PlannerStatus::Solved)
       break;
   }
-  std::cout<<"done"<<std::endl;
 
   if (mPlannerStatus == PlannerStatus::Solved) {
     setBestPathCost(mGraph[mTargetVertex].getCostToCome());
@@ -359,10 +351,13 @@ void GLS::setRoadmap(std::string filename) {
 }
 
 // ============================================================================
-void GLS::setImplicit(datastructures::DiscFunc disc_function, datastructures::NeighborFunc transition_function){
+void GLS::setImplicit(datastructures::DiscFunc disc_function, datastructures::NeighborFunc transition_function, datastructures::InterpolateFunc interpolate_function){
     datastructures::ImplicitGraph iGraph = datastructures::ImplicitGraph(disc_function, transition_function);
     mGraph.setImplicit(iGraph);
     mImplicit = true;
+    if(interpolate_function){
+        mInterpolate = interpolate_function;
+    }
 }
 
 // ============================================================================
@@ -470,15 +465,12 @@ void GLS::extendSearchTree() {
     // If the vertex has been marked to be in collision, do not extend.
     if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
       continue;
-    //std::cout<<u.mImplicitVertex<<std::endl;
 
     // Get the neighbors and extend.
-    // TODO (avk): Have a wrapper in case the implicit vs explicit.
     NeighborIter ni, ni_end;
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end; ++ni) {
       Vertex v = *ni;
 
-      //std::cout<<"      "<<v.mImplicitVertex<<std::endl;
       // If the successor has been previously marked to be in collision,
       // continue to the next successor.
       if (mGraph[v].getCollisionStatus() == CollisionStatus::Collision)
@@ -782,10 +774,22 @@ void GLS::evaluateSearchTree() {
 ompl::base::PathPtr GLS::constructSolution(const Vertex& source, const Vertex& target) {
   ompl::geometric::PathGeometric* path = new ompl::geometric::PathGeometric(si_);
   Vertex v = target;
+  Vertex u; // temp vertex
+  int uvID; // for interpolation
+  std::vector<StatePtr> intermStates;
 
   while (v != source) {
     path->append(mGraph[v].getState()->getOMPLState());
-    v = mGraph[v].getParent();
+    u = mGraph[v].getParent();
+    if(mInterpolate){
+        uvID = mGraph[getEdge(u,v)].getPrimID();
+        intermStates = mInterpolate(mGraph[u].getState(), uvID);
+        std::reverse(intermStates.begin(), intermStates.end());
+        for(StatePtr state : intermStates){
+            path->append(state->getOMPLState());
+        }
+    }
+    v = u;
   }
 
   if (v == source) {

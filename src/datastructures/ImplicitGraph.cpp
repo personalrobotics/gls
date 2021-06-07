@@ -56,7 +56,7 @@ bool ImplicitGraph::addAdjVertex(vertex_descriptor vi, StatePtr state){
     return exists;
 }
 
-std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descriptor v2, double length){
+std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descriptor v2, double length, int motprimID){
     IEdge ei = {v1, v2}; // EdgeHash effectively
     std::string eh = v1 + v2; // EdgeHash effectively
     bool exists = true;
@@ -67,6 +67,7 @@ std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descr
         mEdges[ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
         mEdges[ei].setCollisionStatus(CollisionStatus::Free);
         mEdges[ei].setLength(length);
+        mEdges[ei].setPrimID(motprimID);
         mEdgeHashTable[eh] = ei;
         exists = false;
     }
@@ -111,15 +112,15 @@ IVertex target(const IEdge& e, const ImplicitGraph& g) {
 // wish I could return iterator, but can't because vector is made in function
 std::vector<std::tuple<IVertex, bool, bool>> adjacent_vertices(const IVertex& u, ImplicitGraph& g) {
 
-  // Generate neighbors
-  std::vector<std::tuple<IVertex, VertexProperties, double>> neighbors = g.neighbors(u, g[u]);
+  // Generate neighbors: vertex_descriptor, VertexProperties, length, motprimID
+  std::vector<std::tuple<IVertex, VertexProperties, double, int>> neighbors = g.neighbors(u, g[u]);
 
   std::vector<std::tuple<IVertex, bool, bool>> return_neighbors;
 
   // Update internal graph
   for(INeighborIter it = neighbors.begin(); it != neighbors.end(); ++it) {
       bool vexists = g.addAdjVertex(std::get<0>(*it), std::get<1>(*it).getState()); // Add vertex to map if not already in
-      std::pair<IEdge, bool> edge_pair = g.addEdge(u, std::get<0>(*it), std::get<2>(*it)); // Add edge to map if not already in
+      std::pair<IEdge, bool> edge_pair = g.addEdge(u, std::get<0>(*it), std::get<2>(*it), std::get<3>(*it)); // Add edge to map if not already in
       return_neighbors.push_back(std::tuple<IVertex, bool, bool>{std::get<0>(*it), vexists, edge_pair.second});
   }
   return return_neighbors;

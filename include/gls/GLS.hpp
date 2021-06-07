@@ -85,7 +85,7 @@ public:
   void setRoadmap(std::string filename);
 
   /// Sets transition function for graph. Implicit only. 
-  void setImplicit(gls::datastructures::DiscFunc disc_function, gls::datastructures::NeighborFunc transition_function);
+  void setImplicit(gls::datastructures::DiscFunc disc_function, gls::datastructures::NeighborFunc transition_function, datastructures::InterpolateFunc interpolate_function=NULL);
 
   /// Set the best path cost.
   void setBestPathCost(double cost);
@@ -155,7 +155,11 @@ private:
       gls::datastructures::EPLengthMap>>
       mRoadmap;
 
+  // True if using implicit graph
   bool mImplicit = false;
+
+  // For reconstructing the full path, optional
+  datastructures::InterpolateFunc mInterpolate;
 
   /// Connection radius in the graph.
   double mConnectionRadius;

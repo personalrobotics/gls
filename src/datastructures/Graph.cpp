@@ -23,7 +23,7 @@ std::pair<Edge&, bool> Graph::addEdge(Vertex v1, Vertex v2){
     Edge newEdge;
     if (mImplicit){
         //TODO (schmittle) this never gets run and we don't have the edge length so set to 0
-        std::pair<IEdge, bool> raw_edge = mImplicitGraph.addEdge(v1.mImplicitVertex, v2.mImplicitVertex, 0);
+        std::pair<IEdge, bool> raw_edge = mImplicitGraph.addEdge(v1.mImplicitVertex, v2.mImplicitVertex, 0, 0);
         newEdge = Edge(v1, v2, true);
         newEdge.mImplicitEdge = raw_edge.first;
         exists = raw_edge.second;

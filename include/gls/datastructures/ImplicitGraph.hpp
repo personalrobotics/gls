@@ -22,10 +22,10 @@ class ImplicitGraph {
         typedef std::pair<vertex_descriptor, vertex_descriptor> edge_descriptor;
 
         typedef std::vector<vertex_descriptor>::iterator vertex_iterator;
-        typedef std::vector<std::tuple<vertex_descriptor, VertexProperties, double>>::iterator neighbor_iterator;
+        typedef std::vector<std::tuple<vertex_descriptor, VertexProperties, double, int>>::iterator neighbor_iterator;
         typedef std::vector<edge_descriptor>::iterator edge_iterator;
         typedef std::function<StatePtr(StatePtr)> fdiscretize;
-        typedef std::function<std::vector<std::tuple<vertex_descriptor, VertexProperties, double>>(vertex_descriptor, VertexProperties)> fneighbors;
+        typedef std::function<std::vector<std::tuple<vertex_descriptor, VertexProperties, double, int>>(vertex_descriptor, VertexProperties)> fneighbors;
 
         ImplicitGraph(){};
         ImplicitGraph(fdiscretize discretizefunc, fneighbors neighborfunc):
@@ -45,7 +45,7 @@ class ImplicitGraph {
 
         bool addVertex(vertex_descriptor vi, StatePtr state);
         bool addAdjVertex(vertex_descriptor vi, StatePtr state); // add vertex w/o fit
-        std::pair<edge_descriptor, bool> addEdge(vertex_descriptor v1, vertex_descriptor v2, double length);
+        std::pair<edge_descriptor, bool> addEdge(vertex_descriptor v1, vertex_descriptor v2, double length, int motprimID);
 
     private:
         std::map<vertex_descriptor, VertexProperties> mVertices;
@@ -53,7 +53,7 @@ class ImplicitGraph {
         std::map<std::string, edge_descriptor> mEdgeHashTable;
 };
 
-// For map
+// For map TODO (Schmittle) this should be user defined since it has a specific statepspace
 struct IVertexHash{
     std::string operator()(StatePtr k) {
         double* values = k->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
@@ -69,6 +69,7 @@ typedef std::shared_ptr<IEdge> IEdgePtr;
 
 typedef ImplicitGraph::fneighbors NeighborFunc;
 typedef ImplicitGraph::fdiscretize DiscFunc;
+typedef std::function<std::vector<StatePtr>(StatePtr, int)> InterpolateFunc;
 
 /// vertex/edge iterator
 typedef ImplicitGraph::vertex_iterator IVertexIter;
