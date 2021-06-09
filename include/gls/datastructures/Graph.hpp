@@ -49,6 +49,7 @@ class Graph {
         
         VertexProperties & operator[](Vertex key);
         EdgeProperties & operator[](Edge key);
+        std::pair<Edge, bool> operator[](std::string hash);
 
         // TODO (schmittle) make these private
         bool mImplicit = false;

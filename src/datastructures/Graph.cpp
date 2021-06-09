@@ -63,6 +63,15 @@ EdgeProperties & Graph::operator[](Edge key) {
 }
 
 // ============================================================================
+std::pair<Edge, bool> Graph::operator[](std::string hash) {
+    if(mEdgesLookup.find(hash) != mEdgesLookup.end()){
+        return std::pair<Edge, bool>{mEdgesLookup[hash], true};
+    }
+    Edge* e = new Edge(); // blank edge
+    return std::pair<Edge, bool>{*e, false};
+}
+
+// ============================================================================
 std::pair<VertexIter, VertexIter> Graph::vertices(){
     return std::pair<VertexIter,VertexIter>{mVertices.begin(), mVertices.end()};
 }
@@ -104,7 +113,7 @@ std::pair<NeighborIter, NeighborIter> Graph::adjacents(Vertex u){
 }
 
 // ============================================================================
-const std::map<std::string, Edge>& Graph::getLookup(){
+const std::map<std::string, Edge>& Graph::getLookup(){ // never use this function
     return mEdgesLookup;
 }
 
@@ -165,9 +174,9 @@ std::pair<Edge&, bool> addEdge(Vertex v1, Vertex v2, Graph& g){
 // ============================================================================
 std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph& g){
     EdgeHash hash;
-    Edge* e = new Edge(); // blank edge
     std::string hashed_edge = hash(std::pair<Vertex, Vertex>{v1, v2});
     std::string reverse_hashed_edge = hash(std::pair<Vertex, Vertex>{v2, v1});
+    /*
     std::map<std::string, Edge> lookup = g.getLookup();
     if(lookup.find(hashed_edge) != lookup.end()){
         return std::pair<Edge, bool>{lookup[hashed_edge], true};
@@ -175,7 +184,15 @@ std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph& g){
     if(!g.mImplicit && lookup.find(reverse_hashed_edge) != lookup.end()){ // TODO (schmittle) check reverse 4 implicit?
         return std::pair<Edge, bool>{lookup[reverse_hashed_edge], true};
     }
+    Edge* e = new Edge(); // blank edge
     return std::pair<Edge, bool>{*e, false};
+    */
+    /// This is faster than above
+    std::pair<Edge, bool> edge_lookup = g[hashed_edge];
+    if(!g.mImplicit && !edge_lookup.second){
+        edge_lookup = g[reverse_hashed_edge];
+    }
+    return edge_lookup;
 }
 
 // ============================================================================

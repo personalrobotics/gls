@@ -19,6 +19,7 @@
 
 // Custom header files
 #include "gls/GLS.hpp"
+#include <rsmotion/rsmotion.h>
 
 using namespace gls::datastructures;
 
@@ -27,8 +28,7 @@ using namespace gls::datastructures;
 /// \param[in] state The ompl state to check for validity.
 bool isPointValid(const ompl::base::State* state, ompl::base::RealVectorBounds& bounds, std::function<std::vector<double>(std::vector<double>)> lat2real) {
   double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-  std::vector<double> vec_vals = std::vector<double>{values[0], values[1], values[2], values[3]};
-  std::vector<double> real_values = lat2real(vec_vals);
+  std::vector<double> real_values = lat2real(std::vector<double>{values[0], values[1], values[2], values[3]});
   if(real_values[0] > bounds.low[0] && real_values[0] < bounds.high[0]){
     if(real_values[1] > bounds.low[1] && real_values[1] < bounds.high[1])
         return true;
@@ -47,9 +47,14 @@ StatePtr fit_state2lattice(StatePtr state, gls::io::MotionPrimitiveReader *mRead
     vals[1] = (double)CONTXY2DISC(vals[1], mReader->resolution);
     vals[2] = (double) mReader->ContTheta2DiscNew(vals[2]);
 
+    /*
     StatePtr newState(new State(space));
     space->copyFromReals(newState->getOMPLState(), vals);
     return newState;
+    */
+
+    space->copyFromReals(state->getOMPLState(), vals);
+    return state; //TODO(schmittle) can I just not return anything?
 }
 
 // Reverse continuous state from lattice 
@@ -75,18 +80,11 @@ StatePtr lattice2state(StatePtr state, gls::io::MotionPrimitiveReader *mReader,s
 }
 
 // Transition function from one state to another
-// Each new vertex must have a unique vertex_descriptor for lookup
-// The same state should ALWAYS have the same descriptor
-// AKA use the state to create the descriptor
 std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_function(IVertex vi, VertexProperties vp, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
     std::vector<std::tuple<IVertex, VertexProperties, double, int>> neighbors; 
 
     // Get State
     double* values = vp.getState()->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-    int x = (int)values[0]; 
-    int y = (int)values[1]; 
-    int theta = (int)values[2];
-    int level = (int)values[3]; // TODO use me!
 
     // Neighbors
     int nx, ny, ntheta;
@@ -94,22 +92,16 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
     IVertex neighbor;
     double length; //debug
     VertexProperties neighborProperties;
-    std::vector<gls::io::MotionPrimitive> mprims = mReader->mprimV;
-    for (gls::io::MotionPrimitive mprim : mprims){
+    for (gls::io::MotionPrimitive mprim : mReader->mprimV){
 
         // prims for current theta
-        if(mprim.starttheta_c == theta){
+        if(mprim.starttheta_c == values[2]){
             // Apply mprim
-            nx = mprim.endcell.x + x;
-            ny = mprim.endcell.y + y;
+            nx = mprim.endcell.x + values[0];
+            ny = mprim.endcell.y + values[1];
             ntheta = mprim.endcell.theta;
-            // debug somehow a straight line is not returned as the solution
-            // I think the length/heuristic are causing problems
-            length = mprim.additionalactioncostmult*CONTXY2DISC(mprim.length, mReader->resolution);
-            if(mprim.motprimID == 3 || mprim.motprimID == 0){
-                //length = 0;
-            }
 
+            length = mprim.additionalactioncostmult*CONTXY2DISC(mprim.length, mReader->resolution);
             // Set state
             // TODO (schmittle) this seems inefficient to make a new state
             neighborProperties = VertexProperties();
@@ -156,6 +148,37 @@ double heuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::base::RealVe
 
     return std::sqrt(std::pow(values[0]-goal_values[0],2) + std::pow(values[1]-goal_values[1], 2));
 
+}
+double rsheuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
+    double* values = 
+        v->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    double* goal_values = 
+        target->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+
+    using namespace rsmotion::math;
+
+    // set the wheelbase to 0.44 meter
+    const float wheelbase = 0.44f;
+
+    // set the start position to the origin
+    const Vec3f startPosition {DISCXY2CONT(values[0], mReader->resolution)
+                            , DISCXY2CONT(values[1], mReader->resolution), 0};
+
+    // set the orientation (yaw; around y axis) to zero degrees (i.e. no rotation)
+    const Quatf startOrientation { Vec3f{0,1,0}, Anglef::Radians(
+            mReader->DiscTheta2ContNew(values[2])) };
+
+    // create the initial CarState
+    rsmotion::CarState carStart{{startPosition, startOrientation}, wheelbase};
+
+    const Vec3f finishPosition {DISCXY2CONT(goal_values[0], mReader->resolution), 
+        DISCXY2CONT(goal_values[1], mReader->resolution), 0.f};
+    const Quatf finishOrientation { Vec3f{0,1,0}, Anglef::Radians(
+            mReader->DiscTheta2ContNew(goal_values[2])) };
+    const rsmotion::PointState finishPoint {finishPosition, finishOrientation};
+
+    const auto path = SearchShortestPath(carStart, finishPoint);
+    return CONTXY2DISC(path.Length(), mReader->resolution); // slow so added weight
 }
 
 /// Displays path
@@ -269,7 +292,7 @@ int main (int argc, char const *argv[]) {
   space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{3, 3, 0, -1});
 
   StatePtr targetState(new State(space));
-  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 3, 1.57, -1});
+  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 3, 3.14, -1});
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
@@ -295,10 +318,16 @@ int main (int argc, char const *argv[]) {
               space, 
               mReader)
           );
+  planner.setHeuristic(std::bind(&rsheuristic,  
+                std::placeholders::_1, 
+                std::placeholders::_2, 
+                space, mReader));
+  /*
   planner.setHeuristic(std::bind(&heuristic,  
                 std::placeholders::_1, 
                 std::placeholders::_2, 
                 space));
+                */
   auto event = std::make_shared<gls::event::ShortestPathEvent>();
   auto selector = std::make_shared<gls::selector::ForwardSelector>();
   planner.setEvent(event);

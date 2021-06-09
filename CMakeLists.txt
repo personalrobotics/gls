@@ -12,13 +12,14 @@ find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options s
 find_package(OpenCV REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include examples/include
   LIBRARIES ${PROJECT_NAME}
   DEPENDS Boost
 )
 
 include_directories(
   include
+  examples/include
   ${catkin_INCLUDE_DIRS}
   ${OMPL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
@@ -51,6 +52,7 @@ add_library(${PROJECT_NAME}
   src/selector/FailFastSelector.cpp
   src/selector/ForwardSelector.cpp
   src/io/MotionPrimitiveReader.cpp
+  examples/rsmotion.cpp
 )
 
 #================================================================================
