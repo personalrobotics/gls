@@ -47,24 +47,21 @@ StatePtr fit_state2lattice(StatePtr state, gls::io::MotionPrimitiveReader *mRead
     vals[1] = (double)CONTXY2DISC(vals[1], mReader->resolution);
     vals[2] = (double) mReader->ContTheta2DiscNew(vals[2]);
 
-    /*
     StatePtr newState(new State(space));
     space->copyFromReals(newState->getOMPLState(), vals);
     return newState;
-    */
-
-    space->copyFromReals(state->getOMPLState(), vals);
-    return state; //TODO(schmittle) can I just not return anything?
 }
 
 // Reverse continuous state from lattice 
 // This must be user-defined because it varies per state space
 std::vector<double> lattice2real(std::vector<double> vals, gls::io::MotionPrimitiveReader *mReader){
-    vals[0] = (double)DISCXY2CONT(vals[0], mReader->resolution);
-    vals[1] = (double)DISCXY2CONT(vals[1], mReader->resolution);
-    vals[2] = (double) mReader->DiscTheta2ContNew(vals[2]);
+    std::vector<double>real_vals;
+    real_vals.reserve(3);
+    real_vals[0] = (double)DISCXY2CONT(vals[0], mReader->resolution);
+    real_vals[1] = (double)DISCXY2CONT(vals[1], mReader->resolution);
+    real_vals[2] = (double) mReader->DiscTheta2ContNew(vals[2]);
 
-    return vals;
+    return real_vals;
 }
 
 // Reverse continuous state from lattice 
@@ -92,7 +89,8 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
     IVertex neighbor;
     double length; //debug
     VertexProperties neighborProperties;
-    for (gls::io::MotionPrimitive mprim : mReader->mprimV){
+    std::vector<gls::io::MotionPrimitive> mprims = mReader->mprimV;
+    for (gls::io::MotionPrimitive mprim : mprims){
 
         // prims for current theta
         if(mprim.starttheta_c == values[2]){
@@ -101,7 +99,10 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
             ny = mprim.endcell.y + values[1];
             ntheta = mprim.endcell.theta;
 
-            length = mprim.additionalactioncostmult*CONTXY2DISC(mprim.length, mReader->resolution);
+            // Length calculation
+            //length = mprim.additionalactioncostmult*CONTXY2DISC(mprim.length, mReader->resolution);
+            length = CONTXY2DISC(mprim.length, mReader->resolution);
+
             // Set state
             // TODO (schmittle) this seems inefficient to make a new state
             neighborProperties = VertexProperties();
@@ -162,22 +163,29 @@ double rsheuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::base::Real
 
     // set the start position to the origin
     const Vec3f startPosition {DISCXY2CONT(values[0], mReader->resolution)
-                            , DISCXY2CONT(values[1], mReader->resolution), 0};
+                            , 0.f, DISCXY2CONT(values[1], mReader->resolution)};
 
     // set the orientation (yaw; around y axis) to zero degrees (i.e. no rotation)
     const Quatf startOrientation { Vec3f{0,1,0}, Anglef::Radians(
-            mReader->DiscTheta2ContNew(values[2])) };
+            mReader->DiscTheta2ContNew(values[2])+1.57) };
 
     // create the initial CarState
     rsmotion::CarState carStart{{startPosition, startOrientation}, wheelbase};
 
-    const Vec3f finishPosition {DISCXY2CONT(goal_values[0], mReader->resolution), 
-        DISCXY2CONT(goal_values[1], mReader->resolution), 0.f};
+    const Vec3f finishPosition {DISCXY2CONT(goal_values[0], mReader->resolution), 0.f, 
+        DISCXY2CONT(goal_values[1], mReader->resolution)};
     const Quatf finishOrientation { Vec3f{0,1,0}, Anglef::Radians(
-            mReader->DiscTheta2ContNew(goal_values[2])) };
+            mReader->DiscTheta2ContNew(goal_values[2])+1.57) };
     const rsmotion::PointState finishPoint {finishPosition, finishOrientation};
 
     const auto path = SearchShortestPath(carStart, finishPoint);
+    //std::cout<<DISCXY2CONT(values[0], mReader->resolution)<< " "<< DISCXY2CONT(values[1], mReader->resolution)<<" "<<mReader->DiscTheta2ContNew(values[2])<<std::endl;
+    //std::cout<<DISCXY2CONT(goal_values[0], mReader->resolution)<< " "<< DISCXY2CONT(goal_values[1], mReader->resolution)<<" "<<mReader->DiscTheta2ContNew(goal_values[2])<<std::endl;
+    if(values[2] == 0 && values[1] == 59){
+        std::cout<<values[0]<< " "<< values[1]<<" "<<values[2]<<std::endl;
+        std::cout<<goal_values[0]<< " "<< goal_values[1]<<" "<<goal_values[2]<<std::endl;
+        std::cout<<DISCXY2CONT(values[0], mReader->resolution) - DISCXY2CONT(goal_values[0], mReader->resolution)<<" "<<path.Length()<<" "<<CONTXY2DISC(path.Length(), mReader->resolution)<<std::endl<<std::endl;
+    }
     return CONTXY2DISC(path.Length(), mReader->resolution); // slow so added weight
 }
 
@@ -267,7 +275,8 @@ int main (int argc, char const *argv[]) {
   // Load Motion Primitives
   gls::io::MotionPrimitiveReader* mReader = new gls::io::MotionPrimitiveReader();
   //TODO (schmittle) don't hardcode paths
-  mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim");
+  mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.mprim");
+  //mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim");
   //mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/pushr/mprim/pushr_sandpaper.mprim");
   std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
 
@@ -289,10 +298,10 @@ int main (int argc, char const *argv[]) {
   si->setup();
 
   StatePtr sourceState(new State(space));
-  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{3, 3, 0, -1});
+  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{2, 3, 0, -1});
 
   StatePtr targetState(new State(space));
-  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 3, 3.14, -1});
+  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 1.5, 3.14, -1});
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
