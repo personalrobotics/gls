@@ -221,7 +221,8 @@ int main (int argc, char const *argv[]) {
   gls::io::MotionPrimitiveReader* mReader = new gls::io::MotionPrimitiveReader();
   //TODO (schmittle) don't hardcode paths
   // TODO pushr.mprim
-  mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim");
+  mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim",
+         "/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.json");
   std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
 
   // Define the state space: R^4

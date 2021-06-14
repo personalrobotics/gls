@@ -99,9 +99,10 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
             ny = mprim.endcell.y + values[1];
             ntheta = mprim.endcell.theta;
 
-            // Length calculation
+            // Length calculation TODO (schmittle) revert to use cost mul
             //length = mprim.additionalactioncostmult*CONTXY2DISC(mprim.length, mReader->resolution);
             length = CONTXY2DISC(mprim.length, mReader->resolution);
+            //std::cout<<mprim.length<<" "<<length<<std::endl;
 
             // Set state
             // TODO (schmittle) this seems inefficient to make a new state
@@ -179,14 +180,62 @@ double rsheuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::base::Real
     const rsmotion::PointState finishPoint {finishPosition, finishOrientation};
 
     const auto path = SearchShortestPath(carStart, finishPoint);
-    //std::cout<<DISCXY2CONT(values[0], mReader->resolution)<< " "<< DISCXY2CONT(values[1], mReader->resolution)<<" "<<mReader->DiscTheta2ContNew(values[2])<<std::endl;
-    //std::cout<<DISCXY2CONT(goal_values[0], mReader->resolution)<< " "<< DISCXY2CONT(goal_values[1], mReader->resolution)<<" "<<mReader->DiscTheta2ContNew(goal_values[2])<<std::endl;
-    if(values[2] == 0 && values[1] == 59){
+
+    /*if(values[2] == 0 && values[1] == 59){
         std::cout<<values[0]<< " "<< values[1]<<" "<<values[2]<<std::endl;
         std::cout<<goal_values[0]<< " "<< goal_values[1]<<" "<<goal_values[2]<<std::endl;
         std::cout<<DISCXY2CONT(values[0], mReader->resolution) - DISCXY2CONT(goal_values[0], mReader->resolution)<<" "<<path.Length()<<" "<<CONTXY2DISC(path.Length(), mReader->resolution)<<std::endl<<std::endl;
     }
+        */
     return CONTXY2DISC(path.Length(), mReader->resolution); // slow so added weight
+}
+
+double testheuristic(std::vector<double> start, std::vector<double> goal){
+    using namespace rsmotion::math;
+
+    // set the wheelbase to 0.44 meter
+    const float wheelbase = 0.44f;
+
+    // set the start position to the origin
+    const Vec3f startPosition {start[0], 0.f, start[1]};
+
+    // set the orientation (yaw; around y axis) to zero degrees (i.e. no rotation)
+    const Quatf startOrientation { Vec3f{0,1,0}, Anglef::Radians(start[2]+1.57) };
+
+    // create the initial CarState
+    rsmotion::CarState carStart{{startPosition, startOrientation}, wheelbase};
+
+    const Vec3f finishPosition {goal[0], 0.f, goal[1]};
+    const Quatf finishOrientation { Vec3f{0,1,0}, Anglef::Radians(goal[2]+1.57) };
+    const rsmotion::PointState finishPoint {finishPosition, finishOrientation};
+
+    const auto path = SearchShortestPath(carStart, finishPoint);
+    std::string direction;
+    std::string type;
+    for (rsmotion::algorithm::Segment s : path.Segments){
+        if(s.Direction == rsmotion::algorithm::SegmentDirection::Fwd){
+            direction = "fwd";
+        }
+        else{
+            direction = "bwd";
+        }
+
+        if(s.Type == rsmotion::algorithm::SegmentType::Left){
+            type = "left";
+        }
+        else if(s.Type == rsmotion::algorithm::SegmentType::Right){
+            type = "right";
+        }
+        else if(s.Type == rsmotion::algorithm::SegmentType::Straight){
+            type = "straight";
+        }
+        else{
+           type  = "None";
+        }
+        std::cout<<direction<<" "<<type<<" "<<s.Length()<<std::endl;
+    }
+
+    return path.Length(); // slow so added weight
 }
 
 /// Displays path
@@ -203,7 +252,7 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
 
   // TODO don't do this
   double scale = 500.0;
-  int offsetx = 700;
+  int offsetx = 500;
   int offsety = -700;
   int car_int = 4;
   cv::Scalar box_color(255, 0, 0);
@@ -275,7 +324,8 @@ int main (int argc, char const *argv[]) {
   // Load Motion Primitives
   gls::io::MotionPrimitiveReader* mReader = new gls::io::MotionPrimitiveReader();
   //TODO (schmittle) don't hardcode paths
-  mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.mprim");
+  mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.mprim",
+          "/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.json");
   //mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim");
   //mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/pushr/mprim/pushr_sandpaper.mprim");
   std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
@@ -298,10 +348,10 @@ int main (int argc, char const *argv[]) {
   si->setup();
 
   StatePtr sourceState(new State(space));
-  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{2, 3, 0, -1});
+  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{3, 3, 0, -1});
 
   StatePtr targetState(new State(space));
-  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 1.5, 3.14, -1});
+  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{2, 3, 0, -1});
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
@@ -353,12 +403,19 @@ int main (int argc, char const *argv[]) {
   if (status == ompl::base::PlannerStatus::EXACT_SOLUTION) {
     // Display path and specify path size
     auto path = std::dynamic_pointer_cast<ompl::geometric::PathGeometric>(pdef->getSolutionPath());
+    std::cout<<"Path length: "<< path->length()<<std::endl;
     std::cout << "Number of Edge Evaluations: " << planner.getNumberOfEdgeEvaluations()
               << std::endl;
     displayPath(obstacleLocation, path, mReader->resolution, mReader); // TODO (schmittle) mReader should not need to be here
     planner.clear();
     return 0;
   }
+
+  /* debug stuff
+  std::cout<<testheuristic({3,3,0},{2,3,0})<<std::endl;
+  std::cout<<testheuristic({3,3,3.14},{2,3,3.14})<<std::endl;
+  std::cout<<testheuristic({3,3,0},{3,3,3.14})<<std::endl;
+  */
 
   return 0;
 }

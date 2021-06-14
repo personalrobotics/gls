@@ -132,11 +132,11 @@ Path CalculateMinPath(Path basePath, State toState, R baseFormula)
     {
         minPath = std::min(minPath, rsmotion::algorithm::Reflect(basePath));
     }
-    if (baseFormula(Timeflip(toState), basePath))
+    if (baseFormula(Timeflip(toState), basePath)) // stop 4 dubins
     {
         minPath = std::min(minPath, Timeflip(basePath));
     }
-    if (baseFormula(rsmotion::algorithm::Reflect(Timeflip(toState)), basePath))
+    if (baseFormula(rsmotion::algorithm::Reflect(Timeflip(toState)), basePath)) // stop 4 dubins
     {
         minPath = std::min(minPath, rsmotion::algorithm::Reflect(Timeflip(basePath)));
     }
@@ -587,9 +587,9 @@ Path SearchShortestPath(State toState)
     // these five path configurations
     return std::min({CSC(toState),
                      CCC(toState),
-                     CCCC(toState),
-                     CCSC(toState),
-                     CCSCC(toState)});
+                     CCCC(toState), //remove for dubins
+                     CCSC(toState), //remove for dubins
+                     CCSCC(toState)}); //remove for dubins
 }
 
 State InterpolateDistance(const State &from, const Path &path, const float dist)

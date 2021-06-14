@@ -12,6 +12,8 @@
 #include <math.h>
 #include <cmath>
 #include <vector>
+#include "json.hpp"
+using json = nlohmann::json;
 
 namespace gls {
 namespace io {
@@ -45,7 +47,7 @@ struct MotionPrimitive{
 class MotionPrimitiveReader{
     public:
         MotionPrimitiveReader(){};
-        bool ReadMotionPrimitives(const char* filename); // main api function
+        bool ReadMotionPrimitives(const char* mprim_filename, const char* json_filename); // main api function
 
         float resolution;
         int NumThetaDirs;
@@ -60,8 +62,8 @@ class MotionPrimitiveReader{
         double DiscTheta2ContFromSet(int theta);
         int ContTheta2DiscFromSet(double theta);
 
-        bool ReadinCell(cell_xyt* cell,FILE* fIn);
-        bool ReadinMotionPrimitive(MotionPrimitive* pMotPrim,FILE* fIn);
+        bool ReadinCell(cell_xyt* cell,FILE* fIn, std::string &metaID);
+        bool ReadinMotionPrimitive(MotionPrimitive* pMotPrim, FILE* fIn, json metaPrims);
 };
 
 double normalizeAngle(double angle);

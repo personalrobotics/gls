@@ -498,6 +498,7 @@ void GLS::extendSearchTree() {
         continue;
 
       double edgeLength = mGraph[uv].getLength();
+      //edgeLength = 0.0; //debug
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited) {
         assert(v != mSourceVertex);
         mGraph[v].setVisitStatus(VisitStatus::Visited);
@@ -570,6 +571,7 @@ void GLS::updateSearchTree() {
     mEvent->updateVertexProperties(mUpdateQueue);
     assert(mUpdateQueue.isEmpty());
   } else {
+      std::cout<<"rewire"<<std::endl;
     // Rewire the search tree.
     rewireSearchTree();
 

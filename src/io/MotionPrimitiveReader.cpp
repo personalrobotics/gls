@@ -107,7 +107,8 @@ int MotionPrimitiveReader::ContTheta2DiscFromSet(double theta)
 
 bool MotionPrimitiveReader::ReadinCell(
     cell_xyt* cell,
-    FILE* fIn)
+    FILE* fIn, 
+    std::string &metaID)
 {
     char sTemp[60];
 
@@ -115,14 +116,20 @@ bool MotionPrimitiveReader::ReadinCell(
         return false;
     }
     cell->x = atoi(sTemp);
+    metaID += sTemp;
+    metaID += ", ";
     if (fscanf(fIn, "%s", sTemp) == 0) {
         return false;
     }
     cell->y = atoi(sTemp);
+    metaID += sTemp;
+    metaID += ", ";
     if (fscanf(fIn, "%s", sTemp) == 0) {
         return false;
     }
     cell->theta = atoi(sTemp);
+    metaID += sTemp;
+    metaID += ")";
 
     // normalize the angle
     cell->theta = normalizeDiscAngle(cell->theta, NumThetaDirs, bUseNonUniformAngles);
@@ -132,13 +139,15 @@ bool MotionPrimitiveReader::ReadinCell(
 
 bool MotionPrimitiveReader::ReadinMotionPrimitive(
     MotionPrimitive* pMotPrim,
-    FILE* fIn)
+    FILE* fIn,
+    json metaPrims)
 {
     char sTemp[1024];
     int dTemp;
     char sExpected[1024];
     int numofIntermPoses;
     float fTemp;
+    std::string metaID = "(";
 
     // read in actionID
     strcpy(sExpected, "primID:");
@@ -168,6 +177,8 @@ bool MotionPrimitiveReader::ReadinMotionPrimitive(
         return false;
     }
     pMotPrim->starttheta_c = dTemp;
+    metaID += std::to_string(dTemp);
+    metaID +=", ";
 
     // read in end pose
     strcpy(sExpected, "endpose_c:");
@@ -179,7 +190,7 @@ bool MotionPrimitiveReader::ReadinMotionPrimitive(
         return false;
     }
 
-    if (ReadinCell(&pMotPrim->endcell, fIn) == false) {
+    if (ReadinCell(&pMotPrim->endcell, fIn, metaID) == false) {
         std::cout<<"ERROR: failed to read in endsearchpose\n"<<std::endl;
         return false;
     }
@@ -260,26 +271,19 @@ bool MotionPrimitiveReader::ReadinMotionPrimitive(
         return false;
     }
 
-    // Calculate motion primitive length using l2 between interm points. This is an approx!!!
-    // This varies for a give prim based on angle
-    double length = 0;
-    int prev_idx = 0;
-    for(int idx=0; idx < pMotPrim->intermptV.size(); idx++){
-        if(prev_idx != idx){
-            length += std::sqrt(
-                    std::pow(pMotPrim->intermptV[idx].x - pMotPrim->intermptV[prev_idx].x, 2) + 
-                    std::pow(pMotPrim->intermptV[idx].y - pMotPrim->intermptV[prev_idx].y, 2));
-        }
-        prev_idx = idx;
-    }
-    pMotPrim->length = length;
+    pMotPrim->length = std::fabs(metaPrims[metaID]["path_len"].get<float>());
 
     return true;
 }
 
-bool MotionPrimitiveReader::ReadMotionPrimitives(const char* filename)
+bool MotionPrimitiveReader::ReadMotionPrimitives(const char* mprim_filename, const char* json_filename)
 {
-    FILE* fMotPrims = fopen(filename, "r"); 
+    FILE* fMotPrims = fopen(mprim_filename, "r"); 
+    std::ifstream fMetadataPrims(json_filename);
+    json metaPrims;
+    fMetadataPrims >> metaPrims;
+    std::cout<<metaPrims["(14, 1, -1, 14)"]["path_len"]<<std::endl;
+
     char sTemp[1024], sExpected[1024];
     float fTemp;
     int dTemp;
@@ -388,7 +392,7 @@ bool MotionPrimitiveReader::ReadMotionPrimitives(const char* filename)
     for (int i = 0; i < totalNumofActions; i++) {
         MotionPrimitive motprim;
 
-        if (!ReadinMotionPrimitive(&motprim, fMotPrims) ){
+        if (!ReadinMotionPrimitive(&motprim, fMotPrims, metaPrims) ){
             return false;
         }
 
