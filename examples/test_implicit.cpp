@@ -311,9 +311,9 @@ void displayPath(std::string obstacleFile, std::vector<rsmotion::algorithm::Stat
   int numberOfColumns = image.cols;
 
   // TODO don't do this
-  double scale = 500.0;
-  int offsetx = 500;
-  int offsety = -700;
+  double scale = 350.0;
+  int offsetx = 380;
+  int offsety = -500;
   int car_int = 4;
   cv::Scalar box_color(255, 0, 0);
   for (int i = 0; i < pathSize; ++i) {
@@ -356,9 +356,9 @@ void displayStatePaths(std::string obstacleFile, std::vector<std::vector<rsmotio
   int numberOfColumns = image.cols;
 
   // TODO don't do this
-  double scale = 500.0;
-  int offsetx = 500;
-  int offsety = -700;
+  double scale = 350.0;
+  int offsetx = 380;
+  int offsety = -500;
 
   for (std::vector<rsmotion::algorithm::State> path : paths){
 
@@ -406,7 +406,7 @@ void displayPaths(std::string obstacleFile, std::vector<rsmotion::algorithm::Pat
 }
 
 int savePath(double q[3], double x, void* user_data, std::vector<rsmotion::algorithm::State>* saved_path) {
-    rsmotion::algorithm::State dstate(q[0], q[1], q[2], false);
+    rsmotion::algorithm::State dstate(q[0], q[1], q[2]-M_PI, false);
     saved_path->push_back(dstate);
     return 0;
 }
@@ -533,7 +533,6 @@ int main (int argc, char const *argv[]) {
   length = pair.first;
   path = pair.second;
 
-  //displayPath(obstacleLocation, path);
 
   using namespace rsmotion::math;
   const float wheelbase = 0.44f;
@@ -548,14 +547,15 @@ int main (int argc, char const *argv[]) {
   const rsmotion::PointState finishPoint {finishPosition, finishOrientation};
 
   auto paths = EnumPaths(carStart, finishPoint, turning_radius);
-  //displayPaths(obstacleLocation, paths, carStart, 0.05, turning_radius); 
+  displayPath(obstacleLocation, path);
+  displayPaths(obstacleLocation, paths, carStart, 0.05, turning_radius); 
   
   // Dubins
   DubinsPath dubins_path;
   std::vector<DubinsPath> dpaths;
   std::vector<rsmotion::algorithm::State> state_path;
-  double start[] = {3.0,3.0,0.0};
-  double goal[] = {2.0,3.0,3.14};
+  double start[] = {3.0,3.0,0.0+M_PI};
+  double goal[] = {2.0,3.0,3.14+M_PI};
   dubins_shortest_path(&dubins_path, start, goal, turning_radius); 
 
   dubins_path_sample_many(&dubins_path,  0.05, std::bind(&savePath, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, &state_path), NULL);
@@ -568,9 +568,9 @@ int main (int argc, char const *argv[]) {
       dubins_path_sample_many(&dpath,  0.05, std::bind(&savePath, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, &dstate_path), NULL);
       dstate_paths.push_back(dstate_path);
   }
-  displayPath(obstacleLocation, state_path);
+  //displayPath(obstacleLocation, state_path);
   std::cout<<"size: "<<dstate_paths.size()<<std::endl;
-  displayStatePaths(obstacleLocation, dstate_paths); 
+  //displayStatePaths(obstacleLocation, dstate_paths); 
 
   return 0;
 }
