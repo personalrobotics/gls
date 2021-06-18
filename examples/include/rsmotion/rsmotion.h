@@ -118,7 +118,7 @@ public:
     Path() = default;
     Path(std::initializer_list<Segment> segments) noexcept;
 
-    float Length() const;
+    float Length(double radius=1.0) const;
     bool Valid() const;
     float &Distance(std::size_t n);
 
@@ -162,6 +162,12 @@ private:
 };
 
 /**
+ * Enumerates all ReedsShepp paths currently unordered 
+ * The start state is implicitly the  origin (0,0,0) and no rotation.
+ */
+std::vector<Path> EnumPaths(State toState);
+
+/**
  * Calculates the optimal path towards the supplied PointState.
  * The start state is implicitly the  origin (0,0,0) and no rotation.
  */
@@ -172,6 +178,11 @@ Path SearchShortestPath(State toState);
  * path by supplying a normalized value between and including 0.f and 1.f
  */
 State InterpolateNormalized(const State &from, const Path &path, float t);
+
+/**
+ * Returns entire path along given resolution 
+ */
+std::vector<State> GetPath(const State &from, const Path &path, double resolution, double turning_radius);
 
 /**
  * Returns the interpolated PointState (location and orientation) along the 
@@ -288,16 +299,26 @@ float ConfigurationDistance(const PointState &a, const PointState &b);
  */
 float ConfigurationDistance(const CarState &a, const CarState &b);
 
+/**
+ * Returns all paths to go from 'from' towards 'to'. Uses Reeds-Shepp' algorithm.
+ */
+std::vector<algorithm::Path> EnumPaths(const PointState &from, const PointState &to, double radius=1.0);
+
+/**
+ * Returns all paths to go from the carstate 'from' towards pointstate 'to'. Uses Reeds-Shepp algorithm.
+ */
+std::vector<algorithm::Path> EnumPaths(const CarState &from, const PointState &to, double radius=1.0);
+
 
 /**
  * Returns the optimal path to go from 'from' towards 'to'. Uses Reeds-Shepp' algorithm.
  */
-algorithm::Path SearchShortestPath(const PointState &from, const PointState &to);
+algorithm::Path SearchShortestPath(const PointState &from, const PointState &to, double radius=1.0);
 
 /**
  * Returns the optimal path to go from the carstate 'from' towards pointstate 'to'. Uses Reeds-Shepp algorithm.
  */
-algorithm::Path SearchShortestPath(const CarState &from, const PointState &to);
+algorithm::Path SearchShortestPath(const CarState &from, const PointState &to, double radius=1.0);
 
 
 /**
@@ -309,6 +330,11 @@ CarState TraversePathNormalized(float normalizedProgress, const algorithm::Path 
  * Moves the car along the path given the distance travelled with the given carstate as startpoint. Returns a new car state.
  */
 CarState TraversePathDistance(float distance, const algorithm::Path &path, const CarState &start);
+
+/**
+ * Returns entire path along given resolution 
+ */
+std::vector<algorithm::State> GetPath(const CarState &start, const algorithm::Path &path, double resolution, double turning_radius);
 
 } // namespace rsmotion
 

@@ -63,6 +63,9 @@
 #include <cmath>
 
 #include <rsmotion/rsmotion.h>
+    
+// debug can remove
+#include <iostream>
 
 using namespace rsmotion;
 using namespace rsmotion::algorithm;
@@ -144,6 +147,30 @@ Path CalculateMinPath(Path basePath, State toState, R baseFormula)
     return minPath;
 }
 
+template <class R>
+std::vector<Path> CalculateAllPaths(Path basePath, State toState, R baseFormula)
+{
+    std::vector<Path> paths;
+    // for each equation, try each operation and add 
+    if (baseFormula(toState, basePath))
+    {
+        paths.push_back(basePath);
+    }
+    if (baseFormula(Reflect(toState), basePath))
+    {
+        paths.push_back(rsmotion::algorithm::Reflect(basePath));
+    }
+    if (baseFormula(Timeflip(toState), basePath)) // stop 4 dubins
+    {
+        paths.push_back(Timeflip(basePath));
+    }
+    if (baseFormula(rsmotion::algorithm::Reflect(Timeflip(toState)), basePath)) // stop 4 dubins
+    {
+        paths.push_back(rsmotion::algorithm::Reflect(Timeflip(basePath)));
+    }
+    return paths;
+}
+
 // some helper functions
 template <class T>
 inline T mod2pi(T x)
@@ -206,9 +233,20 @@ inline bool LpSpLp(T x, T y, T phi, T &t, T &u, T &v)
     return false;
 }
 
+// Enumerate all potential paths
+template <class T>
+inline bool EnumLpSpLp(T x, T y, T phi, T &t, T &u, T &v)
+{
+    auto p = polar(x - sin(phi), y - 1 + cos(phi));
+    t = p.theta;
+    u = p.r;
+    v = mod2pi(phi - t);
+    return false;
+}
+
 // formula 8.2
 template <class T>
-inline bool LpSpRp(T x, T y, T phi, T &t, T &u, T &v)
+inline bool LpSpRp(T x, T y, T phi, T &t, T &u, T &v, bool enumerate=false)
 {
     auto pol = polar(x + sin(phi), y - 1 - cos(phi));
     pol.r = pol.r * pol.r;
@@ -221,6 +259,10 @@ inline bool LpSpRp(T x, T y, T phi, T &t, T &u, T &v)
         assert(fabs(2 * sin(t) + u * cos(t) - sin(phi) - x) < RS_EPS);
         assert(fabs(-2 * cos(t) + u * sin(t) + cos(phi) + 1 - y) < RS_EPS);
         assert(fabs(mod2pi(t - v - phi)) < RS_EPS);
+        if (enumerate){
+            return true;
+        }
+
         return t >= -ZERO && v >= -ZERO;
     }
     return false;
@@ -228,7 +270,7 @@ inline bool LpSpRp(T x, T y, T phi, T &t, T &u, T &v)
 
 // formula 8.3 / 8.4  *** TYPO IN PAPER ***
 template <class T>
-inline bool LpRmL(T x, T y, T phi, T &t, T &u, T &v)
+inline bool LpRmL(T x, T y, T phi, T &t, T &u, T &v, bool enumerate=false)
 {
     auto xi = x - sin(phi);
     auto eta = y - 1 + cos(phi);
@@ -241,6 +283,9 @@ inline bool LpRmL(T x, T y, T phi, T &t, T &u, T &v)
         assert(fabs(2 * (sin(t) - sin(t - u)) + sin(phi) - x) < RS_EPS);
         assert(fabs(2 * (-cos(t) + cos(t - u)) - cos(phi) + 1 - y) < RS_EPS);
         assert(fabs(mod2pi(t - u + v - phi)) < RS_EPS);
+        if (enumerate){
+            return true;
+        }
         return t >= -ZERO && u <= ZERO;
     }
     return false;
@@ -255,6 +300,19 @@ Path CSC(State toState)
         CalculateMinPath({LP, SP, RP}, toState, [](const State &s, Path &p) { 
             return LpSpRp(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2)); 
         }));
+}
+
+std::vector<Path> EnumCSC(State toState)
+{
+    std::vector<Path> p1 = CalculateAllPaths({LP, SP, LP}, toState, [](const State &s, Path &p) {
+            return EnumLpSpLp(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2));
+        });
+    std::vector<Path> p2 = CalculateAllPaths({LP, SP, RP}, toState, [](const State &s, Path &p) { 
+            return LpSpRp(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), true); 
+        });
+    p1.insert(p1.end(), p2.begin(), p2.end());
+
+    return p1;
 }
 
 Path CCC(State toState)
@@ -280,9 +338,35 @@ Path CCC(State toState)
     return path;
 }
 
+std::vector<Path> EnumCCC(State toState)
+{
+    // forwards (8.3)
+    std::vector<Path> p1 = CalculateAllPaths({LP, RM, LP}, toState, [](const State &s, Path &p) {
+            return LpRmL(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), true);
+        });
+
+    // backwards (8.4).
+    std::vector<Path> p2 = CalculateAllPaths({LP, RM, LP}, InvertState(toState), [](const State &s, Path &p) {
+			return LpRmL(s.X(), s.Y(), s.Phi(), p.Distance(2), p.Distance(1), p.Distance(0), true); 
+        });
+
+    p1.insert(p1.end(), p2.begin(), p2.end());
+
+    for (Path path : p1){
+        // the first and third segment can be either positive or negative
+        if (!path.Segments.empty())
+        {
+            path.Segments[2].Direction = path.Segments[2].Distance < 0 ? SegmentDirection::Bwd : SegmentDirection::Fwd;
+            path.Segments[0].Direction = path.Segments[0].Distance < 0 ? SegmentDirection::Bwd : SegmentDirection::Fwd;
+        }
+    }
+
+    return p1;
+}
+
 // formula 8.7
 template <class T>
-inline bool LpRupLumRm(T x, T y, T phi, T &t, T &u, T &u2, T &v)
+inline bool LpRupLumRm(T x, T y, T phi, T &t, T &u, T &u2, T &v, bool enumerate=false)
 {
     auto xi = x + sin(phi);
     auto eta = y - 1 - cos(phi);
@@ -297,6 +381,9 @@ inline bool LpRupLumRm(T x, T y, T phi, T &t, T &u, T &u2, T &v)
         assert(fabs(2 * (sin(t) - sin(t - u) + sin(t - 2 * u)) - sin(phi) - x) < RS_EPS);
         assert(fabs(2 * (-cos(t) + cos(t - u) - cos(t - 2 * u)) + cos(phi) + 1 - y) < RS_EPS);
         assert(fabs(mod2pi(t - 2 * u - v - phi)) < RS_EPS);
+        if (enumerate){
+            return true;
+        }
         return t >= -ZERO && v <= ZERO;
     }
     return false;
@@ -304,7 +391,7 @@ inline bool LpRupLumRm(T x, T y, T phi, T &t, T &u, T &u2, T &v)
 
 // formula 8.8
 template <class T>
-inline bool LpRumLumRp(T x, T y, T phi, T &t, T &u, T &u2, T &v)
+inline bool LpRumLumRp(T x, T y, T phi, T &t, T &u, T &u2, T &v, bool enumerate=false)
 {
     auto xi = x + sin(phi);
     auto eta = y - 1 - cos(phi);
@@ -323,6 +410,9 @@ inline bool LpRumLumRp(T x, T y, T phi, T &t, T &u, T &u2, T &v)
             assert(fabs(4 * sin(t) - 2 * sin(t - u) - sin(phi) - x) < RS_EPS);
             assert(fabs(-4 * cos(t) + 2 * cos(t - u) + cos(phi) + 1 - y) < RS_EPS);
             assert(fabs(mod2pi(t - v - phi)) < RS_EPS);
+            if (enumerate){
+                return true;
+            }
             return t >= -ZERO && v >= -ZERO;
         }
     }
@@ -338,9 +428,21 @@ Path CCCC(State toState)
         CalculateMinPath({LP, RUM, LUM, RP}, toState, [](const State &s, Path &p) { return LpRumLumRp(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), p.Distance(3)); }));
 }
 
+std::vector<Path> EnumCCCC(State toState)
+{
+    std::vector<Path> p1 = CalculateAllPaths({LP, RUP, LUM, RM}, toState, [](const State &s, Path &p) {
+            return LpRupLumRm(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), p.Distance(3), true);
+        });
+    std::vector<Path> p2 = CalculateAllPaths({LP, RUM, LUM, RP}, toState, [](const State &s, Path &p) { return LpRumLumRp(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), p.Distance(3), true); });
+
+    p1.insert(p1.end(), p2.begin(), p2.end());
+    return p1;
+
+}
+
 // formula 8.9
 template <class T>
-inline bool LpRmSmLm(T x, T y, T phi, T &t, T &constrained, T &u, T &v)
+inline bool LpRmSmLm(T x, T y, T phi, T &t, T &constrained, T &u, T &v, bool enumerate=false)
 {
     auto xi = x - sin(phi);
     auto eta = y - 1 + cos(phi);
@@ -357,6 +459,9 @@ inline bool LpRmSmLm(T x, T y, T phi, T &t, T &constrained, T &u, T &v)
         // auto db = fabs(-2 * (sin(t) + cos(t)) + u * cos(t) - cos(phi) + 1 - y);
         assert(fabs(-2 * (sin(t) + cos(t)) + u * cos(t) - cos(phi) + 1 - y) < RS_EPS);
         assert(fabs(mod2pi(t + (pi<T>::value()) / 2 + v - phi)) < RS_EPS);
+        if (enumerate){
+            return true;
+        }
         return t >= -ZERO && u <= ZERO && v <= ZERO;
     }
     return false;
@@ -364,7 +469,7 @@ inline bool LpRmSmLm(T x, T y, T phi, T &t, T &constrained, T &u, T &v)
 
 // formula 8.10
 template <class T>
-inline bool LpRmSmRm(T x, T y, T phi, T &t, T &constrained, T &u, T &v)
+inline bool LpRmSmRm(T x, T y, T phi, T &t, T &constrained, T &u, T &v, bool enumerate=false)
 {
     auto xi = x + sin(phi);
     auto eta = y - 1 - cos(phi);
@@ -379,6 +484,9 @@ inline bool LpRmSmRm(T x, T y, T phi, T &t, T &constrained, T &u, T &v)
         // auto db = fabs(-2 * cos(t) - sin(t - v) + u * cos(t) + 1 - y);
         assert(fabs(-2 * cos(t) - sin(t - v) + u * cos(t) + 1 - y) < RS_EPS);
         assert(fabs(mod2pi(t + (pi<T>::value()) / 2 - v - phi)) < RS_EPS);
+        if(enumerate){
+            return true;
+        }
         return t >= -ZERO && u <= ZERO && v <= ZERO;
     }
     return false;
@@ -407,9 +515,35 @@ Path CCSC(State toState)
     return std::min({p1, p2, p3, p4});
 }
 
+std::vector<Path> EnumCCSC(State toState)
+{
+    std::vector<Path> p1 = CalculateAllPaths({LP, RM, SM, LM}, toState, [](const State &s, Path &p) {
+        return LpRmSmLm(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), p.Distance(3), true);
+    });
+    std::vector<Path> p2 = CalculateAllPaths({LP, RM, SM, RM}, toState, [](const State &s, Path &p) {
+        return LpRmSmRm(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), p.Distance(3), true);
+    });
+
+    auto invertedState = InvertState(toState);
+
+    // backwards
+    std::vector<Path> p3 = CalculateAllPaths({LM, SM, RM, LP}, invertedState, [](const State &s, Path &p) {
+        return LpRmSmLm(s.X(), s.Y(), s.Phi(), p.Distance(3), p.Distance(2), p.Distance(1), p.Distance(0), true);
+    });
+
+    std::vector<Path> p4 = CalculateAllPaths({RM, SM, RM, LP}, invertedState, [](const State &s, Path &p) {
+        return LpRmSmRm(s.X(), s.Y(), s.Phi(), p.Distance(3), p.Distance(2), p.Distance(1), p.Distance(0), true);
+    });
+
+    p1.insert(p1.end(), p2.begin(), p2.end());
+    p1.insert(p1.end(), p3.begin(), p3.end());
+    p1.insert(p1.end(), p4.begin(), p4.end());
+    return p1;
+}
+
 // formula 8.11 *** TYPO IN PAPER ***
 template <class T>
-inline bool LpRmSLmRp(T x, T y, T phi, T &t, T &constrained1, T &u, T &constrained2, T &v)
+inline bool LpRmSLmRp(T x, T y, T phi, T &t, T &constrained1, T &u, T &constrained2, T &v, bool enumerate=false)
 {
     auto xi = x + sin(phi);
     auto eta = y - 1 - cos(phi);
@@ -426,6 +560,9 @@ inline bool LpRmSLmRp(T x, T y, T phi, T &t, T &constrained1, T &u, T &constrain
             assert(fabs(4 * sin(t) - 2 * cos(t) - u * sin(t) - sin(phi) - x) < RS_EPS);
             assert(fabs(-4 * cos(t) - 2 * sin(t) + u * cos(t) + cos(phi) + 1 - y) < RS_EPS);
             assert(fabs(mod2pi(t - v - phi)) < RS_EPS);
+            if (enumerate){
+                return true;
+            }
             return t >= -ZERO && v >= -ZERO;
         }
     }
@@ -436,6 +573,13 @@ Path CCSCC(State toState)
 {
     return CalculateMinPath({LP, RHPIM, SM, LHPIM, RP}, toState, [](const State &s, Path &p) {
         return LpRmSLmRp(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), p.Distance(3), p.Distance(4));
+    });
+}
+
+std::vector<Path> EnumCCSCC(State toState)
+{
+    return CalculateAllPaths({LP, RHPIM, SM, LHPIM, RP}, toState, [](const State &s, Path &p) {
+        return LpRmSLmRp(s.X(), s.Y(), s.Phi(), p.Distance(0), p.Distance(1), p.Distance(2), p.Distance(3), p.Distance(4), true);
     });
 }
 
@@ -518,7 +662,7 @@ Path::Path(std::initializer_list<Segment> segments) noexcept
     std::copy(std::begin(segments), std::end(segments), std::back_inserter(Segments));
 }
 
-float Path::Length() const
+float Path::Length(double radius) const
 {
     if (Segments.empty())
     {
@@ -532,7 +676,7 @@ float Path::Length() const
             return std::numeric_limits<float>::max();
         l += s.Length();
     }
-    return l;
+    return l*radius;
 }
 
 bool Path::Valid() const
@@ -581,6 +725,20 @@ float EnforceSO2Boundsf(float val)
     return EnforceSO2Bounds<float>(val);
 }
 
+std::vector<Path> EnumPaths(State toState){
+    std::vector<Path> paths = EnumCSC(toState);
+    std::vector<Path> p1 =  EnumCCC(toState);
+    std::vector<Path> p2 =  EnumCCCC(toState);
+    std::vector<Path> p3 =  EnumCCSC(toState);
+    std::vector<Path> p4 =  EnumCCSCC(toState);
+    std::cout<<"sizes: "<< paths.size()<< " "<<p1.size()<<" "<<p2.size()<<" "<<p3.size()<<" "<<p4.size()<<std::endl;
+
+    paths.insert(paths.end(), p1.begin(), p1.end());
+    paths.insert(paths.end(), p2.begin(), p2.end());
+    paths.insert(paths.end(), p3.begin(), p3.end());
+    paths.insert(paths.end(), p4.begin(), p4.end());
+    return paths;
+}
 Path SearchShortestPath(State toState)
 {
     // the optimal path is always one of
@@ -590,6 +748,45 @@ Path SearchShortestPath(State toState)
                      CCCC(toState), //remove for dubins
                      CCSC(toState), //remove for dubins
                      CCSCC(toState)}); //remove for dubins
+}
+
+// TODO (schmittle) remove the need for all these arguments
+std::vector<State> GetPath(const State &from, const Path &path, double resolution, double turning_radius)
+{
+    std::vector<State> state_path;
+    if(path.Length() >= std::numeric_limits<double>::infinity()){
+        std::cout<<"her"<<std::endl;
+        return state_path;
+    }
+    int curr_seg = 0;
+    double seg_dist = 0;
+    State to{0, 0, from.Phi()};
+    State start{0, 0, from.Phi()};
+    while(curr_seg < path.Segments.size())
+    {
+        if(path.Segments[curr_seg].Distance != 0){
+            auto &segment = path.Segments[curr_seg];
+            auto neg = segment.Distance < 0 ? -1 : 1;
+            to = StateAfterInterpolation(start, segment, seg_dist*neg);
+            state_path.push_back({from.X() + turning_radius*to.X(), from.Y() + turning_radius*to.Y(), EnforceSO2Bounds(to.Phi()), to.InReverse()});
+        }
+
+        seg_dist += resolution/turning_radius;
+
+        if(seg_dist >= path.Segments[curr_seg].Length()){
+            curr_seg += 1;
+            seg_dist = 0;
+
+            if(curr_seg != path.Segments.size()){
+                auto &segment = path.Segments[curr_seg-1];
+                start = StateAfterInterpolation(start, segment, segment.Distance);
+            }
+        }
+    }
+    to = StateAfterInterpolation(start, path.Segments.back(), path.Segments.back().Distance);
+    state_path.push_back({from.X() + turning_radius*to.X(), from.Y() + turning_radius*to.Y(), EnforceSO2Bounds(to.Phi()), to.InReverse()});
+
+    return state_path;
 }
 
 State InterpolateDistance(const State &from, const Path &path, const float dist)
@@ -650,11 +847,11 @@ namespace rsmotion
 
 // rotate the toState in such a way that the current state is at 0,0,0 pointing forward
 // the returning state is ready to be used as input for a search
-algorithm::State ToRSSearchState(const PointState &fromState, const PointState &toState)
+algorithm::State ToRSSearchState(const PointState &fromState, const PointState &toState, double radius)
 {
     // rotate the end state in such a way that the current state is at 0,0,0 pointing forward
     auto &rot = fromState.Orientation;
-    auto fState = PointState{math::Conjugate(rot) * (toState.Pos - fromState.Pos),
+    auto fState = PointState{(math::Conjugate(rot) * (toState.Pos - fromState.Pos))/radius,
                              math::Conjugate(rot) * toState.Orientation};
     return {
         fState.Pos % FW,
@@ -671,14 +868,22 @@ algorithm::State ToRSState(const PointState &ps)
         algorithm::EnforceSO2Boundsf(RotationInXY(ps.Orientation).Value())};
 }
 
-algorithm::Path SearchShortestPath(const PointState &from, const PointState &to)
-{
-    return algorithm::SearchShortestPath(ToRSSearchState(from, to));
+std::vector<algorithm::Path> EnumPaths(const PointState &from, const PointState &to, double radius){
+    return algorithm::EnumPaths(ToRSSearchState(from, to, radius));
 }
 
-algorithm::Path SearchShortestPath(const CarState &from, const PointState &to)
+std::vector<algorithm::Path> EnumPaths(const CarState &from, const PointState &to, double radius){
+    return EnumPaths(from.Rear, to, radius);
+}
+
+algorithm::Path SearchShortestPath(const PointState &from, const PointState &to, double radius)
 {
-    return SearchShortestPath(from.Rear, to);
+    return algorithm::SearchShortestPath(ToRSSearchState(from, to, radius));
+}
+
+algorithm::Path SearchShortestPath(const CarState &from, const PointState &to, double radius)
+{
+    return SearchShortestPath(from.Rear, to, radius);
 }
 
 void CarState::Align()
@@ -699,6 +904,11 @@ CarState TraversePathDistance(float distance, const algorithm::Path &path, const
     return CarFromRSState(start, rsState);
 }
 
+// TODO (schmittle) remove the need for all these arguments
+std::vector<algorithm::State> GetPath(const CarState &start, const algorithm::Path &path, double resolution, double turning_radius)
+{
+    return GetPath(ToRSState(start.Rear), path, resolution, turning_radius);
+}
 
 math::Anglef OrientationDistance(const PointState &from, const PointState &to, const float distance)
 {

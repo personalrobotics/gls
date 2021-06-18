@@ -53,6 +53,7 @@ add_library(${PROJECT_NAME}
   src/selector/ForwardSelector.cpp
   src/io/MotionPrimitiveReader.cpp
   examples/rsmotion.cpp
+  examples/dubins.cpp
 )
 
 #================================================================================
