@@ -789,8 +789,9 @@ ompl::base::PathPtr GLS::constructSolution(const Vertex& source, const Vertex& t
     u = mGraph[v].getParent();
     if(mInterpolate){
         uvID = mGraph[getEdge(u,v)].getPrimID();
-        intermStates = mInterpolate(mGraph[u].getState(), uvID);
+        intermStates = mInterpolate(mGraph[u].getState(), mGraph[v].getState(), uvID);
         std::reverse(intermStates.begin(), intermStates.end());
+        //TODO (Schmittle) this does not add the start/end states I don't think
         for(StatePtr state : intermStates){
             path->append(state->getOMPLState());
         }

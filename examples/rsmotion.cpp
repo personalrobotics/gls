@@ -731,7 +731,6 @@ std::vector<Path> EnumPaths(State toState){
     std::vector<Path> p2 =  EnumCCCC(toState);
     std::vector<Path> p3 =  EnumCCSC(toState);
     std::vector<Path> p4 =  EnumCCSCC(toState);
-    std::cout<<"sizes: "<< paths.size()<< " "<<p1.size()<<" "<<p2.size()<<" "<<p3.size()<<" "<<p4.size()<<std::endl;
 
     paths.insert(paths.end(), p1.begin(), p1.end());
     paths.insert(paths.end(), p2.begin(), p2.end());
@@ -755,7 +754,7 @@ std::vector<State> GetPath(const State &from, const Path &path, double resolutio
 {
     std::vector<State> state_path;
     if(path.Length() >= std::numeric_limits<double>::infinity()){
-        std::cout<<"her"<<std::endl;
+        std::cout<<"Warning: infinite length path!"<<std::endl;
         return state_path;
     }
     int curr_seg = 0;

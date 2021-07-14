@@ -69,7 +69,7 @@ typedef std::shared_ptr<IEdge> IEdgePtr;
 
 typedef ImplicitGraph::fneighbors NeighborFunc;
 typedef ImplicitGraph::fdiscretize DiscFunc;
-typedef std::function<std::vector<StatePtr>(StatePtr, int)> InterpolateFunc;
+typedef std::function<std::vector<StatePtr>(StatePtr, StatePtr, int)> InterpolateFunc;
 
 /// vertex/edge iterator
 typedef ImplicitGraph::vertex_iterator IVertexIter;

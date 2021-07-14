@@ -119,7 +119,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
     return neighbors;
 }
 
-std::vector<StatePtr> interpolate(StatePtr state, int motPrimID, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
+std::vector<StatePtr> interpolate(StatePtr state, StatePtr state2, int motPrimID, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
 
     double* values = 
         state->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
@@ -467,6 +467,7 @@ int main (int argc, char const *argv[]) {
           std::bind(&interpolate, 
               std::placeholders::_1,
               std::placeholders::_2,
+              std::placeholders::_3,
               space, 
               mReader)
           );
