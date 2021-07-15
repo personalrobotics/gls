@@ -57,7 +57,7 @@ class ImplicitGraph {
 struct IVertexHash{
     std::string operator()(StatePtr k) {
         double* values = k->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-        return std::to_string((int)round(values[0])) + std::to_string((int)round(values[1])) + std::to_string((int)round(values[2])) + std::to_string((int)round(values[3]));
+        return std::to_string((int)round(values[0])) + std::to_string((int)round(values[1])) + std::to_string((int)round(values[2])) + std::to_string((int)round(values[4])) + std::to_string((int)round(values[5])) + std::to_string((int)round(values[6]));
 
     }
 };

@@ -14,7 +14,7 @@ ShortestPathEvent::ShortestPathEvent() {
 
 //==============================================================================
 bool ShortestPathEvent::isTriggered(const Vertex& vertex) {
-  if (vertex == mTargetVertex) {
+  if(std::find(mTargetVertices.begin(), mTargetVertices.end(), vertex) != mTargetVertices.end()) {
     return true;
   }
   return false;

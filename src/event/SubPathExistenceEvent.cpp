@@ -18,7 +18,7 @@ SubPathExistenceEvent::SubPathExistenceEvent(edgeToPriorMap& priorMap, double ex
 
 //==============================================================================
 bool SubPathExistenceEvent::isTriggered(const Vertex& vertex) {
-  if (vertex == mTargetVertex) {
+  if(std::find(mTargetVertices.begin(), mTargetVertices.end(), vertex) != mTargetVertices.end()) {
     return true;
   }
 

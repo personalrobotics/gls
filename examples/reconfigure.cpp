@@ -71,7 +71,7 @@ std::vector<xy_pt> make_block_footprint(double width, double resolution){
 // Translate and rotate footprint around given position
 // Assumes footprint and position are on lattice already 
 std::vector<xy_pt> positionFootprint(std::vector<double> position, std::vector<xy_pt> footprint, double resolution){
-    double angle = gls::io::DiscTheta2Cont((int)position[2], NUMTHETADIRS);
+    double angle = gls::io::DiscTheta2Cont((int)position[2], NUMTHETADIRS)+M_PI;
     double x, y, x_rot, y_rot;
     std::vector<xy_pt> rotated_footprint;
 
@@ -80,8 +80,8 @@ std::vector<xy_pt> positionFootprint(std::vector<double> position, std::vector<x
         // Convert to real and Rotate
         x = point.first*resolution;
         y = point.second*resolution;
-        x_rot = x*std::cos(-angle) - y*std::sin(-angle);
-        y_rot = x*std::sin(-angle) + y*std::cos(-angle);
+        x_rot = x*std::cos(angle) - y*std::sin(angle);
+        y_rot = x*std::sin(angle) + y*std::cos(angle);
         point.first = std::round(x_rot/resolution);
         point.second = std::round(y_rot/resolution);
 
@@ -119,6 +119,7 @@ bool isPointValid(
 }
 
 // Checks if robot is 1) in bounds 2) not colliding with block
+// Assuming points on lattice
 bool isRobotValid(
         std::vector<double> values, 
         ompl::base::RealVectorBounds& bounds, 
@@ -138,9 +139,6 @@ bool isRobotValid(
 
   for(xy_pt robot_point : rrobot_fp){
       if(std::find(rblock_fp.begin(), rblock_fp.end(), robot_point) != rblock_fp.end()) {
-          if(values[0] == 39 && values[1] == 49){
-              std::cout<<robot_point.first<<robot_point.second<<std::endl;
-          }//debug
           return false;
       }
   }
@@ -166,11 +164,20 @@ StatePtr fit_state2lattice(StatePtr state, gls::io::MotionPrimitiveReader *mRead
     std::vector<double> vals;
     vals.reserve(7);
     space->copyToReals(vals, state->getOMPLState());
+    /*
     vals[0] = (double)CONTXY2DISC(vals[0], mReader->resolution);
     vals[1] = (double)CONTXY2DISC(vals[1], mReader->resolution);
     vals[2] = (double) gls::io::ContTheta2Disc(vals[2], NUMTHETADIRS);
     vals[4] = (double)CONTXY2DISC(vals[4], mReader->resolution);
     vals[5] = (double)CONTXY2DISC(vals[5], mReader->resolution);
+    vals[6] = (double) gls::io::ContTheta2Disc(vals[6], NUMTHETADIRS);
+    */
+    // Rounding seems to work better
+    vals[0] = std::round(vals[0]/ mReader->resolution);
+    vals[1] = std::round(vals[1]/ mReader->resolution);
+    vals[2] = (double) gls::io::ContTheta2Disc(vals[2], NUMTHETADIRS);
+    vals[4] = std::round(vals[4]/ mReader->resolution);
+    vals[5] = std::round(vals[5]/ mReader->resolution);
     vals[6] = (double) gls::io::ContTheta2Disc(vals[6], NUMTHETADIRS);
 
     StatePtr newState(new State(space));
@@ -226,6 +233,30 @@ rsmotion::math::Vec3f getCarPos(std::vector<double> block_pose, int side){
     return carPosition;
 }
 
+// Creates vector of target states given a end block position. 
+// Assuming we do not care about contact point at goal
+std::vector<StatePtr> createTargetStates(std::vector<double> goal_vec, std::shared_ptr<ompl::base::RealVectorStateSpace> space){
+  std::vector<StatePtr> targetStates = {};
+  std::cout<<"Goal: "<<goal_vec[0]<<" "<<goal_vec[1]<<" "<<goal_vec[2]<<std::endl;
+  for(int i=0; i<4;i++){
+    StatePtr targetState(new State(space));
+    auto car_pos = getCarPos(goal_vec, i);
+
+    std::cout<<"Side "<<i<<": "<<car_pos[2]<<" "<<car_pos[0]<<" "<<goal_vec[2]+i*M_PI/2.0<<std::endl;
+    space->copyFromReals(targetState->getOMPLState(), 
+            std::vector<double>{
+            car_pos[2], 
+            car_pos[0], 
+            goal_vec[2]+i*M_PI/2.0, 
+            i, 
+            goal_vec[0], 
+            goal_vec[1], 
+            goal_vec[2]});
+    targetStates.push_back(targetState);
+
+  }
+  return targetStates;
+}
 
 // Transition function from one state to another
 std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_function(
@@ -256,7 +287,6 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
 
     // If in contact use primitives
     if (values[3] >= 0){
-        //std::cout<<values[0]<<" "<<values[1]<<" "<< values[2]<<" "<< values[3]<<std::endl;
         std::vector<gls::io::MotionPrimitive> mprims = mReader->mprimV;
         for (gls::io::MotionPrimitive mprim : mprims){
 
@@ -296,89 +326,72 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
             }
         }
     }
-    // TODO allow reconfigure as well as push. right now it is either or
-    else{
-        std::cout<<"here"<<std::endl;
-        // Use reedshepp to find paths to faces
+    // Use reedshepp to find paths to faces
+    // set the start position
+    const Vec3f startPosition {DISCXY2CONT(values[1], mReader->resolution)
+                            , 0.0f, DISCXY2CONT(values[0], mReader->resolution)};
 
-        // set the start position
-        const Vec3f startPosition {DISCXY2CONT(values[1], mReader->resolution)
-                                , 0.0f, DISCXY2CONT(values[0], mReader->resolution)};
+    // set the orientation
+    const Quatf startOrientation { Vec3f{0,1,0}, Anglef::Radians(
+            gls::io::DiscTheta2Cont(values[2], NUMTHETADIRS))};
 
-        // set the orientation
-        const Quatf startOrientation { Vec3f{0,1,0}, Anglef::Radians(
-                gls::io::DiscTheta2Cont(values[2], NUMTHETADIRS))};
+    // create the initial CarState
+    rsmotion::CarState carStart{{startPosition, startOrientation}, WHEELBASE};
 
-        // create the initial CarState
-        rsmotion::CarState carStart{{startPosition, startOrientation}, WHEELBASE};
+    for (int i=0; i < 4; i++){
 
-        for (int i=0; i < 4; i++){
+        double side_theta = gls::io::DiscTheta2Cont(values[6], NUMTHETADIRS) + i*M_PI/2.0;
+        // Convert to real
+        std::vector<double> block_pose = {DISCXY2CONT(values[4], mReader->resolution),
+                                        DISCXY2CONT(values[5], mReader->resolution),
+                                        gls::io::DiscTheta2Cont(values[6], NUMTHETADIRS)};
+        const Quatf finishOrientation { Vec3f{0,1,0}, 
+            Anglef::Radians(side_theta)};
 
-            double side_theta = gls::io::DiscTheta2Cont(values[6], NUMTHETADIRS) + i*M_PI/2.0;
-            // Convert to real
-            std::vector<double> block_pose = {DISCXY2CONT(values[4], mReader->resolution),
-                                            DISCXY2CONT(values[5], mReader->resolution),
-                                            gls::io::DiscTheta2Cont(values[6], NUMTHETADIRS)};
-            const Quatf finishOrientation { Vec3f{0,1,0}, 
-                Anglef::Radians(side_theta)};
+        const Vec3f finishPosition = getCarPos(block_pose, i);
+        const rsmotion::PointState finishPoint {finishPosition, finishOrientation};
 
-            const Vec3f finishPosition = getCarPos(block_pose, i);
-            const rsmotion::PointState finishPoint {finishPosition, finishOrientation};
+        // All RS paths
+        auto paths = EnumPaths(carStart, finishPoint, TURNING_RADIUS);
+        
+        int rs_index = 1;
+        bool valid = true;
+        for (rsmotion::algorithm::Path path : paths){
+            nx = CONTXY2DISC(finishPosition[2], mReader->resolution);
+            ny = CONTXY2DISC(finishPosition[0], mReader->resolution);
+            ntheta = gls::io::ContTheta2Disc(side_theta, NUMTHETADIRS);
 
-            // All RS paths
-            auto paths = EnumPaths(carStart, finishPoint, TURNING_RADIUS);
-            
-            int rs_index = 1;
-            bool valid = true;
-            for (rsmotion::algorithm::Path path : paths){
-                nx = CONTXY2DISC(finishPosition[2], mReader->resolution);
-                ny = CONTXY2DISC(finishPosition[0], mReader->resolution);
-                ntheta = gls::io::ContTheta2Disc(side_theta, NUMTHETADIRS);
+            length = CONTXY2DISC(path.Length(TURNING_RADIUS), mReader->resolution);
 
-                length = CONTXY2DISC(path.Length(TURNING_RADIUS), mReader->resolution);
-
-                // Check for collisions with block
-                auto statePath = GetPath(carStart, path, mReader->resolution, TURNING_RADIUS);
-                for (int j = 0; j < statePath.size(); ++j) {
-                    auto u = statePath[j];
-                    std::vector<double> uvec = {CONTXY2DISC(u.X(), mReader->resolution), 
-                                                CONTXY2DISC(u.Y(), mReader->resolution), 
-                                                gls::io::ContTheta2Disc(u.Phi(), NUMTHETADIRS), 
-                                                values[3],
-                                                values[4],
-                                                values[5],
-                                                values[6]};
-                    if(!isRobotValid(uvec, bounds, lat2real, robot_footprint, block_footprint, mReader->resolution)){
-                        if(i == 1){
-                            std::cout<<side_theta<<" "<<ntheta<<std::endl;
-                            std::cout<<rs_index<<" "<<j<<" "<<statePath.size()<< std::endl;
-                            std::cout<<"    "<< uvec[0]<<" "<<uvec[1]<<" "<<uvec[2]<<" | "<<
-                                uvec[4]<<" "<< uvec[5]<<" "<< uvec[6]<<std::endl;
-                            std::cout<<"    "<< CONTXY2DISC(statePath.back().X(), mReader->resolution)<<" "<<
-                                CONTXY2DISC(statePath.back().Y(), mReader->resolution)<<" "<< gls::io::ContTheta2Disc(statePath.back().Phi(), NUMTHETADIRS)<<std::endl;
-                        }
-                        valid = false;
-                        break;
-                    }
-                }
-                if(valid && i == 1){
-                    std::cout<<i<<" "<<rs_index<<std::endl;
-                }
-
-                // Set state
-                // TODO (schmittle) this seems inefficient to make a new state
-                if(valid){
-                    neighborProperties = VertexProperties();
-                    StatePtr newState(new State(space));
-                    space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, i, values[4], values[5], values[6]});
-                    neighborProperties.setState(newState);
-
-                    neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, -rs_index));
-                    rs_index++;
+            // Check for collisions with block
+            auto statePath = GetPath(carStart, path, mReader->resolution, TURNING_RADIUS);
+            for (int j = 0; j < statePath.size(); ++j) {
+                auto u = statePath[j];
+                std::vector<double> uvec = {std::round(u.X()/ mReader->resolution), 
+                                            std::round(u.Y()/ mReader->resolution), 
+                                            gls::io::ContTheta2Disc(u.Phi(), NUMTHETADIRS), 
+                                            values[3],
+                                            values[4],
+                                            values[5],
+                                            values[6]};
+                if(!isRobotValid(uvec, bounds, lat2real, robot_footprint, block_footprint, mReader->resolution)){
+                    valid = false;
+                    break;
                 }
             }
-        }
 
+            // Set state
+            // TODO (schmittle) this seems inefficient to make a new state
+            if(valid){
+                neighborProperties = VertexProperties();
+                StatePtr newState(new State(space));
+                space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, i, values[4], values[5], values[6]});
+                neighborProperties.setState(newState);
+
+                neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, -rs_index));
+                rs_index++;
+            }
+        }
     }
 
     return neighbors;
@@ -605,7 +618,6 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
             box_color = cv::Scalar(0, 0, 255);
         }
 
-        //std::cout<<uvec[0]<<" "<<uvec[1]<<" "<<uvec[2]<<" | "<< block_vec[0]<<" "<<block_vec[1]<<" "<<block_vec[2]<<std::endl;
         // Car
         makeBox(image, box_color, uvec, {0.44, 0.27}, false, scale, offsetx, offsety, numberOfRows);
 
@@ -633,11 +645,10 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
   cv::waitKey(0);
 }
 
-void displayPoints(std::string obstacleFile, std::vector<xy_pt> points, double resolution) {
+void displayPoints(cv::Mat image, std::vector<xy_pt> points, double resolution, cv::Scalar color) {
   // Get state count
 
   // Obtain the image matrix
-  cv::Mat image = cv::imread(obstacleFile, 1);
   int numberOfRows = image.rows;
   int numberOfColumns = image.cols;
 
@@ -645,21 +656,17 @@ void displayPoints(std::string obstacleFile, std::vector<xy_pt> points, double r
   double scale = 300.0;
   int offsetx = -500;
   int offsety = 800;
-  cv::Scalar color;
+  scale = 200.0;
+  offsetx = -100;
+  offsety = 0;
   for (xy_pt point : points){
-    color = cv::Scalar(255,0,0);
     cv::Point uPoint((int)
             (DISCXY2CONT(point.first, resolution)*scale-offsetx), 
             (int)(numberOfRows - DISCXY2CONT(point.second, resolution)*scale)-offsety);
 
-    if (point.first == 0 && point.second == 0){
-        color = cv::Scalar(0,0,255);
-    }
     cv::circle(image, uPoint, 1, color, cv::FILLED);
   }
 
-  cv::imshow("Points", image);
-  cv::waitKey(0);
 }
 
 int savePath(double q[3], double x, void* user_data, std::vector<rsmotion::algorithm::State>* saved_path) {
@@ -675,8 +682,8 @@ int main (int argc, char const *argv[]) {
   //TODO (schmittle) don't hardcode paths
   mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.mprim",
           "/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.json");
-  //mReader->ReadMotionPrimitives("/home/schmittle/Research/boxes/pysbpl/pysbpl/mprim/mushr.mprim");
-  //mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/pushr/mprim/pushr_sandpaper.mprim");
+  //mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/pushr_sandpaper.mprim",
+          //"/home/schmittle/mushr/catkin_ws/src/gls/examples/pushr_sandpaper.json");
   std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
 
   // Define the state space: R^4
@@ -702,19 +709,23 @@ int main (int argc, char const *argv[]) {
   si->setStateValidityChecker(isStateValid);
   si->setup();
 
+  // In real space 
+  std::vector<double> start_vec = {2, 3, 0, -1, 2, 2, 0};
   StatePtr sourceState(new State(space));
   // car_x, car_y, car_theta, contact type, block_x, block_y, block_theta
-  space->copyFromReals(sourceState->getOMPLState(), std::vector<double>{2, 3, 0, -1, 2, 2, 0});
+  space->copyFromReals(sourceState->getOMPLState(), start_vec);
 
+  // block_x, block_y, block_theta
+  std::vector<StatePtr> targetStates = createTargetStates({1, 1, 0}, space);
 
-  StatePtr targetState(new State(space));
-  space->copyFromReals(targetState->getOMPLState(), std::vector<double>{1, 2, M_PI, 1, 2, 2, 0});
+  //StatePtr targetState(new State(space));
+  //space->copyFromReals(targetState->getOMPLState(), std::vector<double>{1, 2, M_PI, 1, 2, 2, 0});
   //TODO specify multiple goals
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
   pdef->addStartState(sourceState->getOMPLState());
-  pdef->setGoalState(targetState->getOMPLState());
+  //pdef->setGoalState(targetState->getOMPLState());
 
   // Setup planner
   gls::GLS planner(si);
@@ -740,7 +751,8 @@ int main (int argc, char const *argv[]) {
               space, 
               mReader)
           );
-  planner.setHeuristic(std::bind(&rsheuristic,  
+  //planner.setHeuristic(std::bind(&rsheuristic,  
+  planner.setHeuristic(std::bind(&reconfigure_heuristic,  
                 std::placeholders::_1, 
                 std::placeholders::_2, 
                 space, mReader));
@@ -751,6 +763,7 @@ int main (int argc, char const *argv[]) {
   planner.setSelector(selector);
 
   planner.setup();
+  planner.setMultipleGoals(targetStates);
   planner.setProblemDefinition(pdef);
 
   // Solve the motion planning problem
@@ -769,17 +782,51 @@ int main (int argc, char const *argv[]) {
   }
 
   /* debug stuff */
-
   /*
-  block_footprint = make_block_footprint(0.1, mReader->resolution);
-  displayPoints(obstacleLocation, block_footprint, 0.05);
-  auto rotated_footprint = positionFootprint({3, 0, 2}, block_footprint, 0.05);
-  displayPoints(obstacleLocation, rotated_footprint, 0.05);
-  displayPoints(obstacleLocation, block_footprint, 0.05);
-  displayPoints(obstacleLocation, rotated_footprint, 0.05);
-  displayPoints(obstacleLocation, block_footprint, 0.05);
-  displayPoints(obstacleLocation, rotated_footprint, 0.05);
-  displayPoints(obstacleLocation, block_footprint, 0.05);
+  // Start state
+  robot_footprint = make_robot_footprint(0.27, 0.44, mReader->resolution);
+  auto rotated_footprint = positionFootprint({2, 3, 0}, robot_footprint, 0.05);
+  auto rotated_block_footprint = positionFootprint({2, 2, 0}, block_footprint, 0.05);
+  cv::Mat image = cv::imread(obstacleLocation, 1);
+  displayPoints(image, rotated_footprint, 0.05, cv::Scalar(255,0,0));
+  displayPoints(image, rotated_block_footprint, 0.05, cv::Scalar(0,0,255));
+  cv::imshow("Points", image);
+  cv::waitKey(0);
+
+  std::cout<<"valid: "<<isRobotValid({2,3,0,-1,2,2,0},
+          bounds, lat2real,robot_footprint, block_footprint, mReader->resolution)<<std::endl;
+
+  rotated_footprint = positionFootprint({std::round(1.49/mReader->resolution), std::round(1/mReader->resolution), 0}, robot_footprint, 0.05);
+  rotated_block_footprint = positionFootprint({CONTXY2DISC(1,mReader->resolution), CONTXY2DISC(1,mReader->resolution), 0}, block_footprint, 0.05);
+  image = cv::imread(obstacleLocation, 1);
+  displayPoints(image, rotated_footprint, 0.05, cv::Scalar(255,0,0));
+  displayPoints(image, rotated_block_footprint, 0.05, cv::Scalar(0,0,255));
+  cv::imshow("Points", image);
+  cv::waitKey(0);
+
+  image = cv::imread(obstacleLocation, 1);
+  rotated_footprint = positionFootprint({std::round(1/mReader->resolution), std::round(1.49/mReader->resolution), 4}, robot_footprint, 0.05);
+  rotated_block_footprint = positionFootprint({CONTXY2DISC(1,mReader->resolution), CONTXY2DISC(1,mReader->resolution), 0}, block_footprint, 0.05);
+  displayPoints(image, rotated_footprint, 0.05, cv::Scalar(255,0,0));
+  displayPoints(image, rotated_block_footprint, 0.05, cv::Scalar(0,0,255));
+  cv::imshow("Points", image);
+  cv::waitKey(0);
+
+  image = cv::imread(obstacleLocation, 1);
+  rotated_footprint = positionFootprint({std::round(0.51/mReader->resolution), std::round(1/mReader->resolution), 8}, robot_footprint, 0.05);
+  rotated_block_footprint = positionFootprint({CONTXY2DISC(1,mReader->resolution), CONTXY2DISC(1,mReader->resolution), 0}, block_footprint, 0.05);
+  displayPoints(image, rotated_footprint, 0.05, cv::Scalar(255,0,0));
+  displayPoints(image, rotated_block_footprint, 0.05, cv::Scalar(0,0,255));
+  cv::imshow("Points", image);
+  cv::waitKey(0);
+
+  image = cv::imread(obstacleLocation, 1);
+  rotated_footprint = positionFootprint({std::round(1/mReader->resolution), std::round(0.51/mReader->resolution), 12}, robot_footprint, 0.05);
+  rotated_block_footprint = positionFootprint({CONTXY2DISC(1,mReader->resolution), CONTXY2DISC(1,mReader->resolution), 0}, block_footprint, 0.05);
+  displayPoints(image, rotated_footprint, 0.05, cv::Scalar(255,0,0));
+  displayPoints(image, rotated_block_footprint, 0.05, cv::Scalar(0,0,255));
+  cv::imshow("Points", image);
+  cv::waitKey(0);
   */
 
   return 0;

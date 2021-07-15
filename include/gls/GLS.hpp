@@ -46,6 +46,9 @@ public:
   /// Setup the planner.
   void setup() override;
 
+  /// If there are multiple goals set them. This will override the target state in pdef
+  void setMultipleGoals(std::vector<datastructures::StatePtr> target_states);
+
   /// Set the problem definition and define the start, goal.
   /// \param[in] pdef OMPL Problem Definition.
   void setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef) override;
@@ -213,6 +216,9 @@ private:
 
   /// Target vertex.
   gls::datastructures::Vertex mTargetVertex;
+
+  /// Target vertices
+  std::vector<gls::datastructures::Vertex> mTargetVertices = {};
 
   /// TODO (avk): Move these into PlannerStatus class.
   /// Number of Edge Evaluations.

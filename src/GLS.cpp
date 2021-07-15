@@ -58,6 +58,21 @@ void GLS::setup() {
 }
 
 // ============================================================================
+void GLS::setMultipleGoals(std::vector<StatePtr> target_states){
+    std::cout<<"Targets: "<< std::endl;
+    for (StatePtr target_state : target_states){
+        Vertex target = addVertex(mGraph, target_state);
+        mGraph[target].setCostToCome(std::numeric_limits<double>::max());
+        mGraph[target].setHeuristic(0);
+        mGraph[target].setVisitStatus(VisitStatus::NotVisited);
+        mGraph[target].setCollisionStatus(CollisionStatus::Free);
+        std::cout<<"    "<<target.mImplicitVertex<<std::endl;
+
+        mTargetVertices.push_back(target);
+    }
+}
+
+// ============================================================================
 void GLS::setProblemDefinition(const ompl::base::ProblemDefinitionPtr& pdef) {
   // Make sure we setup the planner first.
   if (!static_cast<bool>(ompl::base::Planner::setup_)) {
@@ -79,14 +94,24 @@ void GLS::setupPreliminaries() {
   StatePtr sourceState(new gls::datastructures::State(mSpace));
   mSpace->copyState(sourceState->getOMPLState(), pdef_->getStartState(0));
 
-  StatePtr targetState(new gls::datastructures::State(mSpace));
-  mSpace->copyState(
-      targetState->getOMPLState(), pdef_->getGoal()->as<ompl::base::GoalState>()->getState());
-
   mSourceVertex = addVertex(mGraph, sourceState);
   std::cout<<"Source: "<< mSourceVertex.mImplicitVertex<<std::endl;
-  mTargetVertex = addVertex(mGraph, targetState);
-  std::cout<<"Target: "<< mTargetVertex.mImplicitVertex<<std::endl;
+
+  // If only one target provided via pdef
+  if(mTargetVertices.size() == 0){
+      StatePtr targetState(new gls::datastructures::State(mSpace));
+      mSpace->copyState(
+          targetState->getOMPLState(), pdef_->getGoal()->as<ompl::base::GoalState>()->getState());
+
+      mTargetVertex = addVertex(mGraph, targetState);
+      std::cout<<"Target: "<< mTargetVertex.mImplicitVertex<<std::endl;
+
+      mGraph[mTargetVertex].setCostToCome(std::numeric_limits<double>::max());
+      mGraph[mTargetVertex].setHeuristic(0);
+      mGraph[mTargetVertex].setVisitStatus(VisitStatus::NotVisited);
+      mGraph[mTargetVertex].setCollisionStatus(CollisionStatus::Free);
+      mTargetVertices.push_back(mTargetVertex);
+  }
 
   // Assign default values.
   mGraph[mSourceVertex].setCostToCome(0);
@@ -95,11 +120,6 @@ void GLS::setupPreliminaries() {
   mGraph[mSourceVertex].setCollisionStatus(CollisionStatus::Free);
   mGraph[mSourceVertex].setParent(mSourceVertex);
 
-  mGraph[mTargetVertex].setCostToCome(std::numeric_limits<double>::max());
-  mGraph[mTargetVertex].setHeuristic(0);
-  mGraph[mTargetVertex].setVisitStatus(VisitStatus::NotVisited);
-  mGraph[mTargetVertex].setCollisionStatus(CollisionStatus::Free);
-
   // If explicit, connect start and goal to graph and eachother
   if(!mImplicit){
       // TODO (AVK): Make this kNN + R-disc. Additionally join the start and goal.
@@ -107,8 +127,6 @@ void GLS::setupPreliminaries() {
       for (boost::tie(vi, vi_end) = vertices(mGraph); vi != vi_end; ++vi) {
         double sourceDistance
             = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), sourceState->getOMPLState());
-        double targetDistance
-            = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), targetState->getOMPLState());
 
         if (sourceDistance < mConnectionRadius) {
           if (mSourceVertex == *vi)
@@ -121,29 +139,37 @@ void GLS::setupPreliminaries() {
           mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
           assert(newEdge.second);
         }
+        for (Vertex target_vertex : mTargetVertices){
+            StatePtr targetState = mGraph[target_vertex].getState();
+            double targetDistance
+                = mSpace->distance(mGraph[*vi].getState()->getOMPLState(), targetState->getOMPLState());
 
-        if (targetDistance < mConnectionRadius) {
-          if (mTargetVertex == *vi)
-            continue;
+            if (targetDistance < mConnectionRadius) {
+              if (target_vertex == *vi)
+                continue;
 
-          std::pair<Edge, bool> newEdge = addEdge(mTargetVertex, *vi, mGraph);
-          mGraph[newEdge.first].setLength(targetDistance);
-          mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
-          mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
-          assert(newEdge.second);
+              std::pair<Edge, bool> newEdge = addEdge(target_vertex, *vi, mGraph);
+              mGraph[newEdge.first].setLength(targetDistance);
+              mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+              mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
+              assert(newEdge.second);
+            }
         }
       }
 
-      // Additionally connect the source and target with a straight line to snap.
-      std::pair<Edge, bool> newEdge = addEdge(mSourceVertex, mTargetVertex, mGraph);
-      mGraph[newEdge.first].setLength(
-          mSpace->distance(sourceState->getOMPLState(), targetState->getOMPLState()));
-      mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
-      mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
+      for (Vertex target_vertex : mTargetVertices){
+         StatePtr targetState = mGraph[target_vertex].getState();
+          // Additionally connect the source and target with a straight line to snap.
+          std::pair<Edge, bool> newEdge = addEdge(mSourceVertex, target_vertex, mGraph);
+          mGraph[newEdge.first].setLength(
+              mSpace->distance(sourceState->getOMPLState(), targetState->getOMPLState()));
+          mGraph[newEdge.first].setEvaluationStatus(EvaluationStatus::NotEvaluated);
+          mGraph[newEdge.first].setCollisionStatus(CollisionStatus::Free);
+      }
   }
 
   // Setup the event.
-  mEvent->setup(&mGraph, mSourceVertex, mTargetVertex);
+  mEvent->setup(&mGraph, mSourceVertex, mTargetVertices);
 
   // Setup the selector.
   mSelector->setup(&mGraph);
@@ -182,11 +208,15 @@ void GLS::clear() {
 
   // Remove edges between source, target to other vertices.
   clear_vertex(mSourceVertex, mGraph);
-  clear_vertex(mTargetVertex, mGraph);
+  for (Vertex target : mTargetVertices){
+    clear_vertex(target, mGraph);
+   }
 
   // Remove the vertices themselves.
   remove_vertex(mSourceVertex, mGraph);
-  remove_vertex(mTargetVertex, mGraph);
+  for (Vertex target : mTargetVertices){
+    remove_vertex(target, mGraph);
+  }
 
   setBestPathCost(0);
   mNumberOfEdgeEvaluations = 0;
@@ -209,9 +239,17 @@ ompl::base::PlannerStatus GLS::solve(const ompl::base::PlannerTerminationConditi
     return ompl::base::PlannerStatus::INVALID_START;
   }
 
-  if (evaluateVertex(mTargetVertex) == CollisionStatus::Collision) {
-    OMPL_INFORM("Goal State is invalid.");
-    return ompl::base::PlannerStatus::INVALID_GOAL;
+  for(Vertex target : mTargetVertices){
+      // debug
+      /*
+      auto state = mGraph[target].getState()->getOMPLState();
+      double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+      std::cout<<values[0]<<" "<<values[1]<<" "<<values[2]<<" "<<values[3]<<" "<<values[4]<<" "<<values[5]<<" "<<values[6]<<std::endl;
+      */
+      if (evaluateVertex(target) == CollisionStatus::Collision) {
+        OMPL_INFORM("Goal State is invalid.");
+        return ompl::base::PlannerStatus::INVALID_GOAL;
+      }
   }
 
   // Add the source vertex to the search tree with zero cost-to-come.
@@ -302,12 +340,22 @@ bool GLS::foundPathToGoal() {
 
 // ============================================================================
 double GLS::getGraphHeuristic(Vertex v) {
+  double distance = 1e5;
   if (!mHeuristic){
-      return mSpace->distance(
-          mGraph[mTargetVertex].getState()->getOMPLState(), mGraph[v].getState()->getOMPLState());
+      for(Vertex target : mTargetVertices){
+          std::min(distance, 
+                  mSpace->distance(
+                      mGraph[target].getState()->getOMPLState(), 
+                      mGraph[v].getState()->getOMPLState()));
+      }
+      return distance;
   }
   else{
-      return mHeuristic(mGraph[v].getState(), mGraph[mTargetVertex].getState());
+      for(Vertex target : mTargetVertices){
+          std::min(distance, 
+                  mHeuristic(mGraph[v].getState(), mGraph[target].getState()));
+      }
+      return distance;
   }
 }
 
@@ -572,7 +620,6 @@ void GLS::updateSearchTree() {
     mEvent->updateVertexProperties(mUpdateQueue);
     assert(mUpdateQueue.isEmpty());
   } else {
-      std::cout<<"rewire"<<std::endl;
     // Rewire the search tree.
     rewireSearchTree();
 
@@ -632,7 +679,7 @@ void GLS::rewireSearchTree() {
         continue;
 
       // No point rewiring to the target vertex.
-      if (u == mTargetVertex)
+      if(std::find(mTargetVertices.begin(), mTargetVertices.end(), u) != mTargetVertices.end())
         continue;
 
       // If the neighbor is one of the vertices to be rewires, ignore now.
@@ -767,7 +814,9 @@ void GLS::evaluateSearchTree() {
     mRewireQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
   }
 
-  if (bestVertex == mTargetVertex && mTreeValidityStatus == TreeValidityStatus::Valid) {
+  if(std::find(mTargetVertices.begin(), mTargetVertices.end(), bestVertex) != mTargetVertices.end()
+          && mTreeValidityStatus == TreeValidityStatus::Valid) {
+    mTargetVertex = bestVertex; // If found solution, set target vertex to solution
     if (foundPathToGoal()) {
       // Planning problem has been solved!
       mPlannerStatus = PlannerStatus::Solved;

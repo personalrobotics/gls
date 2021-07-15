@@ -17,7 +17,7 @@ ConstantDepthEvent::ConstantDepthEvent(std::size_t depth) : mDepthThreshold(dept
 
 //==============================================================================
 bool ConstantDepthEvent::isTriggered(const Vertex& vertex) {
-  if (vertex == mTargetVertex) {
+  if(std::find(mTargetVertices.begin(), mTargetVertices.end(), vertex) != mTargetVertices.end()) {
     return true;
   }
 

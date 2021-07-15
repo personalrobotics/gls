@@ -34,7 +34,8 @@ public:
   void setup(
       gls::datastructures::Graph* graph,
       gls::datastructures::Vertex& source,
-      gls::datastructures::Vertex& target);
+      std::vector<gls::datastructures::Vertex> targets);
+      //gls::datastructures::Vertex& target);
 
   /// Return true if the event is triggered.
   /// \param[in] vertex Vertex that might cause the trigger.
@@ -58,8 +59,8 @@ protected:
   /// Source vertex of the graph.
   gls::datastructures::Vertex mSourceVertex;
 
-  /// Target vertex of the graph.
-  gls::datastructures::Vertex mTargetVertex;
+  /// Target vertices of the graph.
+  std::vector<gls::datastructures::Vertex> mTargetVertices;
 
 }; // Event
 

@@ -15,10 +15,10 @@ Event::Event() {
 }
 
 //==============================================================================
-void Event::setup(Graph* graph, Vertex& source, Vertex& target) {
+void Event::setup(Graph* graph, Vertex& source, std::vector<gls::datastructures::Vertex> targets){
   mGraph = graph;
   mSourceVertex = source;
-  mTargetVertex = target;
+  mTargetVertices = targets;
 }
 
 //==============================================================================

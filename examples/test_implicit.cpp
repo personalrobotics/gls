@@ -77,7 +77,7 @@ std::vector<xy_pt> make_block_footprint(double width, double resolution){
 // Translate and rotate footprint around given position
 // Assumes footprint and position are on lattice already 
 std::vector<xy_pt> positionFootprint(std::vector<double> position, std::vector<xy_pt> footprint, double resolution){
-    double angle = gls::io::DiscTheta2Cont((int)position[2], NUMTHETADIRS);
+    double angle = gls::io::DiscTheta2Cont((int)position[2], NUMTHETADIRS)+M_PI;
     double x, y, x_rot, y_rot;
     std::vector<xy_pt> rotated_footprint;
 
@@ -86,8 +86,8 @@ std::vector<xy_pt> positionFootprint(std::vector<double> position, std::vector<x
         // Convert to real and Rotate
         x = point.first*resolution;
         y = point.second*resolution;
-        x_rot = x*std::cos(-angle) - y*std::sin(-angle);
-        y_rot = x*std::sin(-angle) + y*std::cos(-angle);
+        x_rot = x*std::cos(angle) - y*std::sin(angle);
+        y_rot = x*std::sin(angle) + y*std::cos(angle);
         point.first = std::round(x_rot/resolution);
         point.second = std::round(y_rot/resolution);
 
@@ -530,13 +530,13 @@ void displayStatePaths(std::string obstacleFile, std::vector<std::vector<rsmotio
         }
         if(colvec[0] == 49 && colvec[1] == 36 && colvec[2] == 4){
             std::vector<xy_pt> rrobot_fp = 
-              positionFootprint({CONTXY2DISC(u.X(), resolution), 
-                                 CONTXY2DISC(u.Y(), resolution), 
+              positionFootprint({std::round(u.X()/ resolution), 
+                                 std::round(u.Y()/ resolution), 
                                  gls::io::ContTheta2Disc(u.Phi(), NUMTHETADIRS)}, 
                                  robot_footprint, resolution);
             for (xy_pt rpoint : rrobot_fp){
                 std::cout<<"rotated: "<<rpoint.first<<", "<<rpoint.second<<std::endl;
-                cv::Point rPoint((int)(DISCXY2CONT(rpoint.first,resolution)*scale-offsetx), (int)(numberOfRows - DISCXY2CONT(rpoint.second,resolution)*scale)-offsety);
+                cv::Point rPoint((int)((rpoint.first*resolution)*scale-offsetx), (int)(numberOfRows - DISCXY2CONT(rpoint.second,resolution)*scale)-offsety);
                 cv::circle(image, rPoint, 2, color, cv::FILLED);
             }
             makeBox(image, color, uvec, scale, offsetx, offsety, numberOfRows);
