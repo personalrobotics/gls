@@ -270,6 +270,8 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
         std::function<std::vector<double>(std::vector<double>)> lat2real) {
 
     std::vector<std::tuple<IVertex, VertexProperties, double, int>> neighbors; 
+    std::tuple<IVertex, VertexProperties, double, int> recon_neighbor;
+
 
     using namespace rsmotion::math;
     const Vec3f blockTransform = {0.0, 0.0, (0.05 + WHEELBASE)};
@@ -356,6 +358,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
         
         int rs_index = 1;
         bool valid = true;
+        double minLength = 1e5;
         for (rsmotion::algorithm::Path path : paths){
             nx = CONTXY2DISC(finishPosition[2], mReader->resolution);
             ny = CONTXY2DISC(finishPosition[0], mReader->resolution);
@@ -380,17 +383,22 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
                 }
             }
 
-            // Set state
-            // TODO (schmittle) this seems inefficient to make a new state
-            if(valid){
+            // Choose shortest valid transition
+            if(valid && length < minLength){
+                minLength = length;
                 neighborProperties = VertexProperties();
+                // Set state
+                // TODO (schmittle) this seems inefficient to make a new state
                 StatePtr newState(new State(space));
                 space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, i, values[4], values[5], values[6]});
                 neighborProperties.setState(newState);
 
-                neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, -rs_index));
-                rs_index++;
+                recon_neighbor = std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, -rs_index);
             }
+            rs_index++;
+        }
+        if (minLength < 1e5){
+            neighbors.push_back(recon_neighbor);
         }
     }
 
@@ -484,15 +492,16 @@ double reconfigure_heuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::
     std::vector<double> cont_values = {DISCXY2CONT(values[0], mReader->resolution), DISCXY2CONT(values[1], mReader->resolution), 
         DISCXY2CONT(values[4], mReader->resolution), 
         DISCXY2CONT(values[5], mReader->resolution)};
-    std::vector<double> cont_goal_values = {DISCXY2CONT(goal_values[0], mReader->resolution), DISCXY2CONT(goal_values[1], mReader->resolution)};
+
+    std::vector<double> cont_goal_values = {DISCXY2CONT(goal_values[4], mReader->resolution), DISCXY2CONT(goal_values[5], mReader->resolution)};
 
     // Approach 
-    double approach_heuristic = sqrt(pow((cont_values[2] - cont_values[0]),2) + pow((cont_values[3] - cont_values[1]),2));
+    double approach_heuristic = abs(sqrt(pow((cont_values[2] - cont_values[0]),2) + pow((cont_values[3] - cont_values[1]),2))-0.5); // 0.5 compensating for wheelbase + block halfwidth
 
     // Pushing 
     double pushing_heuristic = sqrt(pow((cont_goal_values[0] - cont_values[2]),2) + pow((cont_goal_values[1] - cont_values[3]),2));
 
-    return approach_heuristic + pushing_heuristic;
+    return CONTXY2DISC(approach_heuristic + pushing_heuristic, mReader->resolution);
 }
 
 double rsheuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
@@ -710,13 +719,13 @@ int main (int argc, char const *argv[]) {
   si->setup();
 
   // In real space 
-  std::vector<double> start_vec = {2, 3, 0, -1, 2, 2, 0};
+  std::vector<double> start_vec = {3, 2, 0, -1, 2, 2, 0};
   StatePtr sourceState(new State(space));
   // car_x, car_y, car_theta, contact type, block_x, block_y, block_theta
   space->copyFromReals(sourceState->getOMPLState(), start_vec);
 
   // block_x, block_y, block_theta
-  std::vector<StatePtr> targetStates = createTargetStates({1, 1, 0}, space);
+  std::vector<StatePtr> targetStates = createTargetStates({1, 2, 0}, space);
 
   //StatePtr targetState(new State(space));
   //space->copyFromReals(targetState->getOMPLState(), std::vector<double>{1, 2, M_PI, 1, 2, 2, 0});

@@ -240,12 +240,6 @@ ompl::base::PlannerStatus GLS::solve(const ompl::base::PlannerTerminationConditi
   }
 
   for(Vertex target : mTargetVertices){
-      // debug
-      /*
-      auto state = mGraph[target].getState()->getOMPLState();
-      double* values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-      std::cout<<values[0]<<" "<<values[1]<<" "<<values[2]<<" "<<values[3]<<" "<<values[4]<<" "<<values[5]<<" "<<values[6]<<std::endl;
-      */
       if (evaluateVertex(target) == CollisionStatus::Collision) {
         OMPL_INFORM("Goal State is invalid.");
         return ompl::base::PlannerStatus::INVALID_GOAL;
@@ -343,20 +337,19 @@ double GLS::getGraphHeuristic(Vertex v) {
   double distance = 1e5;
   if (!mHeuristic){
       for(Vertex target : mTargetVertices){
-          std::min(distance, 
-                  mSpace->distance(
+          distance = 
+              std::min(distance, 
+                mSpace->distance(
                       mGraph[target].getState()->getOMPLState(), 
                       mGraph[v].getState()->getOMPLState()));
       }
-      return distance;
   }
   else{
       for(Vertex target : mTargetVertices){
-          std::min(distance, 
-                  mHeuristic(mGraph[v].getState(), mGraph[target].getState()));
+          distance = std::min(distance, mHeuristic(mGraph[v].getState(), mGraph[target].getState()));
       }
-      return distance;
   }
+  return distance;
 }
 
 void GLS::setHeuristic(HeuristicFunction heuristic){
@@ -506,6 +499,7 @@ void GLS::extendSearchTree() {
   while (!mExtendQueue.isEmpty()) {
     // Check if the popping the top vertex triggers the event.
     Vertex u = mExtendQueue.getTopVertex();
+
     if (mEvent->isTriggered(u))
       break;
 
@@ -533,6 +527,10 @@ void GLS::extendSearchTree() {
       if (v == mGraph[u].getParent())
         continue;
 
+      // Enforce prevention of loops. Possible with reconfigures
+      if(v==u)
+        continue;
+
       // Never come back to the source.
       if (v == mSourceVertex)
         continue;
@@ -546,7 +544,6 @@ void GLS::extendSearchTree() {
         continue;
 
       double edgeLength = mGraph[uv].getLength();
-      //edgeLength = 0.0; // debug with greedy expansion
       
       if (mGraph[v].getVisitStatus() == VisitStatus::NotVisited) {
         assert(v != mSourceVertex);
@@ -596,6 +593,7 @@ void GLS::extendSearchTree() {
           children.clear();
         }
       }
+
 
       // Update the successor's properties.
       mGraph[v].setParent(u);
