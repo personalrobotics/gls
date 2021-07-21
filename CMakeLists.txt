@@ -5,11 +5,11 @@ list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
 #================================================================================
 # Link Libraries
 #================================================================================
-
 find_package(catkin REQUIRED COMPONENTS roscpp)
 find_package(ompl REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread filesystem graph program_options system)
 find_package(OpenCV REQUIRED)
+find_package(ImageMagick COMPONENTS Magick++ MagickWand MagickCore REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include examples/include
@@ -24,6 +24,7 @@ include_directories(
   ${OMPL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
+  ${ImageMagick_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -34,6 +35,7 @@ link_libraries(
   ${catkin_LIBRARIES}
   ${OMPL_LIBRARIES}
   ${Boost_LIBRARIES}
+  ${ImageMagick_LIBRARIES}
 )
 
 add_library(${PROJECT_NAME}
@@ -98,7 +100,7 @@ target_link_libraries(rc_lattice ${PROJECT_NAME} ${OpenCV_LIBS})
 install(TARGETS rc_lattice RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 add_executable(reconfigure examples/reconfigure.cpp)
-target_link_libraries(reconfigure ${PROJECT_NAME} ${OpenCV_LIBS})
+target_link_libraries(reconfigure ${PROJECT_NAME} ${OpenCV_LIBS} ${ImageMagick_LIBRARIES})
 install(TARGETS reconfigure RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #================================================================================

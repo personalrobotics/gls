@@ -17,6 +17,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+// For GIF
+#include <Magick++.h>
+
 // Custom header files
 #include "gls/GLS.hpp"
 #include <rsmotion/rsmotion.h>
@@ -28,14 +31,39 @@ float WHEELBASE = 0.44;
 float TURNING_RADIUS = 0.627;
 int NUMTHETADIRS = 16;
 
+void displayPoints(cv::Mat image, std::vector<xy_pt> points, double resolution, cv::Scalar color) {
+  // Get state count
+
+  // Obtain the image matrix
+  int numberOfRows = image.rows;
+  int numberOfColumns = image.cols;
+
+  // TODO don't do this
+  double scale = 300.0;
+  int offsetx = -500;
+  int offsety = 800;
+  scale = 200.0;
+  offsetx = -100;
+  offsety = 0;
+  for (xy_pt point : points){
+    cv::Point uPoint((int)
+            (DISCXY2CONT(point.first, resolution)*scale-offsetx), 
+            (int)(numberOfRows - DISCXY2CONT(point.second, resolution)*scale)-offsety);
+
+    cv::circle(image, uPoint, 1, color, cv::FILLED);
+  }
+
+}
+
 // Make mushr car footprint for collision checking
 std::vector<xy_pt> make_robot_footprint(double width, double length, double resolution){
     // Assuming car oriented at [0, 0, 0] and position is with respect to the rear axle
     std::vector<xy_pt> footprint;
 
 
-    double halfwidthd = (double)CONTXY2DISC(width/2.0, resolution);
-    double lengthd = (double)CONTXY2DISC(length, resolution);
+    // Fits within frame better to floor for contact purposes
+    double halfwidthd = std::floor(width/(2.0* resolution));
+    double lengthd = std::floor(length/ resolution);
     // small sides
     for (double z=-halfwidthd; z <= halfwidthd; z +=1.0){
         // long sides
@@ -71,19 +99,19 @@ std::vector<xy_pt> make_block_footprint(double width, double resolution){
 // Translate and rotate footprint around given position
 // Assumes footprint and position are on lattice already 
 std::vector<xy_pt> positionFootprint(std::vector<double> position, std::vector<xy_pt> footprint, double resolution){
-    double angle = gls::io::DiscTheta2Cont((int)position[2], NUMTHETADIRS)+M_PI;
+    double angle = gls::io::DiscTheta2Cont((int)position[2], NUMTHETADIRS);
     double x, y, x_rot, y_rot;
     std::vector<xy_pt> rotated_footprint;
 
     for(xy_pt point : footprint){
 
         // Convert to real and Rotate
-        x = point.first*resolution;
-        y = point.second*resolution;
+        x = DISCXY2CONT(point.first,resolution);
+        y = DISCXY2CONT(point.second,resolution);
         x_rot = x*std::cos(angle) - y*std::sin(angle);
         y_rot = x*std::sin(angle) + y*std::cos(angle);
-        point.first = std::round(x_rot/resolution);
-        point.second = std::round(y_rot/resolution);
+        point.first = CONTXY2DISC(x_rot,resolution);
+        point.second = CONTXY2DISC(y_rot,resolution);
 
         // Transform
         point.first += position[0];
@@ -137,6 +165,16 @@ bool isRobotValid(
   std::vector<xy_pt> rblock_fp = 
       positionFootprint({values[4], values[5], values[6]}, block_footprint, resolution);
 
+  /*
+   //debug
+  std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
+  cv::Mat image = cv::imread(obstacleLocation, 1);
+  displayPoints(image, rrobot_fp, 0.05, cv::Scalar(255,0,0));
+  displayPoints(image, rblock_fp, 0.05, cv::Scalar(0,0,255));
+  cv::imshow("Points", image);
+  cv::waitKey(0);
+  */
+
   for(xy_pt robot_point : rrobot_fp){
       if(std::find(rblock_fp.begin(), rblock_fp.end(), robot_point) != rblock_fp.end()) {
           return false;
@@ -164,20 +202,11 @@ StatePtr fit_state2lattice(StatePtr state, gls::io::MotionPrimitiveReader *mRead
     std::vector<double> vals;
     vals.reserve(7);
     space->copyToReals(vals, state->getOMPLState());
-    /*
     vals[0] = (double)CONTXY2DISC(vals[0], mReader->resolution);
     vals[1] = (double)CONTXY2DISC(vals[1], mReader->resolution);
     vals[2] = (double) gls::io::ContTheta2Disc(vals[2], NUMTHETADIRS);
     vals[4] = (double)CONTXY2DISC(vals[4], mReader->resolution);
     vals[5] = (double)CONTXY2DISC(vals[5], mReader->resolution);
-    vals[6] = (double) gls::io::ContTheta2Disc(vals[6], NUMTHETADIRS);
-    */
-    // Rounding seems to work better
-    vals[0] = std::round(vals[0]/ mReader->resolution);
-    vals[1] = std::round(vals[1]/ mReader->resolution);
-    vals[2] = (double) gls::io::ContTheta2Disc(vals[2], NUMTHETADIRS);
-    vals[4] = std::round(vals[4]/ mReader->resolution);
-    vals[5] = std::round(vals[5]/ mReader->resolution);
     vals[6] = (double) gls::io::ContTheta2Disc(vals[6], NUMTHETADIRS);
 
     StatePtr newState(new State(space));
@@ -205,7 +234,7 @@ std::vector<double> lattice2real(std::vector<double> vals, gls::io::MotionPrimit
 rsmotion::math::Vec3f getBlockPos(std::vector<double> car_pose){
 
     using namespace rsmotion::math;
-    const Vec3f rBlockTransform = {0.0, 0.0, -(0.05 + WHEELBASE)};
+    const Vec3f rBlockTransform = {0.0, 0.0, 0.05 + WHEELBASE};
 
     // Apply transform to car
     const Quatf carOrientation {Vec3f{0,1,0}, Anglef::Radians(car_pose[2])};
@@ -221,7 +250,7 @@ rsmotion::math::Vec3f getBlockPos(std::vector<double> car_pose){
 rsmotion::math::Vec3f getCarPos(std::vector<double> block_pose, int side){
 
     using namespace rsmotion::math;
-    const Vec3f blockTransform = {0.0, 0.0, 0.05 + WHEELBASE};
+    const Vec3f blockTransform = {0.0, 0.0, -(0.05 + WHEELBASE)};
 
     // Apply transform to block
     Vec3f carPosition {block_pose[1], 0.f, block_pose[0]};
@@ -231,6 +260,38 @@ rsmotion::math::Vec3f getCarPos(std::vector<double> block_pose, int side){
     carPosition += rotatedTransform;
 
     return carPosition;
+}
+
+// Save dubin's path to variable
+int savePath(double q[3], double x, void* user_data, std::vector<rsmotion::algorithm::State>* saved_path) {
+    rsmotion::algorithm::State dstate(q[0], q[1], q[2]-M_PI, false);
+    saved_path->push_back(dstate);
+    return 0;
+}
+
+// For each state in path finds if state is valid using isRobotValid
+bool statePathValid(std::vector<rsmotion::algorithm::State>  statePath, 
+        double* values,
+        double resolution, 
+        std::vector<xy_pt> robot_footprint, 
+        std::vector<xy_pt> block_footprint,
+        ompl::base::RealVectorBounds& bounds,
+        std::function<std::vector<double>(std::vector<double>)> lat2real) {
+
+    for (int j = 0; j < statePath.size(); ++j) {
+        auto u = statePath[j];
+        std::vector<double> uvec = {CONTXY2DISC(u.X(), resolution), 
+                                    CONTXY2DISC(u.Y(), resolution), 
+                                    gls::io::ContTheta2Disc(u.Phi(), NUMTHETADIRS), 
+                                    values[3],
+                                    values[4],
+                                    values[5],
+                                    values[6]};
+        if(!isRobotValid(uvec, bounds, lat2real, robot_footprint, block_footprint, resolution)){
+            return false;
+        }
+    }
+    return true;
 }
 
 // Creates vector of target states given a end block position. 
@@ -274,8 +335,6 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
 
 
     using namespace rsmotion::math;
-    const Vec3f blockTransform = {0.0, 0.0, (0.05 + WHEELBASE)};
-    const Vec3f rBlockTransform = {0.0, 0.0, -(0.05 + WHEELBASE)};
 
     // Get State
     double* values = vp.getState()->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
@@ -306,7 +365,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
                 // Convert to real
                 std::vector<double> car_pose = {DISCXY2CONT(nx, mReader->resolution),
                                                 DISCXY2CONT(ny, mReader->resolution),
-                                                gls::io::DiscTheta2Cont(values[2], NUMTHETADIRS)};
+                                                gls::io::DiscTheta2Cont(ntheta, NUMTHETADIRS)};
                 const Vec3f blockPosition =  getBlockPos(car_pose);
 
                 // Set state
@@ -317,7 +376,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
                         std::vector<double>{nx, ny, ntheta, values[3], 
                         CONTXY2DISC(blockPosition[2], mReader->resolution), 
                         CONTXY2DISC(blockPosition[0], mReader->resolution), 
-                        ntheta});
+                        values[6]+(ntheta-values[2])});
                 neighborProperties.setState(newState);
 
                 neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>
@@ -328,6 +387,7 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
             }
         }
     }
+    
     // Use reedshepp to find paths to faces
     // set the start position
     const Vec3f startPosition {DISCXY2CONT(values[1], mReader->resolution)
@@ -341,6 +401,8 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
     rsmotion::CarState carStart{{startPosition, startOrientation}, WHEELBASE};
 
     for (int i=0; i < 4; i++){
+        if(values[3] == i) // don't eval "switching" to the side we are already in contact with
+            continue;
 
         double side_theta = gls::io::DiscTheta2Cont(values[6], NUMTHETADIRS) + i*M_PI/2.0;
         // Convert to real
@@ -355,50 +417,84 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
 
         // All RS paths
         auto paths = EnumPaths(carStart, finishPoint, TURNING_RADIUS);
+
+        // All Dubin's Paths
+        std::vector<DubinsPath> dpaths;
+        double start[] = {startPosition[2], startPosition[0], gls::io::DiscTheta2Cont(values[2], NUMTHETADIRS)+M_PI};
+        double goal[] = {finishPosition[2], finishPosition[0], side_theta+M_PI};
         
         int rs_index = 1;
-        bool valid = true;
+        int dubins_index = 100;
         double minLength = 1e5;
-        for (rsmotion::algorithm::Path path : paths){
-            nx = CONTXY2DISC(finishPosition[2], mReader->resolution);
-            ny = CONTXY2DISC(finishPosition[0], mReader->resolution);
-            ntheta = gls::io::ContTheta2Disc(side_theta, NUMTHETADIRS);
+        nx = CONTXY2DISC(finishPosition[2], mReader->resolution);
+        ny = CONTXY2DISC(finishPosition[0], mReader->resolution);
+        ntheta = gls::io::ContTheta2Disc(side_theta, NUMTHETADIRS);
+        dubins_paths(&dpaths, start, goal, TURNING_RADIUS); 
 
+
+        for (rsmotion::algorithm::Path path : paths){
             length = CONTXY2DISC(path.Length(TURNING_RADIUS), mReader->resolution);
 
             // Check for collisions with block
-            auto statePath = GetPath(carStart, path, mReader->resolution, TURNING_RADIUS);
-            for (int j = 0; j < statePath.size(); ++j) {
-                auto u = statePath[j];
-                std::vector<double> uvec = {std::round(u.X()/ mReader->resolution), 
-                                            std::round(u.Y()/ mReader->resolution), 
-                                            gls::io::ContTheta2Disc(u.Phi(), NUMTHETADIRS), 
-                                            values[3],
-                                            values[4],
-                                            values[5],
-                                            values[6]};
-                if(!isRobotValid(uvec, bounds, lat2real, robot_footprint, block_footprint, mReader->resolution)){
-                    valid = false;
-                    break;
+            if(length < minLength){
+                auto statePath = GetPath(carStart, path, mReader->resolution, TURNING_RADIUS);
+                bool valid = statePathValid(statePath, 
+                        values, mReader->resolution, robot_footprint, block_footprint, bounds, lat2real);
+
+                // Choose shortest valid transition
+                if(valid){
+                    minLength = length;
+                    neighborProperties = VertexProperties();
+                    // Set state
+                    // TODO (schmittle) this seems inefficient to make a new state
+                    StatePtr newState(new State(space));
+                    space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, i, values[4], values[5], values[6]});
+                    neighborProperties.setState(newState);
+
+                    recon_neighbor = std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, -rs_index);
                 }
-            }
-
-            // Choose shortest valid transition
-            if(valid && length < minLength){
-                minLength = length;
-                neighborProperties = VertexProperties();
-                // Set state
-                // TODO (schmittle) this seems inefficient to make a new state
-                StatePtr newState(new State(space));
-                space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, i, values[4], values[5], values[6]});
-                neighborProperties.setState(newState);
-
-                recon_neighbor = std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, -rs_index);
             }
             rs_index++;
         }
-        if (minLength < 1e5){
-            neighbors.push_back(recon_neighbor);
+        if(minLength < 1e5){
+            neighbors.push_back(recon_neighbor); // shortest valid reed shepp path
+        }
+
+        // Eval dubins
+        minLength = 1e5;
+        for(DubinsPath dpath : dpaths){
+            length = CONTXY2DISC(dubins_path_length(&dpath), mReader->resolution);
+
+            if(length < minLength){
+                std::vector<rsmotion::algorithm::State> dstatePath;
+                dubins_path_sample_many(&dpath,  mReader->resolution, 
+                        std::bind(&savePath, 
+                            std::placeholders::_1, 
+                            std::placeholders::_2, 
+                            std::placeholders::_3, 
+                            &dstatePath), NULL);
+
+
+                // Check for collisions with block
+                bool valid = statePathValid(dstatePath, 
+                      values, mReader->resolution, robot_footprint, block_footprint, bounds, lat2real);
+                // Choose shortest valid transition
+                if(valid){
+                    minLength = length;
+                    neighborProperties = VertexProperties();
+                    // Set state
+                    // TODO (schmittle) this seems inefficient to make a new state
+                    StatePtr newState(new State(space));
+                    space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, i, values[4], values[5], values[6]});
+                    neighborProperties.setState(newState);
+
+                    recon_neighbor = std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, -dubins_index);
+                }
+            }
+                dubins_index++;
+        }
+        if(minLength < 1e5){
+            neighbors.push_back(recon_neighbor); // shortest valid dubins path
         }
     }
 
@@ -460,10 +556,30 @@ std::vector<StatePtr> interpolate(StatePtr startState, StatePtr endState, int mo
         const Quatf finishOrientation { Vec3f{0,1,0}, Anglef::Radians(
                 gls::io::DiscTheta2Cont(endValues[2], NUMTHETADIRS)) };
         const rsmotion::PointState finishPoint {finishPosition, finishOrientation};
+        std::vector<rsmotion::algorithm::State> path;
+        
+        if(abs(motPrimID) >= 100){
+            // dubins
+            std::vector<DubinsPath> dpaths;
+            double start[] = {startPosition[2], startPosition[0], gls::io::DiscTheta2Cont(startValues[2], NUMTHETADIRS)+M_PI};
+            double goal[] = {finishPosition[2], finishPosition[0], gls::io::DiscTheta2Cont(endValues[2], NUMTHETADIRS)+M_PI};
+            std::cout<<finishPosition[2]<<" "<< finishPosition[0]<<" "<< endValues[2]<<std::endl;
+            dubins_paths(&dpaths, start, goal, TURNING_RADIUS); 
+            dubins_path_sample_many(&dpaths[abs(motPrimID)-100],  res, 
+                    std::bind(&savePath, 
+                        std::placeholders::_1, 
+                        std::placeholders::_2, 
+                        std::placeholders::_3, 
+                        &path), NULL);
+       }
+        else{
+            // Reed Shepp
 
-        // Get the path 
-        auto paths = EnumPaths(carStart, finishPoint, TURNING_RADIUS);
-        auto path = rsmotion::GetPath(carStart, paths[abs(motPrimID)-1], res, TURNING_RADIUS);
+            // Get the path 
+            auto paths = EnumPaths(carStart, finishPoint, TURNING_RADIUS);
+            path = rsmotion::GetPath(carStart, paths[abs(motPrimID)-1], res, TURNING_RADIUS);
+        }
+
         for (int i = 0; i < path.size(); ++i) {
             auto u = path[i];
             std::vector<double> uvec = {u.X(), u.Y(), u.Phi()};
@@ -496,12 +612,13 @@ double reconfigure_heuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::
     std::vector<double> cont_goal_values = {DISCXY2CONT(goal_values[4], mReader->resolution), DISCXY2CONT(goal_values[5], mReader->resolution)};
 
     // Approach 
-    double approach_heuristic = abs(sqrt(pow((cont_values[2] - cont_values[0]),2) + pow((cont_values[3] - cont_values[1]),2))-0.5); // 0.5 compensating for wheelbase + block halfwidth
+    //double approach_heuristic = abs(sqrt(pow((cont_values[2] - cont_values[0]),2) + pow((cont_values[3] - cont_values[1]),2))-0.5); // 0.5 compensating for wheelbase + block halfwidth
 
     // Pushing 
     double pushing_heuristic = sqrt(pow((cont_goal_values[0] - cont_values[2]),2) + pow((cont_goal_values[1] - cont_values[3]),2));
 
-    return CONTXY2DISC(approach_heuristic + pushing_heuristic, mReader->resolution);
+    //return CONTXY2DISC(approach_heuristic + pushing_heuristic, mReader->resolution);
+    return CONTXY2DISC(pushing_heuristic, mReader->resolution);
 }
 
 double rsheuristic(StatePtr v, StatePtr target, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
@@ -558,10 +675,10 @@ void makeBox(cv::Mat image,
 
     if (center){
         dimentions[0] /= 2.0;
-        offcenter = -dimentions[0];
+        offcenter = dimentions[0];
     }
-    std::pair<double,double> blc = {-dimentions[0]*std::cos(position[2]) + dimentions[1]/2.0*std::sin(position[2]), -dimentions[0]*std::sin(position[2]) - dimentions[1]/2.0*std::cos(position[2])};
-    std::pair<double,double> tlc = {-dimentions[0]*std::cos(position[2]) - dimentions[1]/2.0*std::sin(position[2]), -dimentions[0]*std::sin(position[2]) + dimentions[1]/2.0*std::cos(position[2])};
+    std::pair<double,double> blc = {dimentions[0]*std::cos(position[2]) + dimentions[1]/2.0*std::sin(position[2]), dimentions[0]*std::sin(position[2]) - dimentions[1]/2.0*std::cos(position[2])};
+    std::pair<double,double> tlc = {dimentions[0]*std::cos(position[2]) - dimentions[1]/2.0*std::sin(position[2]), dimentions[0]*std::sin(position[2]) + dimentions[1]/2.0*std::cos(position[2])};
 
     std::pair<double,double> brc = {-offcenter*std::cos(position[2]) + dimentions[1]/2.0*std::sin(position[2]), -offcenter*std::sin(position[2]) - dimentions[1]/2.0*std::cos(position[2])};
     std::pair<double,double> trc = {-offcenter*std::cos(position[2]) - dimentions[1]/2.0*std::sin(position[2]), -offcenter*std::sin(position[2]) + dimentions[1]/2.0*std::cos(position[2])};
@@ -589,9 +706,9 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
   int numberOfColumns = image.cols;
 
   // TODO don't do this
-  double scale = 500.0;
-  int offsetx = 500;
-  int offsety = -700;
+  double scale = 300.0;
+  int offsetx = 300;
+  int offsety = -100;
   int car_int = 4;
   cv::Scalar box_color(255, 0, 0);
   auto goalState = path->getState(pathSize-1);
@@ -625,6 +742,10 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
         }
         if(i == pathSize-1 || cutshort){
             box_color = cv::Scalar(0, 0, 255);
+            std::cout<<u[4]<<" "<<u[5]<<" "<<u[6]<<std::endl;
+            std::cout<<u[0]<<" "<<u[1]<<" "<<u[2]<<std::endl;
+            cv::Point bPoint((int)(u[4]*scale-offsetx), (int)(numberOfRows - u[5]*scale)-offsety);
+            cv::circle(image, bPoint, 1, cv::Scalar(255, 0, 0), cv::FILLED);
         }
 
         // Car
@@ -654,34 +775,75 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
   cv::waitKey(0);
 }
 
-void displayPoints(cv::Mat image, std::vector<xy_pt> points, double resolution, cv::Scalar color) {
+/// Saves gif of path
+void saveGif(std::string name, std::string obstacleFile, std::shared_ptr<ompl::geometric::PathGeometric> path, double resolution) {
   // Get state count
+  int pathSize = path->getStateCount();
 
   // Obtain the image matrix
+  cv::Mat image = cv::imread(obstacleFile, 1);
+  std::list<Magick::Image> images;
   int numberOfRows = image.rows;
   int numberOfColumns = image.cols;
 
   // TODO don't do this
   double scale = 300.0;
-  int offsetx = -500;
-  int offsety = 800;
-  scale = 200.0;
-  offsetx = -100;
-  offsety = 0;
-  for (xy_pt point : points){
-    cv::Point uPoint((int)
-            (DISCXY2CONT(point.first, resolution)*scale-offsetx), 
-            (int)(numberOfRows - DISCXY2CONT(point.second, resolution)*scale)-offsety);
+  int offsetx = 300;
+  int offsety = -100;
+  cv::Scalar box_color(255, 0, 0);
+  auto goalState = path->getState(pathSize-1);
+  double* goalVals = goalState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+  bool cutshort = false;
+  for (int i = 0; i < pathSize; ++i) {
+    auto uState = path->getState(i);
+    double* u = uState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    cv::Point uPoint((int)(u[0]*scale-offsetx), (int)(numberOfRows - u[1]*scale)-offsety);
 
-    cv::circle(image, uPoint, 1, color, cv::FILLED);
+    if (i != pathSize-1){ // this is an optimization that shouldn't just be in viz
+        auto vState = path->getState(i + 1);
+        double* v = vState->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+        cv::Point vPoint((int)(v[0]*scale-offsetx), (int)(numberOfRows - v[1]*scale)-offsety);
+        cv::line(image, uPoint, vPoint, cv::Scalar(0, 0, 0), 1);
+        if(CONTXY2DISC(v[0],resolution) == CONTXY2DISC(goalVals[0],resolution) 
+                && CONTXY2DISC(v[1],resolution) == CONTXY2DISC(goalVals[1],resolution)
+                && gls::io::ContTheta2Disc(v[2], NUMTHETADIRS) == gls::io::ContTheta2Disc(goalVals[2], NUMTHETADIRS)){
+            cutshort = true;
+            u = goalVals;
+        }
+    }
+
+    std::vector<double> uvec = {u[0], u[1], u[2]};
+    std::vector<double> block_vec = {u[4], u[5], u[6]};
+
+
+    if(i == 0){
+        box_color = cv::Scalar(0, 255, 0);
+    }
+    if(i == pathSize-1 || cutshort){
+        box_color = cv::Scalar(0, 0, 255);
+        std::cout<<u[4]<<" "<<u[5]<<" "<<u[6]<<std::endl;
+        std::cout<<u[0]<<" "<<u[1]<<" "<<u[2]<<std::endl;
+        cv::Point bPoint((int)(u[4]*scale-offsetx), (int)(numberOfRows - u[5]*scale)-offsety);
+        cv::circle(image, bPoint, 1, cv::Scalar(255, 0, 0), cv::FILLED);
+    }
+
+    // Car
+    makeBox(image, box_color, uvec, {0.44, 0.27}, false, scale, offsetx, offsety, numberOfRows);
+
+    // Block
+    makeBox(image, box_color, block_vec, {0.1, 0.1}, true, scale, offsetx, offsety, numberOfRows);
+
+    box_color = cv::Scalar(255, 0, 0);
+
+    cv::circle(image, uPoint, 1, cv::Scalar(255, 0, 0), cv::FILLED);
+    Magick::Image mgk(image.cols, image.rows, "BGR", Magick::CharPixel, (char *)image.data);
+    images.push_back(mgk);
+    image = cv::imread(obstacleFile, 1); // Probs better way todo this
+    if(cutshort){
+        break;
+    }
   }
-
-}
-
-int savePath(double q[3], double x, void* user_data, std::vector<rsmotion::algorithm::State>* saved_path) {
-    rsmotion::algorithm::State dstate(q[0], q[1], q[2]-M_PI, false);
-    saved_path->push_back(dstate);
-    return 0;
+  Magick::writeImages(images.begin(), images.end(), name);
 }
 
 int main (int argc, char const *argv[]) {
@@ -689,10 +851,10 @@ int main (int argc, char const *argv[]) {
   // Load Motion Primitives
   gls::io::MotionPrimitiveReader* mReader = new gls::io::MotionPrimitiveReader();
   //TODO (schmittle) don't hardcode paths
-  mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.mprim",
-          "/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.json");
-  //mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/pushr_sandpaper.mprim",
-          //"/home/schmittle/mushr/catkin_ws/src/gls/examples/pushr_sandpaper.json");
+  //mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.mprim",
+   //       "/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.json");
+  mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/pushr_sandpaper.mprim",
+          "/home/schmittle/mushr/catkin_ws/src/gls/examples/pushr_sandpaper.json");
   std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
 
   // Define the state space: R^4
@@ -725,7 +887,7 @@ int main (int argc, char const *argv[]) {
   space->copyFromReals(sourceState->getOMPLState(), start_vec);
 
   // block_x, block_y, block_theta
-  std::vector<StatePtr> targetStates = createTargetStates({1, 2, 0}, space);
+  std::vector<StatePtr> targetStates = createTargetStates({1, 3, 0}, space);
 
   //StatePtr targetState(new State(space));
   //space->copyFromReals(targetState->getOMPLState(), std::vector<double>{1, 2, M_PI, 1, 2, 2, 0});
@@ -787,6 +949,7 @@ int main (int argc, char const *argv[]) {
     std::cout << "Number of Edge Evaluations: " << planner.getNumberOfEdgeEvaluations()
               << std::endl;
     displayPath(obstacleLocation, path, mReader->resolution); 
+    saveGif("test.gif", obstacleLocation, path, mReader->resolution); 
     planner.clear();
   }
 

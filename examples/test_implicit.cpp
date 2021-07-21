@@ -39,13 +39,12 @@ std::vector<xy_pt> make_robot_footprint(double width, double length, double reso
     double ceil_length = length;
     double ceil_width = width;
 
-    double halfwidthd = (double)CONTXY2DISC(ceil_width/2.0, resolution);
-    double lengthd = (double)CONTXY2DISC(ceil_length, resolution);
+    double halfwidthd = std::floor(ceil_width/(2.0* resolution));
+    double lengthd = std::floor(ceil_length/ resolution);
     // small sides
     for (double z=-halfwidthd; z <= halfwidthd; z +=1.0){
         // long sides
         for (double j=0.0; j <= lengthd; j +=1.0){
-            std::cout<<j<<", "<<z<<std::endl;
             footprint.push_back(xy_pt{j, z});
         } 
     } 
@@ -60,7 +59,8 @@ std::vector<xy_pt> make_block_footprint(double width, double resolution){
     std::vector<xy_pt> footprint;
 
     // We want discretization to be conservative
-    double ceil_width = std::ceil(width/resolution)*resolution;
+    //double ceil_width = std::ceil(width/resolution)*resolution;
+    double ceil_width = width;
 
     double halfwidthd = (double)CONTXY2DISC(ceil_width/2.0, resolution);
     // small sides
@@ -77,19 +77,20 @@ std::vector<xy_pt> make_block_footprint(double width, double resolution){
 // Translate and rotate footprint around given position
 // Assumes footprint and position are on lattice already 
 std::vector<xy_pt> positionFootprint(std::vector<double> position, std::vector<xy_pt> footprint, double resolution){
-    double angle = gls::io::DiscTheta2Cont((int)position[2], NUMTHETADIRS)+M_PI;
+    double angle = gls::io::DiscTheta2Cont((int)position[2], NUMTHETADIRS);
+    std::cout<<angle<<std::endl;
     double x, y, x_rot, y_rot;
     std::vector<xy_pt> rotated_footprint;
 
     for(xy_pt point : footprint){
 
         // Convert to real and Rotate
-        x = point.first*resolution;
-        y = point.second*resolution;
+        x = DISCXY2CONT(point.first, resolution);
+        y = DISCXY2CONT(point.second, resolution);
         x_rot = x*std::cos(angle) - y*std::sin(angle);
         y_rot = x*std::sin(angle) + y*std::cos(angle);
-        point.first = std::round(x_rot/resolution);
-        point.second = std::round(y_rot/resolution);
+        point.first = CONTXY2DISC(x_rot, resolution);
+        point.second = CONTXY2DISC(y_rot, resolution);
 
         // Transform
         point.first += position[0];
@@ -325,7 +326,7 @@ std::pair<double, std::vector<rsmotion::algorithm::State>> testheuristic(std::ve
 
     const auto path = SearchShortestPath(carStart, finishPoint);
     const auto path2 = SearchShortestPath(carStart, finishPoint, turning_radius);
-    std::cout<<start[0]<< " "<<start[1]<<" "<<start[2]<<" || "<<goal[0]<<" "<<goal[1]<<" "<<goal[2]<<std::endl;
+    //std::cout<<start[0]<< " "<<start[1]<<" "<<start[2]<<" || "<<goal[0]<<" "<<goal[1]<<" "<<goal[2]<<std::endl;
 
     auto path2_vals = rsmotion::GetPath(carStart, path2, 0.05, turning_radius);
     /*
@@ -340,9 +341,10 @@ std::pair<double, std::vector<rsmotion::algorithm::State>> testheuristic(std::ve
     return {path.Length(), path2_vals};
 }
 
+/*
 void makeBox(cv::Mat image, cv::Scalar box_color, std::vector<double> u, double scale, double offsetx,double offsety, int numberOfRows){
-    std::pair<double,double> blc = {-0.44*std::cos(u[2]) + 0.135*std::sin(u[2]), -0.44*std::sin(u[2]) - 0.135*std::cos(u[2])};
-    std::pair<double,double> tlc = {-0.44*std::cos(u[2]) - 0.135*std::sin(u[2]), -0.44*std::sin(u[2]) + 0.135*std::cos(u[2])};
+    std::pair<double,double> blc = {0.44*std::cos(u[2]) + 0.135*std::sin(u[2]), 0.44*std::sin(u[2]) - 0.135*std::cos(u[2])};
+    std::pair<double,double> tlc = {0.44*std::cos(u[2]) - 0.135*std::sin(u[2]), 0.44*std::sin(u[2]) + 0.135*std::cos(u[2])};
     std::pair<double,double> trc = {-0.135*std::sin(u[2]), 0.135*std::cos(u[2])};
     std::pair<double,double> brc = {0.135*std::sin(u[2]),-0.135*std::cos(u[2])};
 
@@ -350,6 +352,37 @@ void makeBox(cv::Mat image, cv::Scalar box_color, std::vector<double> u, double 
     cv::Point corner2((int)((u[0]+tlc.first)*scale-offsetx), (int)(numberOfRows - (u[1]+tlc.second)*scale)-offsety);
     cv::Point corner3((int)((u[0]+trc.first)*scale-offsetx), (int)(numberOfRows - (u[1]+trc.second)*scale)-offsety);
     cv::Point corner4((int)((u[0]+brc.first)*scale-offsetx), (int)(numberOfRows - (u[1]+brc.second)*scale)-offsety);
+    cv::line(image, corner1, corner2, box_color, 1);
+    cv::line(image, corner1, corner4, box_color, 1);
+    cv::line(image, corner3, corner2, box_color, 1);
+    cv::line(image, corner3, corner4, box_color, 1);
+}
+*/
+void makeBox(cv::Mat image, 
+        cv::Scalar box_color, 
+        std::vector<double> position, 
+        std::vector<double> dimentions, // {length, width}
+        bool center, // if true consider position center of box, else rear axle
+        double scale, 
+        double offsetx,
+        double offsety, 
+        int numberOfRows){
+    double offcenter = 0.0;
+
+    if (center){
+        dimentions[0] /= 2.0;
+        offcenter = dimentions[0];
+    }
+    std::pair<double,double> blc = {dimentions[0]*std::cos(position[2]) + dimentions[1]/2.0*std::sin(position[2]), dimentions[0]*std::sin(position[2]) - dimentions[1]/2.0*std::cos(position[2])};
+    std::pair<double,double> tlc = {dimentions[0]*std::cos(position[2]) - dimentions[1]/2.0*std::sin(position[2]), dimentions[0]*std::sin(position[2]) + dimentions[1]/2.0*std::cos(position[2])};
+
+    std::pair<double,double> brc = {-offcenter*std::cos(position[2]) + dimentions[1]/2.0*std::sin(position[2]), -offcenter*std::sin(position[2]) - dimentions[1]/2.0*std::cos(position[2])};
+    std::pair<double,double> trc = {-offcenter*std::cos(position[2]) - dimentions[1]/2.0*std::sin(position[2]), -offcenter*std::sin(position[2]) + dimentions[1]/2.0*std::cos(position[2])};
+
+    cv::Point corner1((int)((position[0]+blc.first)*scale-offsetx), (int)(numberOfRows - (position[1]+blc.second)*scale)-offsety);
+    cv::Point corner2((int)((position[0]+tlc.first)*scale-offsetx), (int)(numberOfRows - (position[1]+tlc.second)*scale)-offsety);
+    cv::Point corner3((int)((position[0]+trc.first)*scale-offsetx), (int)(numberOfRows - (position[1]+trc.second)*scale)-offsety);
+    cv::Point corner4((int)((position[0]+brc.first)*scale-offsetx), (int)(numberOfRows - (position[1]+brc.second)*scale)-offsety);
     cv::line(image, corner1, corner2, box_color, 1);
     cv::line(image, corner1, corner4, box_color, 1);
     cv::line(image, corner3, corner2, box_color, 1);
@@ -404,7 +437,7 @@ void displayPath(std::string obstacleFile, std::shared_ptr<ompl::geometric::Path
         if(i == pathSize-1 || cutshort){
             box_color = cv::Scalar(0, 0, 255);
         }
-        makeBox(image, box_color, uvec, scale, offsetx, offsety, numberOfRows);
+        makeBox(image, box_color, uvec, {0.44, 0.27}, false, scale, offsetx, offsety, numberOfRows);
         box_color = cv::Scalar(255, 0, 0);
     }
 
@@ -454,7 +487,7 @@ void displayPath(std::string obstacleFile, std::vector<rsmotion::algorithm::Stat
         if(i == pathSize-1){
             box_color = cv::Scalar(0, 0, 255);
         }
-        makeBox(image, box_color, uvec, scale, offsetx, offsety, numberOfRows);
+        makeBox(image, box_color, uvec, {0.44, 0.27}, false, scale, offsetx, offsety, numberOfRows);
         box_color = cv::Scalar(255, 0, 0);
     }
 
@@ -483,7 +516,7 @@ void displayStatePaths(std::string obstacleFile, std::vector<std::vector<rsmotio
   // TODO don't do this
   double scale = 350.0;
   int offsetx = 380;
-  int offsety = -450;
+  int offsety = -150;
 
   // debug collision checking
   double resolution = 0.05;
@@ -492,6 +525,7 @@ void displayStatePaths(std::string obstacleFile, std::vector<std::vector<rsmotio
   auto bounds = ompl::base::RealVectorBounds(7); 
   bounds.setLow(-100.0);
   bounds.setHigh(100.0);
+  int pathidx = 0;//debug
   for (std::vector<rsmotion::algorithm::State> path : paths){
 
       cv::Scalar box_color(0, 255, 0);
@@ -506,15 +540,23 @@ void displayStatePaths(std::string obstacleFile, std::vector<std::vector<rsmotio
         std::vector<double> uvec = {u.X(), u.Y(), u.Phi()};
 
         // Check for collisions
+        /*
         std::vector<double> colvec = {CONTXY2DISC(u.X(), resolution), 
                                     CONTXY2DISC(u.Y(), resolution), 
                                     gls::io::ContTheta2Disc(u.Phi(), NUMTHETADIRS), 
                                     1,
-                                    49,
-                                    26,
+                                    40,
+                                    40,
+                                    0};
+                                    */
+        std::vector<double> colvec = {round(u.X()/ resolution), 
+                                    round(u.Y()/ resolution), 
+                                    gls::io::ContTheta2Disc(u.Phi(), NUMTHETADIRS), 
+                                    1,
+                                    40,
+                                    40,
                                     0};
         if(!isRobotValid(colvec, bounds, lat2real, robot_footprint, block_footprint, resolution)){
-            std::cout<<colvec[0]<<" "<<colvec[1]<<" "<<colvec[2]<<std::endl;
             std::vector<xy_pt> rrobot_fp = 
               positionFootprint({CONTXY2DISC(u.X(), resolution), 
                                  CONTXY2DISC(u.Y(), resolution), 
@@ -526,32 +568,32 @@ void displayStatePaths(std::string obstacleFile, std::vector<std::vector<rsmotio
                 cv::Point rPoint((int)(rpoint.first*resolution*scale-offsetx), (int)(numberOfRows - rpoint.second*resolution*scale)-offsety);
                 cv::circle(image, rPoint, 1, color, cv::FILLED);
             }
-            makeBox(image, color, uvec, scale, offsetx, offsety, numberOfRows);
+            //makeBox(image, color, uvec, scale, offsetx, offsety, numberOfRows);
         }
-        if(colvec[0] == 49 && colvec[1] == 36 && colvec[2] == 4){
+        if(colvec[0] == 40 && colvec[1] == 40 && colvec[2] == 0){
             std::vector<xy_pt> rrobot_fp = 
               positionFootprint({std::round(u.X()/ resolution), 
                                  std::round(u.Y()/ resolution), 
                                  gls::io::ContTheta2Disc(u.Phi(), NUMTHETADIRS)}, 
                                  robot_footprint, resolution);
             for (xy_pt rpoint : rrobot_fp){
-                std::cout<<"rotated: "<<rpoint.first<<", "<<rpoint.second<<std::endl;
                 cv::Point rPoint((int)((rpoint.first*resolution)*scale-offsetx), (int)(numberOfRows - DISCXY2CONT(rpoint.second,resolution)*scale)-offsety);
                 cv::circle(image, rPoint, 2, color, cv::FILLED);
             }
-            makeBox(image, color, uvec, scale, offsetx, offsety, numberOfRows);
+            makeBox(image, color, uvec, {0.44, 0.27}, false, scale, offsetx, offsety, numberOfRows);
         }
         cv::Point uPoint((int)(u.X()*scale-offsetx), (int)(numberOfRows - u.Y()*scale)-offsety);
         if (i ==0){
-            makeBox(image, box_color, uvec, scale, offsetx, offsety, numberOfRows);
+            makeBox(image, box_color, uvec, {0.44, 0.27}, false, scale, offsetx, offsety, numberOfRows);
         }
         if(i == pathSize-1){
             box_color = cv::Scalar(0, 0, 255);
-            makeBox(image, box_color, uvec, scale, offsetx, offsety, numberOfRows);
+            makeBox(image, box_color, uvec, {0.44, 0.27}, false, scale, offsetx, offsety, numberOfRows);
         }
         cv::circle(image, uPoint, 1, color, cv::FILLED);
         color = cv::Scalar(255, 0, 0);
       }
+      pathidx++;//debug
   }
   cv::Point bPoint((int)(49*resolution*scale-offsetx), (int)(numberOfRows - 26*resolution*scale)-offsety);
   cv::circle(image, bPoint, 3, cv::Scalar(255,255,0), cv::FILLED);
@@ -568,6 +610,32 @@ void displayStatePaths(std::string obstacleFile, std::vector<std::vector<rsmotio
 
   cv::imshow("All Paths", image);
   cv::waitKey(0);
+}
+
+void displayPoints(cv::Mat image, std::vector<xy_pt> points, double resolution, cv::Scalar color) {
+  // Get state count
+
+  // Obtain the image matrix
+  int numberOfRows = image.rows;
+  int numberOfColumns = image.cols;
+
+  // TODO don't do this
+  double scale = 500.0;
+  int offsetx = -300;
+  int offsety = 400;
+  int thickness = 1;
+  for (xy_pt point : points){
+      if(point.first == 0 && point.second == 0){
+          thickness = 3;
+      }
+    cv::Point uPoint((int)
+            (DISCXY2CONT(point.first, resolution)*scale-offsetx), 
+            (int)(numberOfRows - DISCXY2CONT(point.second, resolution)*scale)-offsety);
+
+    cv::circle(image, uPoint, thickness, color, cv::FILLED);
+    thickness = 1;
+  }
+
 }
 
 void displayPaths(std::string obstacleFile, std::vector<rsmotion::algorithm::Path> paths,rsmotion::CarState carStart, double resolution, double turning_radius, std::function<std::vector<double>(std::vector<double>)> lat2real) {
@@ -682,7 +750,29 @@ int main (int argc, char const *argv[]) {
 
   /* debug stuff*/
 
+  double resolution = mReader->resolution;
+  std::vector<xy_pt> robot_footprint = make_robot_footprint(0.27, 0.44, resolution);
+  std::vector<xy_pt> block_footprint = make_block_footprint(0.1, resolution);
+
+  auto rotated_footprint = positionFootprint({0, 0, 4}, robot_footprint, 0.05);
+  auto rotated_block_footprint = positionFootprint({0,CONTXY2DISC(0.05+WHEELBASE, resolution), 0}, block_footprint, 0.05);
+  cv::Mat image = cv::imread(obstacleLocation, 1);
+
+  //displayPoints(image, robot_footprint, 0.05, cv::Scalar(255,0,0));
+  displayPoints(image, rotated_footprint, 0.05, cv::Scalar(0,0,255));
+  displayPoints(image, rotated_block_footprint, 0.05, cv::Scalar(0,0,255));
+  double scale = 500.0;
+  int offsetx = -300;
+  int offsety = 400;
+  int numberOfRows = image.rows;
+  std::vector<double> uvec = {0, 0, 0};
+  makeBox(image, cv::Scalar(0,255,0), uvec, {WHEELBASE, 0.27}, false, scale, offsetx, offsety, numberOfRows);
+  makeBox(image, cv::Scalar(0,255,0), {0.05 + WHEELBASE,0,0}, {0.1, 0.1}, true, scale, offsetx, offsety, numberOfRows);
+  cv::imshow("Points", image);
+  cv::waitKey(0);
+
   // Reeds Shepp
+  /*
   auto rsspace = std::make_shared<ompl::base::ReedsSheppStateSpace>(0.627);
   auto rsbounds = ompl::base::RealVectorBounds(2); 
   rsbounds.setLow(-100.0); // TODO set real bounds, although I don't think these are used
@@ -697,8 +787,8 @@ int main (int argc, char const *argv[]) {
   StatePtr startState(new State(rsspace));
   StatePtr goalState(new State(rsspace));
 
-  startvect = {3.0,3.0,0.0};
-  goalvect = {2.0,3.0,3.14};
+  startvect = {3.0,2.0,0.0};
+  goalvect = {2.0,1.5,M_PI/2.0};
   rsspace->copyFromReals(startState->getOMPLState(),startvect); 
   rsspace->copyFromReals(goalState->getOMPLState(),goalvect); 
   std::cout<<"ompl: "<<rsspace->distance(startState->getOMPLState(), goalState->getOMPLState())<<std::endl;
@@ -727,14 +817,14 @@ int main (int argc, char const *argv[]) {
       std::cout<<statePath.back().Phi()<<std::endl;
   }
   displayPath(obstacleLocation, path);
-  displayPaths(obstacleLocation, paths, carStart, 0.05, turning_radius, lat2real); 
+  //displayPaths(obstacleLocation, paths, carStart, 0.05, turning_radius, lat2real); 
   
   // Dubins
   DubinsPath dubins_path;
   std::vector<DubinsPath> dpaths;
   std::vector<rsmotion::algorithm::State> state_path;
-  double start[] = {3.0,3.0,0.0+M_PI};
-  double goal[] = {2.0,3.0,3.14+M_PI};
+  double start[] = {3.0,2.0,0.0+M_PI};
+  double goal[] = {2.0,1.5,(M_PI*3.0/2.0)+M_PI};
   dubins_shortest_path(&dubins_path, start, goal, turning_radius); 
 
   dubins_path_sample_many(&dubins_path,  0.05, std::bind(&savePath, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, &state_path), NULL);
@@ -743,13 +833,15 @@ int main (int argc, char const *argv[]) {
 
   std::vector<std::vector<rsmotion::algorithm::State>> dstate_paths;
   for(DubinsPath dpath : dpaths){
+      std::cout<<"length: "<<CONTXY2DISC(dubins_path_length(&dpath), mReader->resolution)<<std::endl;
       std::vector<rsmotion::algorithm::State> dstate_path;
       dubins_path_sample_many(&dpath,  0.05, std::bind(&savePath, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, &dstate_path), NULL);
       dstate_paths.push_back(dstate_path);
   }
-  //displayPath(obstacleLocation, state_path);
+  displayPath(obstacleLocation, state_path);
   std::cout<<"size: "<<dstate_paths.size()<<std::endl;
-  //displayStatePaths(obstacleLocation, dstate_paths); 
+  displayStatePaths(obstacleLocation, dstate_paths, lat2real); 
 
+  */ 
   return 0;
 }

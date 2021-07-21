@@ -19,8 +19,11 @@ namespace gls {
 namespace io {
 
 #define PI_CONST 3.141592653589793238462643383279502884
-#define CONTXY2DISC(X, CELLSIZE) (((X)>=0)?((int)((X)/(CELLSIZE))):((int)((X)/(CELLSIZE))-1))    
-#define DISCXY2CONT(X, CELLSIZE) ((X)*(CELLSIZE) + (CELLSIZE)/2.0)  
+//#define CONTXY2DISC(X, CELLSIZE) (((X)>=0)?((int)((X)/(CELLSIZE))):((int)((X)/(CELLSIZE))-1))    
+//#define DISCXY2CONT(X, CELLSIZE) ((X)*(CELLSIZE) + (CELLSIZE)/2.0)  
+#define CONTXY2DISC(X, CELLSIZE) (((X)>=0)?((int)std::round((X)/(CELLSIZE))):((int)std::round((X)/(CELLSIZE))))    
+#define DISCXY2CONT(X, CELLSIZE) ((X)*(CELLSIZE))  
+ 
 
 struct pt_xyt{
     float x;
