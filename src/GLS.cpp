@@ -818,6 +818,7 @@ void GLS::evaluateSearchTree() {
     if (foundPathToGoal()) {
       // Planning problem has been solved!
       mPlannerStatus = PlannerStatus::Solved;
+      std::cout<<"plan found"<<std::endl;
     }
   }
 
