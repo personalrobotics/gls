@@ -95,10 +95,6 @@ add_executable(test_implicit examples/test_implicit.cpp)
 target_link_libraries(test_implicit ${PROJECT_NAME} ${OpenCV_LIBS})
 install(TARGETS test_implicit RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-add_executable(rc_lattice examples/rc_lattice.cpp)
-target_link_libraries(rc_lattice ${PROJECT_NAME} ${OpenCV_LIBS})
-install(TARGETS rc_lattice RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
 add_executable(reconfigure examples/reconfigure.cpp)
 target_link_libraries(reconfigure ${PROJECT_NAME} ${OpenCV_LIBS} ${ImageMagick_LIBRARIES})
 install(TARGETS reconfigure RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

@@ -191,6 +191,17 @@ std::vector<double> lattice2real(std::vector<double> vals, gls::io::MotionPrimit
     return real_vals;
 }
 
+// Vertex hash specific to the statespace
+std::string iVertexHash(StatePtr k) {
+    double* values = k->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    return std::to_string((int)round(values[0])) + 
+        std::to_string((int)round(values[1])) + 
+        std::to_string((int)round(values[2])) + 
+        std::to_string((int)round(values[4])) + 
+        std::to_string((int)round(values[5]));
+    //debug + std::to_string((int)round(values[6])); // Ignore block angle
+}
+
 // Reverse continuous state from lattice 
 // This must be user-defined because it varies per state space
 StatePtr lattice2state(StatePtr state, gls::io::MotionPrimitiveReader *mReader,std::shared_ptr<ompl::base::RealVectorStateSpace> space){
@@ -212,7 +223,6 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
 
     // Neighbors
     int nx, ny, ntheta;
-    IVertexHash hash;
     IVertex neighbor;
     double length; //debug
     VertexProperties neighborProperties;
@@ -238,14 +248,14 @@ std::vector<std::tuple<IVertex, VertexProperties, double, int>> transition_funct
             space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, -1});
             neighborProperties.setState(newState);
 
-            neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(hash(neighborProperties.getState()), neighborProperties, length, mprim.motprimID));
+            neighbors.push_back(std::tuple<IVertex, VertexProperties, double, int>(iVertexHash(neighborProperties.getState()), neighborProperties, length, mprim.motprimID));
         }
     }
 
     return neighbors;
 }
 
-std::vector<StatePtr> interpolate(StatePtr state, StatePtr state2, int motPrimID, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
+std::vector<StatePtr> interpolate(StatePtr state, StatePtr state2, int motPrimID, bool real, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
 
     double* values = 
         state->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
@@ -257,10 +267,18 @@ std::vector<StatePtr> interpolate(StatePtr state, StatePtr state2, int motPrimID
         if(mprim.motprimID == motPrimID && mprim.starttheta_c == values[2]){
             for(gls::io::pt_xyt point : mprim.intermptV){
                 StatePtr newState(new State(space));
-                space->copyFromReals(newState->getOMPLState(), 
-                        std::vector<double>{(double)point.x + DISCXY2CONT(values[0], res), 
-                                            (double)point.y + DISCXY2CONT(values[1], res), 
-                                            (double)point.theta, -1});
+                if(real){
+                    space->copyFromReals(newState->getOMPLState(), 
+                            std::vector<double>{(double)point.x + DISCXY2CONT(values[0], res), 
+                                                (double)point.y + DISCXY2CONT(values[1], res), 
+                                                (double)point.theta, -1});
+                }
+                else{ // on lattice
+                    space->copyFromReals(newState->getOMPLState(), 
+                            std::vector<double>{(double)CONTXY2DISC(point.x, res) + values[0], 
+                                                (double)CONTXY2DISC(point.y, res) + values[1], 
+                                                (double)mReader->ContTheta2DiscNew(point.theta), -1});
+                }
                                             
                 states.push_back(newState);
             }
@@ -706,10 +724,17 @@ int main (int argc, char const *argv[]) {
                 std::placeholders::_2, 
                 space, 
                 mReader),
+          std::bind(&transition_function,   // This should be a parents function but for now it is ok since we have not collision checking
+                std::placeholders::_1, 
+                std::placeholders::_2, 
+                space, 
+                mReader),
+          std::function<std::string(StatePtr)>(&iVertexHash),
           std::bind(&interpolate, 
               std::placeholders::_1,
               std::placeholders::_2,
               std::placeholders::_3,
+              std::placeholders::_4,
               space, 
               mReader)
           );

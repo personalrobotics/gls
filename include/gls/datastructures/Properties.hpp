@@ -43,7 +43,7 @@ class Vertex {
 struct VertexHash{
     std::size_t operator()(const Vertex& k) const{
         if (k.isImplicit()){
-            return std::stoi(k.mImplicitVertex);//TODO this could be wrong for -1 in name
+            return std::stoi(k.mImplicitVertex);//TODO this will be wrong for -1 in name
         }
         else{
             return k.mExplicitVertex;

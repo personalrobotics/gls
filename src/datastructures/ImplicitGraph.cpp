@@ -61,7 +61,7 @@ bool ImplicitGraph::addAdjVertex(vertex_descriptor vi, StatePtr state){
 }
 
 std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descriptor v2, double length, int motprimID){
-    IEdge ei = {v1, v2}; // EdgeHash effectively
+    IEdge ei = {v1, v2};
     std::string eh = v1 + v2; // EdgeHash effectively
     bool exists = true;
     if(mEdgeHashTable.find(eh) == mEdgeHashTable.end()){
@@ -111,6 +111,22 @@ IVertex source(const IEdge& e, const ImplicitGraph& g) {
 }
 IVertex target(const IEdge& e, const ImplicitGraph& g) {
     return e.second;
+}
+
+std::vector<std::tuple<IVertex, bool, bool>> parent_vertices(const IVertex& u, ImplicitGraph& g) {
+
+  // Generate neighbors: vertex_descriptor, VertexProperties, length, motprimID
+  std::vector<std::tuple<IVertex, VertexProperties, double, int>> neighbors = g.parents(u, g[u]);
+
+  std::vector<std::tuple<IVertex, bool, bool>> return_neighbors;
+
+  // Update internal graph
+  for(INeighborIter it = neighbors.begin(); it != neighbors.end(); ++it) {
+      bool vexists = g.addAdjVertex(std::get<0>(*it), std::get<1>(*it).getState()); // Add vertex to map if not already in
+      std::pair<IEdge, bool> edge_pair = g.addEdge(std::get<0>(*it), u, std::get<2>(*it), std::get<3>(*it)); // Add edge to map if not already in
+      return_neighbors.push_back(std::tuple<IVertex, bool, bool>{std::get<0>(*it), vexists, edge_pair.second});
+  }
+  return return_neighbors;
 }
 
 // wish I could return iterator, but can't because vector is made in function

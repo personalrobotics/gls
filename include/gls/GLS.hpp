@@ -90,7 +90,7 @@ public:
   void setRoadmap(std::string filename);
 
   /// Sets transition function for graph. Implicit only. 
-  void setImplicit(gls::datastructures::DiscFunc disc_function, gls::datastructures::NeighborFunc transition_function, datastructures::InterpolateFunc interpolate_function=NULL);
+  void setImplicit(datastructures::DiscFunc disc_function, datastructures::NeighborFunc transition_function, datastructures::NeighborFunc parent_function, datastructures::HashFunc hash_function, datastructures::InterpolateFunc interpolate_function=NULL);
 
   /// Set heuristic function, optional 
   void setHeuristic(HeuristicFunction heuristic);

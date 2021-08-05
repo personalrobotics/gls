@@ -257,6 +257,7 @@ ompl::base::PlannerStatus GLS::solve(const ompl::base::PlannerTerminationConditi
   while (!mExtendQueue.isEmpty()) {
     // Extend the tree till the event is triggered.
     extendSearchTree();
+    std::cout<<"event triggered"<<std::endl;
 
     // Evaluate the extended search tree.
     evaluateSearchTree();
@@ -389,7 +390,7 @@ void GLS::setRoadmap(std::string filename) {
       mGraph.mExplicitGraph, get(&VertexProperties::mState, mGraph.mExplicitGraph), get(&EdgeProperties::mLength, mGraph.mExplicitGraph));
 
   // Explicit graph setup
-  mGraph.mImplicit = false;
+  mGraph.setGraphType("explicit");
   mGraph.updateExplicit(); // assumes mGraph.mExplicitGraph already set
 
   // Mark the graph to have been setup.
@@ -397,8 +398,8 @@ void GLS::setRoadmap(std::string filename) {
 }
 
 // ============================================================================
-void GLS::setImplicit(datastructures::DiscFunc disc_function, datastructures::NeighborFunc transition_function, datastructures::InterpolateFunc interpolate_function){
-    datastructures::ImplicitGraph iGraph = datastructures::ImplicitGraph(disc_function, transition_function);
+void GLS::setImplicit(datastructures::DiscFunc disc_function, datastructures::NeighborFunc transition_function, datastructures::NeighborFunc parent_function, datastructures::HashFunc hash_function, datastructures::InterpolateFunc interpolate_function){
+    datastructures::ImplicitGraph iGraph = datastructures::ImplicitGraph(disc_function, transition_function, parent_function, hash_function);
     mGraph.setImplicit(iGraph);
     mImplicit = true;
     if(interpolate_function){
@@ -475,16 +476,28 @@ CollisionStatus GLS::evaluateEdge(const Edge& e) {
     return CollisionStatus::Collision;
   }
 
-  // Evaluate the state in between.
-  int maxSteps = 1.0 / mCollisionCheckResolution;
-  for (int multiplier = 1; multiplier < maxSteps + 1; ++multiplier) {
-    double interpolationStep = mCollisionCheckResolution * multiplier;
-    assert(interpolationStep <= 1);
-    StatePtr midVertex(new gls::datastructures::State(mSpace));
-    mSpace->interpolate(startState, endState, interpolationStep, midVertex->getOMPLState());
+  if(mInterpolate){ // Custom interpolation
+    int uvID = mGraph[e].getPrimID();
+    // Get discretized states
+    std::vector<StatePtr> intermStates = mInterpolate(mGraph[startVertex].getState(), mGraph[endVertex].getState(), uvID, false);
 
-    if (!validityChecker->isValid(midVertex->getOMPLState()))
-      return CollisionStatus::Collision;
+    for(StatePtr state : intermStates){
+        if (!validityChecker->isValid(state->getOMPLState()))
+          return CollisionStatus::Collision;
+    }
+  }
+  else{ // Use state space interpolate
+      // Evaluate the state in between.
+      int maxSteps = 1.0 / mCollisionCheckResolution;
+      for (int multiplier = 1; multiplier < maxSteps + 1; ++multiplier) {
+        double interpolationStep = mCollisionCheckResolution * multiplier;
+        assert(interpolationStep <= 1);
+        StatePtr midVertex(new gls::datastructures::State(mSpace));
+        mSpace->interpolate(startState, endState, interpolationStep, midVertex->getOMPLState());
+
+        if (!validityChecker->isValid(midVertex->getOMPLState()))
+          return CollisionStatus::Collision;
+      }
   }
 
   // Edge is collision-free.
@@ -513,9 +526,12 @@ void GLS::extendSearchTree() {
     if (mGraph[u].getCollisionStatus() == CollisionStatus::Collision)
       continue;
 
+    //debug
+    bool targetneighbor;
     // Get the neighbors and extend.
     NeighborIter ni, ni_end;
     for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end; ++ni) {
+      targetneighbor = false; //debug
       Vertex v = *ni;
 
       // If the successor has been previously marked to be in collision,
@@ -538,6 +554,11 @@ void GLS::extendSearchTree() {
       // Get the edge between the two vertices.
       Edge uv = getEdge(u, v);
 
+      //debug
+      if(std::find(mTargetVertices.begin(), mTargetVertices.end(), v) != mTargetVertices.end()){
+          targetneighbor = true;
+          std::cout<<"target neighbor discovered "<<(mGraph[uv].getCollisionStatus()==CollisionStatus::Collision)<<std::endl;
+      }
       // If the edge has been previously marked to be in collision,
       // continue to the next successor.
       if (mGraph[uv].getCollisionStatus() == CollisionStatus::Collision)
@@ -606,6 +627,11 @@ void GLS::extendSearchTree() {
       // Add it to its new siblings
       mGraph[u].addChild(v);
 
+      //debug
+      if(targetneighbor){
+        std::cout<<"length: "<<edgeLength<<" "<<mGraph[v].getEstimatedTotalCost()<<std::endl;
+      }
+
       mExtendQueue.addVertexWithValue(v, mGraph[v].getEstimatedTotalCost());
     }
   }
@@ -668,7 +694,7 @@ void GLS::rewireSearchTree() {
 
     // Look for possible parents in the rest of the graph.
     NeighborIter ni, ni_end;
-    for (boost::tie(ni, ni_end) = adjacent_vertices(v, mGraph); ni != ni_end; ++ni) {
+    for (boost::tie(ni, ni_end) = parent_vertices(v, mGraph); ni != ni_end; ++ni) {
       // Get the possible parent.
       Vertex u = *ni;
 
@@ -837,9 +863,9 @@ ompl::base::PathPtr GLS::constructSolution(const Vertex& source, const Vertex& t
     u = mGraph[v].getParent();
     if(mInterpolate){
         uvID = mGraph[getEdge(u,v)].getPrimID();
-        intermStates = mInterpolate(mGraph[u].getState(), mGraph[v].getState(), uvID);
+        // Get real states
+        intermStates = mInterpolate(mGraph[u].getState(), mGraph[v].getState(), uvID, true);
         std::reverse(intermStates.begin(), intermStates.end());
-        //TODO (Schmittle) this does not add the start/end states I don't think
         for(StatePtr state : intermStates){
             path->append(state->getOMPLState());
         }
@@ -848,6 +874,7 @@ ompl::base::PathPtr GLS::constructSolution(const Vertex& source, const Vertex& t
         path->append(mGraph[v].getState()->getOMPLState());
     }
     v = u;
+    std::cout<<u<<std::endl;
   }
 
   if (v == source) {

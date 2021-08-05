@@ -31,7 +31,7 @@ typedef std::tuple<IVertex, VertexProperties, double, int> Neighbor;
 typedef std::pair<double, double> xy_pt;
 float WHEELBASE = 0.44;
 float TURNING_RADIUS = 0.627;
-int NUMTHETADIRS = 16;
+int NUMTHETADIRS = 32; // TODO (schmittle) this should come from the mprim file
 
 void displayPoints(cv::Mat image, std::vector<xy_pt> points, double resolution, cv::Scalar color) {
   // Get state count
@@ -123,7 +123,6 @@ std::vector<xy_pt> positionFootprint(std::vector<double> position, std::vector<x
     return rotated_footprint;
 }
 
-
 /// Checks for bounds only
 /// This is bound to the stateValidityChecker of the ompl StateSpace.
 /// \param[in] state The ompl state to check for validity.
@@ -197,7 +196,6 @@ bool isRobotStateValid(
   return isRobotValid({values[0], values[1], values[2], values[3], values[4], values[5], values[6]}, bounds, lat2real, robot_footprint, block_footprint, resolution);
 }
 
-// TODO (schmittle) should be able to move the fitting functions to internal
 // Discretize state to graph
 // This must be user-defined because it varies per state space
 StatePtr fit_state2lattice(StatePtr state, gls::io::MotionPrimitiveReader *mReader,std::shared_ptr<ompl::base::RealVectorStateSpace> space){
@@ -230,6 +228,17 @@ std::vector<double> lattice2real(std::vector<double> vals, gls::io::MotionPrimit
     real_vals[6] = (double) gls::io::DiscTheta2Cont(vals[6], NUMTHETADIRS);
 
     return real_vals;
+}
+
+// Vertex hash specific to the statespace
+std::string iVertexHash(StatePtr k) {
+    double* values = k->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    return std::to_string((int)round(values[0])) + 
+        std::to_string((int)round(values[1])) + 
+        std::to_string((int)round(values[2])) + 
+        std::to_string((int)round(values[4])) + 
+        std::to_string((int)round(values[5]));
+    //debug + std::to_string((int)round(values[6])); // Ignore block angle
 }
 
 // Given robot state, return block state assuming in contact
@@ -366,7 +375,6 @@ std::pair<std::vector<Neighbor>, std::vector<std::vector<rsmotion::algorithm::St
     rsmotion::CarState carStart{{startPosition, startOrientation}, WHEELBASE};
 
     VertexProperties neighborProperties;
-    IVertexHash hash;
     double length;
     int rs_index = 1;
 
@@ -423,7 +431,7 @@ std::pair<std::vector<Neighbor>, std::vector<std::vector<rsmotion::algorithm::St
                     neighborProperties.setState(newState);
 
                     recon_neighbor = Neighbor(
-                            hash(neighborProperties.getState()), neighborProperties, length, -rs_index);
+                            iVertexHash(neighborProperties.getState()), neighborProperties, length, -rs_index);
                 }
                 rs_index++;
             }
@@ -461,7 +469,7 @@ std::pair<std::vector<Neighbor>, std::vector<std::vector<rsmotion::algorithm::St
                     space->copyFromReals(newState->getOMPLState(), std::vector<double>{nx, ny, ntheta, i, robot_state[4], robot_state[5], robot_state[6]});
                     neighborProperties.setState(newState);
 
-                    recon_neighbor = Neighbor(hash(neighborProperties.getState()), neighborProperties, length, -(rs_index+100)); // 100 used to delineate dubins from rs for old interpolate
+                    recon_neighbor = Neighbor(iVertexHash(neighborProperties.getState()), neighborProperties, length, -(rs_index+100)); // 100 used to delineate dubins from rs for old interpolate
                 }
                 rs_index++;
             }
@@ -492,7 +500,6 @@ std::vector<Neighbor> cached_transition_function(
 
         // Neighbors
         int nx, ny, ntheta;
-        IVertexHash hash;
         IVertex neighbor;
         double length;
         VertexProperties neighborProperties;
@@ -521,7 +528,6 @@ std::vector<Neighbor> cached_transition_function(
                     const Vec3f blockPosition =  getBlockPos(car_pose);
 
                     // Set state
-                    // TODO (schmittle) this seems inefficient to make a new state
                     neighborProperties = VertexProperties();
                     StatePtr newState(new State(space));
                     space->copyFromReals(newState->getOMPLState(), 
@@ -532,7 +538,7 @@ std::vector<Neighbor> cached_transition_function(
                     neighborProperties.setState(newState);
 
                     neighbors.push_back(Neighbor
-                            (hash(neighborProperties.getState()), 
+                            (iVertexHash(neighborProperties.getState()), 
                              neighborProperties, 
                              length, 
                              mprim.motprimID));
@@ -566,7 +572,7 @@ std::vector<Neighbor> cached_transition_function(
                 neighborProperties.setState(newState);
 
                 recon_neighbor = Neighbor
-                    (hash(newState), neighborProperties, std::get<2>(recon_neighbor), std::get<3>(recon_neighbor));
+                    (iVertexHash(newState), neighborProperties, std::get<2>(recon_neighbor), std::get<3>(recon_neighbor));
 
                 neighbors.push_back(recon_neighbor); // shortest valid reedshepp/dubins path
             }
@@ -615,7 +621,6 @@ std::vector<Neighbor> transition_function(
 
     // Neighbors
     int nx, ny, ntheta;
-    IVertexHash hash;
     IVertex neighbor;
     double length;
     VertexProperties neighborProperties;
@@ -643,7 +648,6 @@ std::vector<Neighbor> transition_function(
                 const Vec3f blockPosition =  getBlockPos(car_pose);
 
                 // Set state
-                // TODO (schmittle) this seems inefficient to make a new state
                 neighborProperties = VertexProperties();
                 StatePtr newState(new State(space));
                 space->copyFromReals(newState->getOMPLState(), 
@@ -654,7 +658,7 @@ std::vector<Neighbor> transition_function(
                 neighborProperties.setState(newState);
 
                 neighbors.push_back(Neighbor
-                        (hash(neighborProperties.getState()), 
+                        (iVertexHash(neighborProperties.getState()), 
                          neighborProperties, 
                          length, 
                          mprim.motprimID));
@@ -688,7 +692,7 @@ void positionPath(std::vector<rsmotion::algorithm::State>& path, std::vector<dou
 }
 
 std::vector<StatePtr> cached_interpolate(StatePtr startState, StatePtr endState, 
-        int motPrimID, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader, 
+        int motPrimID, bool real, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader, 
         std::vector<std::vector<rsmotion::algorithm::State>> reconfigure_paths, 
         std::function<std::pair<std::vector<Neighbor>, std::vector<std::vector<rsmotion::algorithm::State>>>(std::vector<double>)> getTransition) {
 
@@ -708,21 +712,32 @@ std::vector<StatePtr> cached_interpolate(StatePtr startState, StatePtr endState,
             if(mprim.motprimID == motPrimID && mprim.starttheta_c == startValues[2]){
                 for(gls::io::pt_xyt point : mprim.intermptV){
                     StatePtr newState(new State(space));
-
-                    // Convert to real
                     std::vector<double> car_pose = {(double)point.x + DISCXY2CONT(startValues[0], res),
                                                     (double)point.y + DISCXY2CONT(startValues[1], res),
                                                     (double)point.theta};
                     const rsmotion::math::Vec3f blockPosition =  getBlockPos(car_pose);
 
-                    space->copyFromReals(newState->getOMPLState(), 
-                            std::vector<double>{car_pose[0], 
-                                                car_pose[1], 
-                                                car_pose[2], 
-                                                startValues[3], 
-                                                blockPosition[2],
-                                                blockPosition[0],
-                                                car_pose[2]});
+                    // Convert to real
+                    if(real){
+                        space->copyFromReals(newState->getOMPLState(), 
+                                std::vector<double>{car_pose[0], 
+                                                    car_pose[1], 
+                                                    car_pose[2], 
+                                                    startValues[3], 
+                                                    blockPosition[2],
+                                                    blockPosition[0],
+                                                    car_pose[2]});
+                    }
+                    else{ // on lattice
+                        space->copyFromReals(newState->getOMPLState(), 
+                                std::vector<double>{CONTXY2DISC(car_pose[0], res), 
+                                                    CONTXY2DISC(car_pose[1], res), 
+                                                    gls::io::ContTheta2Disc(car_pose[2], NUMTHETADIRS),
+                                                    startValues[3], 
+                                                    CONTXY2DISC(blockPosition[2], res),
+                                                    CONTXY2DISC(blockPosition[0], res),
+                                                    gls::io::ContTheta2Disc(car_pose[2], NUMTHETADIRS)});
+                    }
                     states.push_back(newState);
                 }
             }
@@ -765,21 +780,33 @@ std::vector<StatePtr> cached_interpolate(StatePtr startState, StatePtr endState,
                 std::cout<<uvec[0]<<", "<<uvec[1]<<", "<<uvec[2]<<std::endl;
             }
             StatePtr newState(new State(space));
-            space->copyFromReals(newState->getOMPLState(), 
-                    std::vector<double>{uvec[0], 
-                                        uvec[1], 
-                                        uvec[2], 
-                                        -1, 
-                                        DISCXY2CONT(startValues[4], res),
-                                        DISCXY2CONT(startValues[5], res),
-                                        gls::io::DiscTheta2Cont(startValues[6], NUMTHETADIRS)});
+            if(real){
+                space->copyFromReals(newState->getOMPLState(), 
+                        std::vector<double>{uvec[0], 
+                                            uvec[1], 
+                                            uvec[2], 
+                                            -1, 
+                                            DISCXY2CONT(startValues[4], res),
+                                            DISCXY2CONT(startValues[5], res),
+                                            gls::io::DiscTheta2Cont(startValues[6], NUMTHETADIRS)});
+            }
+            else{
+                space->copyFromReals(newState->getOMPLState(), 
+                        std::vector<double>{CONTXY2DISC(uvec[0],res), 
+                                            CONTXY2DISC(uvec[1],res), 
+                                            gls::io::ContTheta2Disc(uvec[2], NUMTHETADIRS), 
+                                            -1, 
+                                            startValues[4],
+                                            startValues[5],
+                                            startValues[6]});
+            }
             states.push_back(newState);
         }
     }
     return states;
 }
 
-std::vector<StatePtr> interpolate(StatePtr startState, StatePtr endState, int motPrimID, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
+std::vector<StatePtr> interpolate(StatePtr startState, StatePtr endState, int motPrimID, bool real, std::shared_ptr<ompl::base::RealVectorStateSpace> space, gls::io::MotionPrimitiveReader *mReader){
 
     double* startValues = 
         startState->getOMPLState()->as<ompl::base::RealVectorStateSpace::StateType>()->values;
@@ -802,14 +829,26 @@ std::vector<StatePtr> interpolate(StatePtr startState, StatePtr endState, int mo
                                                     (double)point.theta};
                     const rsmotion::math::Vec3f blockPosition =  getBlockPos(car_pose);
 
-                    space->copyFromReals(newState->getOMPLState(), 
-                            std::vector<double>{car_pose[0], 
-                                                car_pose[1], 
-                                                car_pose[2], 
-                                                startValues[3], 
-                                                blockPosition[2],
-                                                blockPosition[0],
-                                                car_pose[2]});
+                    if(real){
+                        space->copyFromReals(newState->getOMPLState(), 
+                                std::vector<double>{car_pose[0], 
+                                                    car_pose[1], 
+                                                    car_pose[2], 
+                                                    startValues[3], 
+                                                    blockPosition[2],
+                                                    blockPosition[0],
+                                                    car_pose[2]});
+                    }
+                    else{
+                        space->copyFromReals(newState->getOMPLState(), 
+                                std::vector<double>{CONTXY2DISC(car_pose[0], res),
+                                                    CONTXY2DISC(car_pose[1], res),
+                                                    gls::io::ContTheta2Disc(car_pose[2], NUMTHETADIRS), 
+                                                    startValues[3], 
+                                                    CONTXY2DISC(blockPosition[2], res),
+                                                    CONTXY2DISC(blockPosition[0], res),
+                                                    gls::io::ContTheta2Disc(car_pose[2], NUMTHETADIRS)});
+                    }
                     states.push_back(newState);
                 }
             }
@@ -857,14 +896,26 @@ std::vector<StatePtr> interpolate(StatePtr startState, StatePtr endState, int mo
             auto u = path[i];
             std::vector<double> uvec = {u.X(), u.Y(), u.Phi()};
             StatePtr newState(new State(space));
-            space->copyFromReals(newState->getOMPLState(), 
-                    std::vector<double>{uvec[0], 
-                                        uvec[1], 
-                                        uvec[2], 
-                                        -1, 
-                                        DISCXY2CONT(startValues[4], res),
-                                        DISCXY2CONT(startValues[5], res),
-                                        gls::io::DiscTheta2Cont(startValues[6], NUMTHETADIRS)});
+            if(real){
+                space->copyFromReals(newState->getOMPLState(), 
+                        std::vector<double>{uvec[0], 
+                                            uvec[1], 
+                                            uvec[2], 
+                                            -1, 
+                                            DISCXY2CONT(startValues[4], res),
+                                            DISCXY2CONT(startValues[5], res),
+                                            gls::io::DiscTheta2Cont(startValues[6], NUMTHETADIRS)});
+            }
+            else{
+                space->copyFromReals(newState->getOMPLState(), 
+                        std::vector<double>{CONTXY2DISC(uvec[0],res), 
+                                            CONTXY2DISC(uvec[1],res), 
+                                            gls::io::ContTheta2Disc(uvec[2], NUMTHETADIRS), 
+                                            -1, 
+                                            startValues[4],
+                                            startValues[5],
+                                            startValues[6]});
+            }
             states.push_back(newState);
         }
     }
@@ -1124,7 +1175,7 @@ int main (int argc, char const *argv[]) {
   gls::io::MotionPrimitiveReader* mReader = new gls::io::MotionPrimitiveReader();
   //TODO (schmittle) don't hardcode paths
   //mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.mprim",
-   //      "/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.json");
+         //"/home/schmittle/mushr/catkin_ws/src/gls/examples/mushr.json");
   mReader->ReadMotionPrimitives("/home/schmittle/mushr/catkin_ws/src/gls/examples/pushr_sandpaper.mprim",
           "/home/schmittle/mushr/catkin_ws/src/gls/examples/pushr_sandpaper.json");
   std::string obstacleLocation("/home/schmittle/mushr/catkin_ws/src/gls/examples/blank.png");
@@ -1161,12 +1212,7 @@ int main (int argc, char const *argv[]) {
   space->copyFromReals(sourceState->getOMPLState(), start_vec);
 
   // block_x, block_y, block_theta
-  //std::vector<StatePtr> targetStates = createTargetStates({1.75, 1.95, 2}, space);
-  std::vector<StatePtr> targetStates = createTargetStates({1.75, 1.95, 2}, space);
-
-  //StatePtr targetState(new State(space));
-  //space->copyFromReals(targetState->getOMPLState(), std::vector<double>{1, 2, M_PI, 1, 2, 2, 0});
-  //TODO specify multiple goals
+  std::vector<StatePtr> targetStates = createTargetStates({1, 1, M_PI/2.0}, space);
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
@@ -1195,6 +1241,7 @@ int main (int argc, char const *argv[]) {
       = std::bind(&computeReconfigures, std::placeholders::_1, 
               mReader->resolution, robot_footprint, block_footprint, bounds, space, lat2real);
 
+
   planner.setImplicit(
           std::bind(&fit_state2lattice,  
                 std::placeholders::_1, 
@@ -1210,10 +1257,22 @@ int main (int argc, char const *argv[]) {
                 bounds,
                 lat2real,
                 reconfigure_neighbors),
+          std::bind(&cached_transition_function,  // This should be a parents function but for now it is ok since we have not collision checking
+                std::placeholders::_1, 
+                std::placeholders::_2, 
+                space, 
+                mReader,
+                robot_footprint,
+                block_footprint,
+                bounds,
+                lat2real,
+                reconfigure_neighbors),
+          std::function<std::string(StatePtr)>(&iVertexHash),
           std::bind(&cached_interpolate, 
               std::placeholders::_1,
               std::placeholders::_2,
               std::placeholders::_3,
+              std::placeholders::_4,
               space, 
               mReader,
               rNeighbors.second,

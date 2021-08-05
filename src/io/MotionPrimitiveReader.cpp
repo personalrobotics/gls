@@ -282,12 +282,12 @@ bool MotionPrimitiveReader::ReadMotionPrimitives(const char* mprim_filename, con
     std::ifstream fMetadataPrims(json_filename);
     json metaPrims;
     fMetadataPrims >> metaPrims;
-    std::cout<<metaPrims["(14, 1, -1, 14)"]["path_len"]<<std::endl;
 
     char sTemp[1024], sExpected[1024];
     float fTemp;
     int dTemp;
     int totalNumofActions = 0;
+    bUseNonUniformAngles = false; // default
 
     std::cout<<"Reading in motion primitives..." << std::endl;
     fflush(stdout);
@@ -311,7 +311,6 @@ bool MotionPrimitiveReader::ReadMotionPrimitives(const char* mprim_filename, con
     if (fscanf(fMotPrims, "%s", sTemp) == 0) {
         return false;
     }
-    std::cout<< "sTemp: "<< sTemp << std::endl;
     if (strncmp(sTemp, "min_turning_radius_m:", 21) == 0) {
         bUseNonUniformAngles = true;
     }
@@ -344,7 +343,6 @@ bool MotionPrimitiveReader::ReadMotionPrimitives(const char* mprim_filename, con
     if (fscanf(fMotPrims, "%d", &dTemp) == 0) {
         return false;
     }
-    std::cout<<"numberofangles: "<<dTemp<<std::endl;
     NumThetaDirs = dTemp;
 
     if (bUseNonUniformAngles) {
@@ -398,7 +396,6 @@ bool MotionPrimitiveReader::ReadMotionPrimitives(const char* mprim_filename, con
 
         mprimV.push_back(motprim);
     }
-    std::cout<<"done"<<std::endl;
     return true;
 }
 

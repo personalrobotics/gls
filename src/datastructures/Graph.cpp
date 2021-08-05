@@ -6,6 +6,29 @@ namespace gls {
 namespace datastructures {
 
 // ============================================================================
+bool Graph::isImplicit(){
+    return mImplicit;
+}
+
+// ============================================================================
+void Graph::setGraphType(std::string type){
+    if(type == "implicit"){
+        mImplicit = true;
+    }
+    else if(type == "explicit"){
+        mImplicit = false;
+    }
+    else{
+        OMPL_ERROR("Invalid graph type in setGraphType");
+    }
+}
+
+// ============================================================================
+int Graph::numVertices(){
+    return mVertexNum;
+}
+
+// ============================================================================
 Vertex& Graph::addVertex(Vertex v, StatePtr state){
     if(mImplicit){
         mImplicitGraph.addVertex(v.mImplicitVertex, state);
@@ -21,19 +44,11 @@ Vertex& Graph::addVertex(Vertex v, StatePtr state){
 std::pair<Edge&, bool> Graph::addEdge(Vertex v1, Vertex v2){
     bool exists;
     Edge newEdge;
-    if (mImplicit){
-        //TODO (schmittle) this never gets run and we don't have the edge length so set to 0
-        std::pair<IEdge, bool> raw_edge = mImplicitGraph.addEdge(v1.mImplicitVertex, v2.mImplicitVertex, 0, 0);
-        newEdge = Edge(v1, v2, true);
-        newEdge.mImplicitEdge = raw_edge.first;
-        exists = raw_edge.second;
-    }
-    else{
-        newEdge = Edge(v1,v2, false);
-        std::pair<EEdge, bool> raw_edge  = add_edge(v1.mExplicitVertex, v2.mExplicitVertex, mExplicitGraph); 
-        newEdge.mExplicitEdge = raw_edge.first;
-        exists = raw_edge.second;
-    }
+    assert(!mImplicit); // Not a functionality for implicit graphs
+    newEdge = Edge(v1,v2, false);
+    std::pair<EEdge, bool> raw_edge  = add_edge(v1.mExplicitVertex, v2.mExplicitVertex, mExplicitGraph); 
+    newEdge.mExplicitEdge = raw_edge.first;
+    exists = raw_edge.second;
     EdgeHash hash;
     mEdges.push_back(newEdge);
     mEdgesLookup[hash(std::pair<Vertex, Vertex>{v1, v2})] = mEdges.back();
@@ -82,11 +97,51 @@ std::pair<EdgeIter, EdgeIter> Graph::edges(){
 }
 
 // ============================================================================
+std::pair<NeighborIter, NeighborIter> Graph::parents(Vertex u){
+    // Adjacent vertices analog but handles directed implicit graph
+    if(mImplicit){
+        mAdjacents.clear();
+        EdgeHash hash;
+        std::string hashed_edge;
+        std::vector<std::tuple<IVertex, bool, bool>> raw_parents = 
+            gls::datastructures::parent_vertices(u.mImplicitVertex, mImplicitGraph);
+
+        mAdjacents.reserve(raw_parents.size());
+        for (std::tuple<IVertex, bool, bool> vi : raw_parents){
+            mAdjacents.push_back(Vertex(std::get<0>(vi)));
+
+            // Update mVertices, mEdges if we expanded internally
+            if(!std::get<1>(vi)){ // vertex didn't exist before now 
+                Vertex v(std::get<0>(vi)); 
+                mVertices.push_back(v);
+            }
+            hashed_edge = hash(std::pair<Vertex, Vertex>{mAdjacents.back(), u});
+
+            //debug
+            if(hashed_edge == std::string("62-42-8-061-31-7-0")){
+                std::cout<<"edge exists"<<std::endl;
+            }
+
+            if(mEdgesLookup.find(hashed_edge) == mEdgesLookup.end()){ // edge doesn't exist
+                Edge newEdge = Edge(mAdjacents.back(), u, true);
+                mEdges.push_back(newEdge);
+                mEdgesLookup[hashed_edge] = mEdges.back();
+            }
+        }
+        return std::pair<NeighborIter, NeighborIter>{mAdjacents.begin(), mAdjacents.end()};
+    }
+    else{
+        return adjacents(u);
+    }
+}
+
+// ============================================================================
 std::pair<NeighborIter, NeighborIter> Graph::adjacents(Vertex u){
     mAdjacents.clear();
     EdgeHash hash;
     if(mImplicit){
-        std::vector<std::tuple<IVertex, bool, bool>> raw_adjs = gls::datastructures::adjacent_vertices(u.mImplicitVertex, mImplicitGraph);
+        std::vector<std::tuple<IVertex, bool, bool>> raw_adjs = 
+            gls::datastructures::adjacent_vertices(u.mImplicitVertex, mImplicitGraph);
         mAdjacents.reserve(raw_adjs.size());
         for (std::tuple<IVertex, bool, bool> vi : raw_adjs){
             mAdjacents.push_back(Vertex(std::get<0>(vi)));
@@ -97,7 +152,7 @@ std::pair<NeighborIter, NeighborIter> Graph::adjacents(Vertex u){
                 mVertices.push_back(v);
             }
             if(!std::get<2>(vi)){ // edge didn't exist before now 
-                Edge newEdge = Edge(u, mAdjacents.back(), true); // I THINK this is okay 
+                Edge newEdge = Edge(u, mAdjacents.back(), true);
                 mEdges.push_back(newEdge);
                 mEdgesLookup[hash(std::pair<Vertex, Vertex>{u, mAdjacents.back()})] = mEdges.back();
             }
@@ -149,15 +204,19 @@ std::pair<EdgeIter, EdgeIter> edges(Graph& g){
 }
 
 // ============================================================================
+std::pair<NeighborIter, NeighborIter> parent_vertices(Vertex u, Graph& g){
+    return g.parents(u);
+}
+
+// ============================================================================
 std::pair<NeighborIter, NeighborIter> adjacent_vertices(Vertex u, Graph& g){
     return g.adjacents(u);
 }
 
 // ============================================================================
 Vertex addVertex(Graph& g, StatePtr state){
-    IVertexHash hash;
-    if(g.mImplicit){
-        Vertex vert = Vertex(hash(g.mImplicitGraph.fit2Lat(state)));
+    if(g.isImplicit()){
+        Vertex vert = Vertex(g.mImplicitGraph.hash(g.mImplicitGraph.fit2Lat(state)));
         return g.addVertex(vert, state);
     }
     else{
@@ -176,21 +235,15 @@ std::pair<Edge, bool> edge(Vertex v1, Vertex v2, Graph& g){
     EdgeHash hash;
     std::string hashed_edge = hash(std::pair<Vertex, Vertex>{v1, v2});
     std::string reverse_hashed_edge = hash(std::pair<Vertex, Vertex>{v2, v1});
-    /*
-    std::map<std::string, Edge> lookup = g.getLookup();
-    if(lookup.find(hashed_edge) != lookup.end()){
-        return std::pair<Edge, bool>{lookup[hashed_edge], true};
-    }
-    if(!g.mImplicit && lookup.find(reverse_hashed_edge) != lookup.end()){ // TODO (schmittle) check reverse 4 implicit?
-        return std::pair<Edge, bool>{lookup[reverse_hashed_edge], true};
-    }
-    Edge* e = new Edge(); // blank edge
-    return std::pair<Edge, bool>{*e, false};
-    */
-    /// This is faster than above
+
     std::pair<Edge, bool> edge_lookup = g[hashed_edge];
-    if(!g.mImplicit && !edge_lookup.second){
+    // Check reverse. Explicit only, implicit directed
+    if(!g.isImplicit() && !edge_lookup.second){
         edge_lookup = g[reverse_hashed_edge];
+    }
+    //debug
+    if(!edge_lookup.second){
+        std::cout<<hashed_edge<<std::endl;
     }
     return edge_lookup;
 }
@@ -217,7 +270,7 @@ Vertex target(Edge e, Graph& g){
 
 // ============================================================================
 void clear_vertex(Vertex v, Graph& g){
-    if (!g.mImplicit){
+    if (!g.isImplicit()){
         clear_vertex(v.mExplicitVertex, g.mExplicitGraph);
     }
     else{
@@ -227,7 +280,7 @@ void clear_vertex(Vertex v, Graph& g){
 
 // ============================================================================
 void remove_vertex(Vertex v, Graph& g){
-    if (!g.mImplicit){
+    if (!g.isImplicit()){
         remove_vertex(v.mExplicitVertex, g.mExplicitGraph);
     }
     else{

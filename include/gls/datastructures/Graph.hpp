@@ -13,9 +13,6 @@
 #include <boost/property_map/dynamic_property_map.hpp>
 
 // GLS headers
-//#include "gls/datastructures/State.hpp"
-//#include "gls/datastructures/Types.hpp"
-//#include "gls/datastructures/Properties.hpp"
 #include "gls/datastructures/ImplicitGraph.hpp"
 
 // TODO (avk): state and length are made public to accomodate the
@@ -51,22 +48,33 @@ class Graph {
         EdgeProperties & operator[](Edge key);
         std::pair<Edge, bool> operator[](std::string hash);
 
-        // TODO (schmittle) make these private
-        bool mImplicit = false;
-        int mVertexNum;
-        EGraph mExplicitGraph;
         ImplicitGraph mImplicitGraph;
+        EGraph mExplicitGraph;
+
+        /// Which graph type it is
+        bool isImplicit();
+
+        /// Sets mImplicit to true of false
+        void setGraphType(std::string name);
+
+        /// Return number of vertices
+        int numVertices();
 
         Vertex& addVertex(Vertex v, StatePtr state);
         std::pair<Edge&, bool> addEdge(Vertex v1, Vertex v2);
         void setImplicit(ImplicitGraph g);
         std::pair<VertexIter,VertexIter> vertices();
         std::pair<EdgeIter, EdgeIter> edges();
+
+        std::pair<NeighborIter, NeighborIter> parents(Vertex u);
         std::pair<NeighborIter, NeighborIter> adjacents(Vertex u);
         const std::map<std::string, Edge>& getLookup();
 
         void updateExplicit();
     private:
+        bool mImplicit = false;
+        int mVertexNum;
+
         // Needed for edges(Graph), vertices(Graph), & adjacent_vertices(Graph)
         std::vector<Vertex> mVertices;
         std::vector<Edge> mEdges;
@@ -77,6 +85,7 @@ class Graph {
 // Graph functions
 std::pair<VertexIter, VertexIter> vertices(Graph& g);
 std::pair<EdgeIter, EdgeIter> edges(Graph& g);
+std::pair<NeighborIter, NeighborIter> parent_vertices(Vertex u, Graph& g);
 std::pair<NeighborIter, NeighborIter> adjacent_vertices(Vertex u, Graph& g);
 Vertex addVertex(Graph& g, StatePtr state);
 std::pair<Edge&, bool> addEdge(Vertex v1, Vertex v2, Graph& g);
