@@ -257,7 +257,7 @@ ompl::base::PlannerStatus GLS::solve(const ompl::base::PlannerTerminationConditi
   while (!mExtendQueue.isEmpty()) {
     // Extend the tree till the event is triggered.
     extendSearchTree();
-    std::cout<<"event triggered"<<std::endl;
+    std::cout<<"event triggered "<<mNumExtended<<std::endl;
 
     // Evaluate the extended search tree.
     evaluateSearchTree();
@@ -335,6 +335,7 @@ bool GLS::foundPathToGoal() {
 
 // ============================================================================
 double GLS::getGraphHeuristic(Vertex v) {
+  //common::SimpleScopedTimer timer("heuristic", "milliseconds"); //debug
   double distance = 1e5;
   if (!mHeuristic){
       for(Vertex target : mTargetVertices){
@@ -512,6 +513,7 @@ void GLS::extendSearchTree() {
   while (!mExtendQueue.isEmpty()) {
     // Check if the popping the top vertex triggers the event.
     Vertex u = mExtendQueue.getTopVertex();
+    mNumExtended++;
 
     if (mEvent->isTriggered(u))
       break;
@@ -530,7 +532,12 @@ void GLS::extendSearchTree() {
     bool targetneighbor;
     // Get the neighbors and extend.
     NeighborIter ni, ni_end;
-    for (boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph); ni != ni_end; ++ni) {
+    {
+        //common::SimpleScopedTimer timer("adjacents", "milliseconds"); //debug
+        boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph);
+    }
+    //for (boost::tie(ni, ni_end) = adjacent_vertices(u, mgraph); ni != ni_end; ++ni) {
+    for (boost::tie(ni, ni_end); ni != ni_end; ++ni) {
       targetneighbor = false; //debug
       Vertex v = *ni;
 
@@ -827,6 +834,7 @@ void GLS::evaluateSearchTree() {
     // Populate the queue to update the search tree.
     mUpdateQueue.addVertexWithValue(v, mGraph[v].getCostToCome());
   } else {
+      std::cout<<"collision"<<std::endl;
     mGraph[uv].setCollisionStatus(CollisionStatus::Collision);
     mTreeValidityStatus = TreeValidityStatus::NotValid;
 

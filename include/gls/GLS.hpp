@@ -24,6 +24,7 @@
 #include "gls/event.hpp"
 #include "gls/io.hpp"
 #include "gls/selector.hpp"
+#include "gls/common.hpp"
 
 namespace gls {
 
@@ -210,6 +211,9 @@ private:
 
   /// The fixed roadmap over which the search is done.
   gls::datastructures::Graph mGraph;
+
+  /// Number of nodes extended
+  int mNumExtended = 0;
 
   /// Source vertex.
   gls::datastructures::Vertex mSourceVertex;

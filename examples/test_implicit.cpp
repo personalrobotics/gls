@@ -797,7 +797,6 @@ int main (int argc, char const *argv[]) {
   cv::waitKey(0);
 
   // Reeds Shepp
-  /*
   auto rsspace = std::make_shared<ompl::base::ReedsSheppStateSpace>(0.627);
   auto rsbounds = ompl::base::RealVectorBounds(2); 
   rsbounds.setLow(-100.0); // TODO set real bounds, although I don't think these are used
@@ -812,8 +811,8 @@ int main (int argc, char const *argv[]) {
   StatePtr startState(new State(rsspace));
   StatePtr goalState(new State(rsspace));
 
-  startvect = {3.0,2.0,0.0};
-  goalvect = {2.0,1.5,M_PI/2.0};
+  startvect = {3.0,2.0,M_PI};
+  goalvect = {2.0,2.0, 0};
   rsspace->copyFromReals(startState->getOMPLState(),startvect); 
   rsspace->copyFromReals(goalState->getOMPLState(),goalvect); 
   std::cout<<"ompl: "<<rsspace->distance(startState->getOMPLState(), goalState->getOMPLState())<<std::endl;
@@ -841,8 +840,9 @@ int main (int argc, char const *argv[]) {
       auto statePath = GetPath(carStart, path, mReader->resolution, TURNING_RADIUS);
       std::cout<<statePath.back().Phi()<<std::endl;
   }
-  displayPath(obstacleLocation, path);
+  //displayPath(obstacleLocation, path);
   //displayPaths(obstacleLocation, paths, carStart, 0.05, turning_radius, lat2real); 
+  /*
   
   // Dubins
   DubinsPath dubins_path;

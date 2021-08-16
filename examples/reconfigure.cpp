@@ -409,18 +409,23 @@ std::pair<std::vector<Neighbor>, std::vector<std::vector<rsmotion::algorithm::St
 
         for (rsmotion::algorithm::Path path : paths){
             length = CONTXY2DISC(path.Length(TURNING_RADIUS), resolution);
+            auto rsStatePath = GetPath(carStart, path, resolution, TURNING_RADIUS);
+
+            interpolated_paths.push_back(rsStatePath);
+
+            bool valid = pathValid(rsStatePath, robot_state, 
+                    resolution, robot_footprint, block_footprint, bounds, lat2real);
+
+            if(i == 2){
+                std::cout<<valid<<std::endl;
+            }
+
 
             // Check for collisions with block
-            if(length < minLength){
-                auto rsStatePath = GetPath(carStart, path, resolution, TURNING_RADIUS);
-
-                interpolated_paths.push_back(rsStatePath);
-
-                bool valid = pathValid(rsStatePath, robot_state, 
-                        resolution, robot_footprint, block_footprint, bounds, lat2real);
+            if(valid){
 
                 // Choose shortest valid transition
-                if(valid){
+                if(length < minLength){
                     minLength = length;
                     neighborProperties = VertexProperties();
 
@@ -1206,13 +1211,13 @@ int main (int argc, char const *argv[]) {
   si->setup();
 
   // In real space 
-  std::vector<double> start_vec = {3, 2, 0, -1, 2, 2, 0};
+  std::vector<double> start_vec = {3, 2, M_PI, -1, 2.5, 2, 0};
   StatePtr sourceState(new State(space));
   // car_x, car_y, car_theta, contact type, block_x, block_y, block_theta
   space->copyFromReals(sourceState->getOMPLState(), start_vec);
 
   // block_x, block_y, block_theta
-  std::vector<StatePtr> targetStates = createTargetStates({1, 1, M_PI/2.0}, space);
+  std::vector<StatePtr> targetStates = createTargetStates({3, 2, 0}, space);
 
   // Problem Definition
   ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
