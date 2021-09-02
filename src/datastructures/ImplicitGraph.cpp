@@ -9,14 +9,14 @@ VertexProperties & ImplicitGraph::operator[](IVertex key){
     return mVertices[key];
 }
 EdgeProperties & ImplicitGraph::operator[](IEdge key){
-    return mEdges[mEdgeHashTable[key.first+key.second]];
+    return mEdges[key.first+key.second].second;
 }
 
-std::map<IVertex, VertexProperties> ImplicitGraph::get_vmap() const{
+std::unordered_map<IVertex, VertexProperties> ImplicitGraph::get_vmap() const{
     return mVertices;
 }
 
-std::map<IEdge, EdgeProperties> ImplicitGraph::get_emap() const{
+IEdgeTable ImplicitGraph::get_emap() const{
     return mEdges;
 }
 
@@ -64,15 +64,14 @@ std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descr
     IEdge ei = {v1, v2};
     std::string eh = v1 + v2; // EdgeHash effectively
     bool exists = true;
-    if(mEdgeHashTable.find(eh) == mEdgeHashTable.end()){
+    if(mEdges.find(eh) == mEdges.end()){
 
         // Add to map
-        mEdges[ei] = EdgeProperties();
-        mEdges[ei].setEvaluationStatus(EvaluationStatus::NotEvaluated);
-        mEdges[ei].setCollisionStatus(CollisionStatus::Free);
-        mEdges[ei].setLength(length);
-        mEdges[ei].setPrimID(motprimID);
-        mEdgeHashTable[eh] = ei;
+        mEdges[eh].second = EdgeProperties();
+        mEdges[eh].second.setEvaluationStatus(EvaluationStatus::NotEvaluated);
+        mEdges[eh].second.setCollisionStatus(CollisionStatus::Free);
+        mEdges[eh].second.setLength(length);
+        mEdges[eh].second.setPrimID(motprimID);
         exists = false;
     }
     return std::pair<IEdge, bool>{ei, exists};
@@ -89,19 +88,19 @@ std::size_t num_edges(const ImplicitGraph& g) {
 
 std::vector<IVertex> vertices(const ImplicitGraph& g) {
     std::vector<IVertex> vertices;
-    std::map<IVertex, VertexProperties> m = g.get_vmap();
+    std::unordered_map<IVertex, VertexProperties> m = g.get_vmap();
     vertices.reserve(m.size());
-    for(std::map<IVertex, VertexProperties>::iterator it = m.begin(); it != m.end(); ++it) {
+    for(std::unordered_map<IVertex, VertexProperties>::iterator it = m.begin(); it != m.end(); ++it) {
           vertices.push_back(it->first);
     }
     return vertices;
 }
 std::vector<IEdge> edges(const ImplicitGraph& g) {
     std::vector<IEdge> edges;
-    std::map<IEdge, EdgeProperties> m = g.get_emap();
+    IEdgeTable m = g.get_emap();
     edges.reserve(m.size());
-    for(std::map<IEdge, EdgeProperties>::iterator it = m.begin(); it != m.end(); ++it) {
-          edges.push_back(it->first);
+    for(IEdgeTable::iterator it = m.begin(); it != m.end(); ++it) {
+          edges.push_back((it->second).first);
     }
     return edges;
 }

@@ -75,7 +75,7 @@ if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3)
             set(CMAKE_CXX_STANDARD 17)
         endif()
 
-        add_compile_options(-Wall -Wextra -Wpedantic)
+        add_compile_options(-Wall -Wextra -Wpedantic -O3)
 
 
 #================================================================================

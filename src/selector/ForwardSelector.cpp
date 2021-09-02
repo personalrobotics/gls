@@ -14,16 +14,14 @@ ForwardSelector::ForwardSelector() {
 
 //==============================================================================
 Edge ForwardSelector::selectEdgeToEvaluate(Path path) {
-  // Access the graph.
-  auto graph = *mGraph;
   Edge edgeToEvaluate;
 
   // Return the first unevaluated edge closest to source.
   for (std::size_t i = path.size() - 1; i > 0; --i) {
     bool edgeExists;
-    boost::tie(edgeToEvaluate, edgeExists) = edge(path[i], path[i - 1], graph);
+    boost::tie(edgeToEvaluate, edgeExists) = edge(path[i], path[i - 1], *mGraph);
 
-    if (graph[edgeToEvaluate].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
+    if ((*mGraph)[edgeToEvaluate].getEvaluationStatus() == EvaluationStatus::NotEvaluated)
       break;
   }
 

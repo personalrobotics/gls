@@ -117,11 +117,6 @@ std::pair<NeighborIter, NeighborIter> Graph::parents(Vertex u){
             }
             hashed_edge = hash(std::pair<Vertex, Vertex>{mAdjacents.back(), u});
 
-            //debug
-            if(hashed_edge == std::string("62-42-8-061-31-7-0")){
-                std::cout<<"edge exists"<<std::endl;
-            }
-
             if(mEdgesLookup.find(hashed_edge) == mEdgesLookup.end()){ // edge doesn't exist
                 Edge newEdge = Edge(mAdjacents.back(), u, true);
                 mEdges.push_back(newEdge);
@@ -165,11 +160,6 @@ std::pair<NeighborIter, NeighborIter> Graph::adjacents(Vertex u){
         }
     }
     return std::pair<NeighborIter, NeighborIter>{mAdjacents.begin(), mAdjacents.end()};
-}
-
-// ============================================================================
-const std::map<std::string, Edge>& Graph::getLookup(){ // never use this function
-    return mEdgesLookup;
 }
 
 // ============================================================================

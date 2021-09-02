@@ -68,7 +68,6 @@ class Graph {
 
         std::pair<NeighborIter, NeighborIter> parents(Vertex u);
         std::pair<NeighborIter, NeighborIter> adjacents(Vertex u);
-        const std::map<std::string, Edge>& getLookup();
 
         void updateExplicit();
     private:
@@ -78,7 +77,7 @@ class Graph {
         // Needed for edges(Graph), vertices(Graph), & adjacent_vertices(Graph)
         std::vector<Vertex> mVertices;
         std::vector<Edge> mEdges;
-        std::map<std::string, Edge> mEdgesLookup; // For O(1) lookup
+        std::unordered_map<std::string, Edge> mEdgesLookup; // For O(1) lookup
         std::vector<Vertex> mAdjacents;
 };
 

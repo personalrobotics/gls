@@ -20,6 +20,7 @@ class ImplicitGraph {
     public:
         typedef std::string vertex_descriptor;
         typedef std::pair<vertex_descriptor, vertex_descriptor> edge_descriptor;
+        typedef std::unordered_map<std::string, std::pair<edge_descriptor, EdgeProperties>> edge_hash_table;
 
         typedef std::vector<vertex_descriptor>::iterator vertex_iterator;
         typedef std::vector<std::tuple<vertex_descriptor, VertexProperties, double, int>>::iterator neighbor_iterator;
@@ -41,8 +42,8 @@ class ImplicitGraph {
         VertexProperties & operator[](vertex_descriptor key);
         EdgeProperties & operator[](edge_descriptor key); 
 
-        std::map<vertex_descriptor, VertexProperties> get_vmap() const;
-        std::map<edge_descriptor, EdgeProperties> get_emap() const;
+        std::unordered_map<vertex_descriptor, VertexProperties> get_vmap() const;
+        edge_hash_table get_emap() const;
         std::size_t num_vertices() const;
         std::size_t num_edges() const;
 
@@ -56,9 +57,9 @@ class ImplicitGraph {
         std::pair<edge_descriptor, bool> addEdge(vertex_descriptor v1, vertex_descriptor v2, double length, int motprimID);
 
     private:
-        std::map<vertex_descriptor, VertexProperties> mVertices;
-        std::map<edge_descriptor, EdgeProperties> mEdges;
-        std::map<std::string, edge_descriptor> mEdgeHashTable;
+        std::unordered_map<vertex_descriptor, VertexProperties> mVertices;
+        edge_hash_table mEdges;
+        std::unordered_map<std::string, edge_descriptor> mEdgeHashTable;
 };
 
 // For map TODO (Schmittle) this should be user defined since it has a specific statepspace
@@ -80,6 +81,7 @@ typedef ImplicitGraph::vertex_descriptor IVertex;
 typedef ImplicitGraph::edge_descriptor IEdge; 
 typedef std::shared_ptr<IVertex> IVertexPtr;
 typedef std::shared_ptr<IEdge> IEdgePtr;
+typedef ImplicitGraph::edge_hash_table IEdgeTable; 
 
 typedef ImplicitGraph::fneighbors NeighborFunc;
 typedef ImplicitGraph::fdiscretize DiscFunc;

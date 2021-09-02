@@ -532,10 +532,7 @@ void GLS::extendSearchTree() {
     bool targetneighbor;
     // Get the neighbors and extend.
     NeighborIter ni, ni_end;
-    {
-        //common::SimpleScopedTimer timer("adjacents", "milliseconds"); //debug
-        boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph);
-    }
+    boost::tie(ni, ni_end) = adjacent_vertices(u, mGraph);
     //for (boost::tie(ni, ni_end) = adjacent_vertices(u, mgraph); ni != ni_end; ++ni) {
     for (boost::tie(ni, ni_end); ni != ni_end; ++ni) {
       targetneighbor = false; //debug
@@ -562,10 +559,12 @@ void GLS::extendSearchTree() {
       Edge uv = getEdge(u, v);
 
       //debug
+      /*
       if(std::find(mTargetVertices.begin(), mTargetVertices.end(), v) != mTargetVertices.end()){
           targetneighbor = true;
           std::cout<<"target neighbor discovered "<<(mGraph[uv].getCollisionStatus()==CollisionStatus::Collision)<<std::endl;
       }
+      */
       // If the edge has been previously marked to be in collision,
       // continue to the next successor.
       if (mGraph[uv].getCollisionStatus() == CollisionStatus::Collision)
@@ -635,9 +634,11 @@ void GLS::extendSearchTree() {
       mGraph[u].addChild(v);
 
       //debug
+      /*
       if(targetneighbor){
         std::cout<<"length: "<<edgeLength<<" "<<mGraph[v].getEstimatedTotalCost()<<std::endl;
       }
+      */
 
       mExtendQueue.addVertexWithValue(v, mGraph[v].getEstimatedTotalCost());
     }
@@ -849,6 +850,7 @@ void GLS::evaluateSearchTree() {
   if(std::find(mTargetVertices.begin(), mTargetVertices.end(), bestVertex) != mTargetVertices.end()
           && mTreeValidityStatus == TreeValidityStatus::Valid) {
     mTargetVertex = bestVertex; // If found solution, set target vertex to solution
+    std::cout<<"popped top"<<std::endl;
     if (foundPathToGoal()) {
       // Planning problem has been solved!
       mPlannerStatus = PlannerStatus::Solved;
