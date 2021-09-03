@@ -434,6 +434,11 @@ double GLS::getNumberOfEdgeEvaluations() {
 }
 
 // ============================================================================
+double GLS::getNumberOfNodeExpansions() {
+  return mNumExtended;
+}
+
+// ============================================================================
 double GLS::getNumberOfEdgeRewires() {
   return mNumberOfEdgeRewires;
 }

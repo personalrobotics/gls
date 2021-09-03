@@ -111,6 +111,9 @@ public:
   /// Get the number of edges evaluated.
   double getNumberOfEdgeEvaluations();
 
+  /// Get the number of nodes expanded.
+  double getNumberOfNodeExpansions();
+
   /// Get the number of edges rewired.
   double getNumberOfEdgeRewires();
 

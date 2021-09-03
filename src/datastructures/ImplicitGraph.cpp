@@ -30,7 +30,7 @@ std::size_t ImplicitGraph::num_edges() const{
 
 bool ImplicitGraph::addVertex(vertex_descriptor vi, StatePtr state){
     bool exists = true;
-    if(mVertices.find(vi) == mVertices.end()){
+    if(mVertices.count(vi) == 0){
 
         VertexProperties* vp = new VertexProperties();
         vp->setState(fit2Lat(state));
@@ -48,7 +48,7 @@ bool ImplicitGraph::addVertex(vertex_descriptor vi, StatePtr state){
 
 bool ImplicitGraph::addAdjVertex(vertex_descriptor vi, StatePtr state){
     bool exists = true;
-    if(mVertices.find(vi) == mVertices.end()){
+    if(mVertices.count(vi) == 0){
 
         VertexProperties* vp = new VertexProperties();
         vp->setState(state);
@@ -64,7 +64,7 @@ std::pair<IEdge, bool> ImplicitGraph::addEdge(vertex_descriptor v1, vertex_descr
     IEdge ei = {v1, v2};
     std::string eh = v1 + v2; // EdgeHash effectively
     bool exists = true;
-    if(mEdges.find(eh) == mEdges.end()){
+    if(mEdges.count(eh) == 0){
 
         // Add to map
         mEdges[eh].second = EdgeProperties();
